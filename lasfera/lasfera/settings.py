@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "manuscript",
     "maps",
     "pages",
+    'django_dbml',
 ]
 
 MIDDLEWARE = [
