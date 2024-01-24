@@ -1,0 +1,146 @@
+Table Library {
+  id big_auto [pk, unique]
+  city char [null]
+  library char [null]
+  Note: '''Library(id, city, library)'''
+}
+
+
+Table ManuscriptLocation {
+  id auto [pk, unique]
+  library foreign_key [null]
+  shelfmark char [null]
+  digitized_url url [note:"The URL to the digitized manuscript. If there isn't one, leave blank.", null]
+  Note: '''ManuscriptLocation(id, library, shelfmark, digitized_url)'''
+}
+ref: ManuscriptLocation.library > Library.id
+
+
+Table EditorialStatus {
+  id auto [pk, unique]
+  manuscript foreign_key [null]
+  siglum char [null]
+  editorial_priority integer [null]
+  collated boolean [null]
+  access integer [null]
+  digitized boolean [null]
+  spatial_priority char [null]
+  dataset char [null]
+  group char [null]
+  Note: '''EditorialStatus(id, manuscript, siglum, editorial_priority, collated, access, digitized, spatial_priority, dataset, group)'''
+}
+ref: EditorialStatus.manuscript > SingleManuscript.id
+
+
+Table Reference {
+  id auto [pk, unique]
+  bert char [null]
+  reference char [null]
+  Note: '''Reference(id, bert, reference)'''
+}
+
+
+Table Codex {
+  id auto [pk, unique]
+  support char [null]
+  height integer [note:"in cm", null]
+  date char [null]
+  folia char [null]
+  lines_per_page char [null]
+  Note: '''Codex(id, support, height, date, folia, lines_per_page)'''
+}
+
+
+Table TextDecoration {
+  id auto [pk, unique]
+  text_script char [null]
+  label_script char [null]
+  diagrams boolean [null]
+  maps boolean [null]
+  illumination boolean [null]
+  other char [null]
+  relative_quality char [null]
+  Note: '''TextDecoration(id, text_script, label_script, diagrams, maps, illumination, other, relative_quality)'''
+}
+
+
+Table Detail {
+  id auto [pk, unique]
+  author_attribution char [null]
+  scribe_attribution char [null]
+  book_headings boolean [null]
+  book_headigs_notes char [null]
+  book_initials boolean [null]
+  book_initials_notes char [null]
+  sanza_headings boolean [null]
+  sanza_headings_notes char [null]
+  stanza_initials boolean [null]
+  stanza_initials_notes char [null]
+  marginal_rubrics boolean [null]
+  marginal_rubrics_notes char [null]
+  filigree boolean [null]
+  filigree_notes char [null]
+  abbreviations boolean [null]
+  abbreviations_notes char [null]
+  catchwords boolean [null]
+  catchwords_notes char [null]
+  mabel_label char [null]
+  map_labels boolean [null]
+  map_labels_notes char [null]
+  distance_lines boolean [null]
+  distance_numbers boolean [null]
+  distance_numbers_notes char [null]
+  coat_of_arms boolean [null]
+  coat_of_arms_notes char [null]
+  is_sea_red boolean [null]
+  laiazzo boolean [null]
+  tabriz boolean [null]
+  rhodes_status char [null]
+  Note: '''Detail(id, author_attribution, scribe_attribution, book_headings, book_headigs_notes, book_initials, book_initials_notes, sanza_headings, sanza_headings_notes, stanza_initials, stanza_initials_notes, marginal_rubrics, marginal_rubrics_notes, filigree, filigree_notes, abbreviations, abbreviations_notes, catchwords, catchwords_notes, mabel_label, map_labels, map_labels_notes, distance_lines, distance_numbers, distance_numbers_notes, coat_of_arms, coat_of_arms_notes, is_sea_red, laiazzo, tabriz, rhodes_status)'''
+}
+
+
+Table ViewerNote {
+  id auto [pk, unique]
+  date_seen date [null]
+  viewer char [null]
+  notes text [null]
+  Note: '''ViewerNote(id, date_seen, viewer, notes)'''
+}
+
+
+Table Stanza {
+  id auto [pk, unique]
+  stanza_number integer [note:"The line number of the stanza in the manuscript.", null]
+  stanza_text text [null]
+  stanza_notes text [null]
+  stanza_translation text [null]
+  stanza_language char [null]
+  stanza_translation_notes text [null]
+  manuscript foreign_key [null]
+  Note: '''Stanza(id, stanza_number, stanza_text, stanza_notes, stanza_translation, stanza_language, stanza_translation_notes, manuscript)'''
+}
+ref: Stanza.manuscript > SingleManuscript.id
+
+
+Table SingleManuscript {
+  id auto [pk, unique]
+  name char [null]
+  library foreign_key [null]
+  editorial_status foreign_key [null]
+  reference foreign_key [null]
+  codex foreign_key [null]
+  text_decorations foreign_key [null]
+  manuscript_details foreign_key [null]
+  viewer_notes foreign_key [null]
+  Note: '''SingleManuscript(id, name, library, editorial_status, reference, codex, text_decorations, manuscript_details, viewer_notes)'''
+}
+ref: SingleManuscript.library > ManuscriptLocation.id
+ref: SingleManuscript.editorial_status > EditorialStatus.id
+ref: SingleManuscript.reference > Reference.id
+ref: SingleManuscript.codex > Codex.id
+ref: SingleManuscript.text_decorations > TextDecoration.id
+ref: SingleManuscript.manuscript_details > Detail.id
+ref: SingleManuscript.viewer_notes > ViewerNote.id
+
+
