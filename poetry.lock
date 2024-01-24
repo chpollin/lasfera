@@ -71,6 +71,17 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-dbml"
+version = "0.7.0"
+description = "Django extension aimed to generate DBML from all models"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-dbml-0.7.0.tar.gz", hash = "sha256:7d177b6df8f3e23067b458c6e9dcbeb6120dcfcaddaf4e7c5ff5a009bddc6e76"},
+    {file = "django_dbml-0.7.0-py3-none-any.whl", hash = "sha256:0c45c1c1cbd3821373f949dd488d32d2ce4f6513b7dc7ca7aad06f5c2f403ccd"},
+]
+
+[[package]]
 name = "django-environ"
 version = "0.11.2"
 description = "A package that allows you to utilize 12factor inspired environment variables to configure your Django application."
@@ -240,4 +251,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "12f2becf9080535399d992db63a2c013cc5dca4c398286230acd4f6824139df0"
+content-hash = "7c62f5258e0521c223db1a371cfb88ddc05a6c687bc05be7b1b25af4c0b4ba69"
