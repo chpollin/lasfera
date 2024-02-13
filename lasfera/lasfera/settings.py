@@ -88,8 +88,12 @@ LOGOUT_REDIRECT_URL = "home"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
+        "NAME": env("DB_NAME", default="lasfera"),
+        "USER": env("DB_USER", default="lasfera"),
+        "PASSWORD": env("DB_PASSWORD"),
     }
 }
 
