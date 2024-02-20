@@ -12,6 +12,7 @@ django-allauth = "^0.61.1"
 django-environ = "^0.11.2"
 pylint-django = "^2.5.5"
 pillow = "^10.2.0"
+psycopg2 = "^2.9.9"
 
 
 [build-system]
