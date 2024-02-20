@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Library(models.Model):
     city = models.CharField(max_length=255, blank=True, null=True)
     library = models.CharField(max_length=255, blank=True, null=True)
@@ -7,18 +8,36 @@ class Library(models.Model):
     def __str__(self):
         return self.library + ", " + self.city
 
+
 class ManuscriptLocation(models.Model):
     id = models.AutoField(primary_key=True)
-    library = models.ForeignKey(Library, on_delete=models.CASCADE, blank=True, null=True)
+    library = models.ForeignKey(
+        Library, on_delete=models.CASCADE, blank=True, null=True
+    )
     shelfmark = models.CharField(max_length=255, blank=True, null=True)
-    digitized_url = models.URLField(max_length=255, blank=True, null=True, help_text="The URL to the digitized manuscript. If there isn't one, leave blank.")
+    digitized_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The URL to the digitized manuscript. If there isn't one, leave blank.",
+    )
 
     def __str__(self):
-        return self.library.library + ", " + self.library.city + " (" + self.shelfmark + ")"
+        return (
+            self.library.library
+            + ", "
+            + self.library.city
+            + " ("
+            + self.shelfmark
+            + ")"
+        )
+
 
 class EditorialStatus(models.Model):
     id = models.AutoField(primary_key=True)
-    manuscript = models.ForeignKey('SingleManuscript', on_delete=models.PROTECT, blank=True, null=True)
+    manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
     siglum = models.CharField(max_length=255, blank=True, null=True)
     editorial_priority = models.IntegerField(blank=True, null=True)
     collated = models.BooleanField(blank=True, null=True)
@@ -28,10 +47,12 @@ class EditorialStatus(models.Model):
     dataset = models.CharField(max_length=255, blank=True, null=True)
     group = models.CharField(max_length=255, blank=True, null=True)
 
+
 class Reference(models.Model):
     id = models.AutoField(primary_key=True)
     bert = models.CharField(max_length=6, blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
+
 
 class Codex(models.Model):
     id = models.AutoField(primary_key=True)
@@ -40,6 +61,7 @@ class Codex(models.Model):
     date = models.CharField(max_length=255, blank=True, null=True)
     folia = models.CharField(max_length=255, blank=True, null=True)
     lines_per_page = models.CharField(max_length=255, blank=True, null=True)
+
 
 class TextDecoration(models.Model):
     id = models.AutoField(primary_key=True)
@@ -51,6 +73,7 @@ class TextDecoration(models.Model):
     other = models.CharField(max_length=255, blank=True, null=True)
     relative_quality = models.CharField(max_length=255, blank=True, null=True)
 
+
 class Detail(models.Model):
     id = models.AutoField(primary_key=True)
     author_attribution = models.CharField(max_length=255, blank=True, null=True)
@@ -59,8 +82,8 @@ class Detail(models.Model):
     book_headigs_notes = models.CharField(max_length=255, blank=True, null=True)
     book_initials = models.BooleanField(blank=True, null=True)
     book_initials_notes = models.CharField(max_length=255, blank=True, null=True)
-    sanza_headings = models.BooleanField(blank=True, null=True)
-    sanza_headings_notes = models.CharField(max_length=255, blank=True, null=True)
+    stanza_headings = models.BooleanField(blank=True, null=True)
+    stanza_headings_notes = models.CharField(max_length=255, blank=True, null=True)
     stanza_initials = models.BooleanField(blank=True, null=True)
     stanza_initials_notes = models.CharField(max_length=255, blank=True, null=True)
     marginal_rubrics = models.BooleanField(blank=True, null=True)
@@ -94,30 +117,108 @@ class ViewerNote(models.Model):
 
 
 class Stanza(models.Model):
-
     STANZA_LANGUAGE = (
-        ('en', 'English'),
-        ('it', 'Italian'),
-        ('la', 'Latin'),
-        ('fr', 'French'),
+        ("en", "English"),
+        ("it", "Italian"),
+        ("la", "Latin"),
+        ("fr", "French"),
     )
 
     id = models.AutoField(primary_key=True)
-    stanza_number = models.IntegerField(blank=True, null=True, help_text="The line number of the stanza in the manuscript.")
+    stanza_number = models.IntegerField(
+        blank=True,
+        null=True,
+        help_text="The line number of the stanza in the manuscript.",
+    )
     stanza_text = models.TextField(blank=True, null=True)
     stanza_notes = models.TextField(blank=True, null=True)
     stanza_translation = models.TextField(blank=True, null=True)
-    stanza_language = models.CharField(max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True)
+    stanza_language = models.CharField(
+        max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
+    )
     stanza_translation_notes = models.TextField(blank=True, null=True)
-    manuscript = models.ForeignKey('SingleManuscript', on_delete=models.PROTECT, blank=True, null=True)
+    manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
+    locations_mentioned = models.ManyToManyField(
+        "Location",
+        blank=True,
+        help_text="Locations mentioned in the stanza.",
+    )
+
+
+class Page(models.Model):
+    """This provides a way to collect several stanzas onto a single page,
+    and associate them with a single manuscript."""
+
+    id = models.AutoField(primary_key=True)
+    page_number = models.IntegerField(blank=True, null=True)
+    page_notes = models.TextField(blank=True, null=True)
+    manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
+    stanzas = models.ManyToManyField(Stanza, blank=True)
+    image = models.ImageField(
+        null=True,
+        blank=True,
+        help_text="The image of the page from the manuscript.",
+    )
 
 
 class SingleManuscript(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, blank=True, null=True)
-    library = models.ForeignKey(ManuscriptLocation, on_delete=models.CASCADE, blank=True, null=True)
-    reference = models.ForeignKey(Reference, on_delete=models.CASCADE, blank=True, null=True)
+    library = models.ForeignKey(
+        ManuscriptLocation, on_delete=models.CASCADE, blank=True, null=True
+    )
+    reference = models.ForeignKey(
+        Reference, on_delete=models.CASCADE, blank=True, null=True
+    )
     codex = models.ForeignKey(Codex, on_delete=models.CASCADE, blank=True, null=True)
-    text_decorations = models.ForeignKey(TextDecoration, on_delete=models.CASCADE, blank=True, null=True)
-    manuscript_details = models.ForeignKey(Detail, on_delete=models.CASCADE, blank=True, null=True)
-    viewer_notes = models.ForeignKey(ViewerNote, on_delete=models.CASCADE, blank=True, null=True)
+    text_decorations = models.ForeignKey(
+        TextDecoration, on_delete=models.CASCADE, blank=True, null=True
+    )
+    manuscript_details = models.ForeignKey(
+        Detail, on_delete=models.CASCADE, blank=True, null=True
+    )
+    viewer_notes = models.ForeignKey(
+        ViewerNote,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        help_text="Notes by whomever viewed the manuscript.",
+    )
+    iiif_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
+    )
+    authority_file = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The URL to the authority file for the manuscript. If there isn't one, leave blank.",
+    )
+
+    provenance = models.TextField(blank=True, null=True)
+    manuscript_lost = models.BooleanField(blank=True, null=True)
+    manuscript_destroyed = models.BooleanField(blank=True, null=True)
+
+
+class Location(models.Model):
+    id = models.AutoField(primary_key=True)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    authority_file = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The URL to the authority file for the location. If there isn't one, leave blank.",
+    )
+
+    def __str__(self):
+        return self.city + ", " + self.country

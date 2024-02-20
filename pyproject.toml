@@ -1,18 +1,17 @@
 [tool.poetry]
-name = "lasfera-django"
+name = "lasfera-app"
 version = "0.1.0"
-description = "Web files for the La Sfera project."
+description = ""
 authors = ["Jason Heppler <jheppler@gmu.edu>"]
-license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-django = "^5.0"
+django = "^5.0.2"
+django-allauth = "^0.61.1"
 django-environ = "^0.11.2"
-python-dotenv = "^1.0.0"
 pylint-django = "^2.5.5"
-django-dbml = "^0.7.0"
+pillow = "^10.2.0"
 
 
 [build-system]

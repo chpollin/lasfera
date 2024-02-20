@@ -1,9 +1,6 @@
 from pathlib import Path
 
 import environ
-from dotenv import load_dotenv
-
-load_dotenv()
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 env = environ.Env()
@@ -33,21 +30,21 @@ LANGUAGE_CODE = "en-us"
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
-
 # Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
+    "django.contrib.messages",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
-    "django.contrib.messages",
     "django.contrib.staticfiles",
     "accounts",
     "manuscript",
-    "maps",
-    "pages",
-    'django_dbml',
+    "map",
 ]
 
 MIDDLEWARE = [
@@ -58,14 +55,15 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
-ROOT_URLCONF = "lasfera.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -73,14 +71,18 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "lasfera.wsgi.application"
-LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "home"
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -93,11 +95,10 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = "accounts.CustomUser"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
+# AUTH_USER_MODEL = "accounts.CustomUser"
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
