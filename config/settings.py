@@ -90,7 +90,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "HOST": env("DB_HOST", default="localhost"),
         "PORT": env("DB_PORT", default="5432"),
         "NAME": env("DB_NAME", default="lasfera"),
@@ -134,6 +134,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+STATIC_ROOT = str(BASE_DIR / "staticfiles")
 STATIC_URL = "static/"
 
 # Default primary key field type
