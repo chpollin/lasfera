@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -7,6 +8,9 @@ class Library(models.Model):
 
     def __str__(self):
         return self.library + ", " + self.city
+
+    class Meta:
+        verbose_name_plural = "Libraries"
 
 
 class ManuscriptLocation(models.Model):
@@ -32,6 +36,9 @@ class ManuscriptLocation(models.Model):
             + ")"
         )
 
+    class Meta:
+        verbose_name = "Manuscript Location"
+
 
 class EditorialStatus(models.Model):
     id = models.AutoField(primary_key=True)
@@ -47,9 +54,16 @@ class EditorialStatus(models.Model):
     dataset = models.CharField(max_length=255, blank=True, null=True)
     group = models.CharField(max_length=255, blank=True, null=True)
 
+    class Meta:
+        verbose_name = "Editorial Status"
+        verbose_name_plural = "Editorial Status"
+
 
 class Reference(models.Model):
     id = models.AutoField(primary_key=True)
+    manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
     bert = models.CharField(max_length=6, blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
 
@@ -61,10 +75,19 @@ class Codex(models.Model):
     date = models.CharField(max_length=255, blank=True, null=True)
     folia = models.CharField(max_length=255, blank=True, null=True)
     lines_per_page = models.CharField(max_length=255, blank=True, null=True)
+    related_manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
+
+    class Meta:
+        verbose_name_plural = "Codex"
 
 
 class TextDecoration(models.Model):
     id = models.AutoField(primary_key=True)
+    manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
     text_script = models.CharField(max_length=255, blank=True, null=True)
     label_script = models.CharField(max_length=255, blank=True, null=True)
     diagrams = models.BooleanField(blank=True, null=True)
@@ -76,6 +99,9 @@ class TextDecoration(models.Model):
 
 class Detail(models.Model):
     id = models.AutoField(primary_key=True)
+    manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
     author_attribution = models.CharField(max_length=255, blank=True, null=True)
     scribe_attribution = models.CharField(max_length=255, blank=True, null=True)
     book_headings = models.BooleanField(blank=True, null=True)
@@ -112,8 +138,20 @@ class Detail(models.Model):
 class ViewerNote(models.Model):
     id = models.AutoField(primary_key=True)
     date_seen = models.DateField(blank=True, null=True)
-    viewer = models.CharField(max_length=255, blank=True, null=True)
+    # the viewer is a dropdown from available users in the system
+    viewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="viewer",
+        help_text="The user who viewed the manuscript.",
+    )
+
     notes = models.TextField(blank=True, null=True)
+    related_manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
 
 
 class Stanza(models.Model):
@@ -125,6 +163,12 @@ class Stanza(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
+    related_folio = models.ForeignKey(
+        "Folio",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+    )
     stanza_number = models.IntegerField(
         blank=True,
         null=True,
@@ -147,21 +191,26 @@ class Stanza(models.Model):
     )
 
 
-class Page(models.Model):
+class Folio(models.Model):
     """This provides a way to collect several stanzas onto a single page,
     and associate them with a single manuscript."""
 
     id = models.AutoField(primary_key=True)
-    page_number = models.IntegerField(blank=True, null=True)
-    page_notes = models.TextField(blank=True, null=True)
+    folio_number = models.IntegerField(blank=True, null=True)
+    folio_notes = models.TextField(blank=True, null=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
     )
-    stanzas = models.ManyToManyField(Stanza, blank=True)
     image = models.ImageField(
         null=True,
         blank=True,
         help_text="The image of the page from the manuscript.",
+    )
+    iiif_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Provide a IIIF manifest to a page in the manuscript. If there isn't one, leave blank.",
+        verbose_name="IIIF URL",
     )
 
 
@@ -171,39 +220,33 @@ class SingleManuscript(models.Model):
     library = models.ForeignKey(
         ManuscriptLocation, on_delete=models.CASCADE, blank=True, null=True
     )
-    reference = models.ForeignKey(
-        Reference, on_delete=models.CASCADE, blank=True, null=True
-    )
-    codex = models.ForeignKey(Codex, on_delete=models.CASCADE, blank=True, null=True)
-    text_decorations = models.ForeignKey(
-        TextDecoration, on_delete=models.CASCADE, blank=True, null=True
-    )
-    manuscript_details = models.ForeignKey(
-        Detail, on_delete=models.CASCADE, blank=True, null=True
-    )
-    viewer_notes = models.ForeignKey(
-        ViewerNote,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        help_text="Notes by whomever viewed the manuscript.",
-    )
     iiif_url = models.URLField(
         max_length=255,
         blank=True,
         null=True,
         help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
+        verbose_name="IIIF URL",
     )
+    # Think about how we might manage multiple authority files
     authority_file = models.URLField(
         max_length=255,
         blank=True,
         null=True,
         help_text="The URL to the authority file for the manuscript. If there isn't one, leave blank.",
     )
+    purl_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="The URL to the permanent URL for the manuscript. If there isn't one, leave blank.",
+        verbose_name="PURL",
+    )
 
     provenance = models.TextField(blank=True, null=True)
-    manuscript_lost = models.BooleanField(blank=True, null=True)
-    manuscript_destroyed = models.BooleanField(blank=True, null=True)
+    manuscript_lost = models.BooleanField(blank=True, null=True, default=False)
+    manuscript_destroyed = models.BooleanField(blank=True, null=True, default=False)
+
+    class Meta:
+        verbose_name = "Manuscript"
 
 
 class Location(models.Model):
