@@ -13,6 +13,7 @@ django-environ = "^0.11.2"
 pylint-django = "^2.5.5"
 pillow = "^10.2.0"
 psycopg2 = "^2.9.9"
+django-admin-interface = "^0.28.5"
 
 
 [build-system]
