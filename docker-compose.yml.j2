@@ -18,7 +18,8 @@ services:
       - DB_USER={{ template.env.db_user }}
       - DB_PASSWORD={{ template.env.db_pass }}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: >
       sh -c "poetry run python manage.py migrate --skip-checks &&
       poetry run python manage.py collectstatic --no-input &&
@@ -34,8 +35,11 @@ services:
       - POSTGRES_USER={{ template.env.db_user }}
       - POSTGRES_PASSWORD={{ template.env.db_pass }}
       - POSTGRES_HOST=db
-    expose:
-      - "{{ template.env.host_db_port }}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lasfera"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 #volumes:
   #postgres_data:
