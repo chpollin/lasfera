@@ -19,7 +19,6 @@ services:
       - DB_PASSWORD={{ template.env.db_pass }}
     depends_on:
       - db
-    working_dir: "/app/lasfera"
     command: >
       sh -c "poetry run python manage.py migrate --skip-checks &&
       poetry run python manage.py collectstatic --no-input &&
