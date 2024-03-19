@@ -67,8 +67,6 @@ class CodexInline(admin.StackedInline):
 
 
 # Custom admin models.
-
-
 class SingleManuscriptAdmin(admin.ModelAdmin):
     inlines = [
         TextDecorationInline,
@@ -85,13 +83,22 @@ class FolioAdmin(admin.ModelAdmin):
     inlines = [StanzaInline]
 
 
+class ReferenceAdmin(admin.ModelAdmin):
+    list_display = ("reference", "bert")
+
+class EditorialStatusAdmin(admin.ModelAdmin):
+    list_display = ("siglum", "editorial_priority", "spatial_priority")
+
+class CodexAdmin(admin.ModelAdmin):
+    list_display = ("id", "support", "height", "folia", "date")
+
 # Register to the admin interface.
 
 admin.site.register(Library)
 admin.site.register(ManuscriptLocation)
-admin.site.register(EditorialStatus)
-admin.site.register(Reference)
-admin.site.register(Codex)
+admin.site.register(EditorialStatus, EditorialStatusAdmin)
+admin.site.register(Reference, ReferenceAdmin)
+admin.site.register(Codex, CodexAdmin)
 admin.site.register(TextDecoration)
 admin.site.register(Detail)
 admin.site.register(Folio, FolioAdmin)

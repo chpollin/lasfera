@@ -1,9 +1,10 @@
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.text import slugify
-from manuscript.models import SingleManuscript, ManuscriptLocation, EditorialStatus, Reference, Codex, TextDecoration, Detail, ViewerNote
+from manuscript.models import SingleManuscript, ManuscriptLocation, DateSeen, EditorialStatus, Reference, Codex, TextDecoration, Detail, ViewerNote
 import pandas as pd
 import numpy as np
 from django.db import transaction
+from datetime import datetime
 
 
 class Command(BaseCommand):
@@ -97,6 +98,11 @@ class Command(BaseCommand):
                     decoration_coat_of_arms = row.get("coat_of_arms?")
 
                     viewer_notes_date_seen = row.get("date_seen")
+                    # date_strings = viewer_notes_date_seen.split(',')
+                    # for date_string in date_strings:
+                    #     date_seen = datetime.fromisoformat(date_string.strip())
+                    #     date_seen_obj, created = DateSeen.objects.get_or_create(date=date_seen)
+                    #     viewer_note.dates_seen.add(date_seen_obj)
                     viewer_notes_viewer = row.get("viewer")
                     viewer_notes_notes = row.get("notes")
 
@@ -133,10 +139,21 @@ class Command(BaseCommand):
 
                     try:
                         self.stdout.write(self.style.SUCCESS(f"Processing row {index + 1} of sheet {sheet_name}"))
-                        viewer_note = ViewerNote.objects.get(date_seen=viewer_notes_date_seen)
-                    except ViewerNote.DoesNotExist:
-                        viewer_note = ViewerNote(date_seen=viewer_notes_date_seen, viewer=viewer_notes_viewer, notes=viewer_notes_notes)
-                        viewer_note.save()
+                        if viewer_notes_date_seen is not None:
+                            # if there is a comma, there are multiple dates
+                            if ',' in viewer_notes_date_seen:
+                                date_strings = viewer_notes_date_seen.split(',')
+                            for date_string in date_strings:
+                                date_seen = datetime.fromisoformat(date_string.strip())
+                                date_seen_obj, created = DateSeen.objects.get_or_create(date=date_seen)
+                                try:
+                                    viewer_note = ViewerNote.objects.get(viewer_initials=viewer_notes_viewer, notes=viewer_notes_notes)
+                                except ViewerNote.DoesNotExist:
+                                    viewer_note = ViewerNote(viewer_initials=viewer_notes_viewer, notes=viewer_notes_notes)
+                                    viewer_note.save()
+                                viewer_note.dates_seen.add(date_seen_obj)
+                    except Exception as e:
+                        self.stdout.write(self.style.ERROR(f"Error loading data at row {index + 1}, column 'date_seen': {e}"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error loading data: {e}"))

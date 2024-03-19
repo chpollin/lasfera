@@ -61,6 +61,12 @@ class EditorialStatus(models.Model):
         verbose_name="IIIF URL",
     )
 
+    def __str__(self):
+        if self.siglum is not None:
+            return self.siglum
+        else:
+            return "Editorial Status"
+
     class Meta:
         verbose_name = "Editorial Status"
         verbose_name_plural = "Editorial Status"
@@ -74,6 +80,9 @@ class Reference(models.Model):
     bert = models.CharField(max_length=6, blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
 
+    def __str__(self):
+        return self.reference
+
 
 class Codex(models.Model):
     id = models.AutoField(primary_key=True)
@@ -85,6 +94,9 @@ class Codex(models.Model):
     related_manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
     )
+
+    def __str__(self):
+        return str(self.id)
 
     class Meta:
         verbose_name_plural = "Codex"
@@ -103,6 +115,12 @@ class TextDecoration(models.Model):
     white_vine_work = models.CharField(blank=True, null=True)
     other = models.CharField(max_length=255, blank=True, null=True)
     relative_quality = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        if self.text_script is not None:
+            return self.text_script
+        else:
+            return "Text Decoration"
 
 
 class Detail(models.Model):
@@ -142,11 +160,16 @@ class Detail(models.Model):
     tabriz = models.BooleanField(blank=True, null=True)
     rhodes_status = models.CharField(max_length=255, blank=True, null=True)
 
+class DateSeen(models.Model):
+    date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return self.date.isoformat()
 
 class ViewerNote(models.Model):
     id = models.AutoField(primary_key=True)
-    date_seen = models.DateField(blank=True, null=True)
-    # the viewer is a dropdown from available users in the system
+    dates_seen = models.ManyToManyField(DateSeen, blank=True)    # the viewer is a dropdown from available users in the system
+    viewer_initials = models.CharField(max_length=255, blank=True, null=True)
     viewer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
