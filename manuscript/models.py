@@ -47,12 +47,19 @@ class EditorialStatus(models.Model):
     )
     siglum = models.CharField(max_length=255, blank=True, null=True)
     editorial_priority = models.IntegerField(blank=True, null=True)
-    collated = models.BooleanField(blank=True, null=True)
+    collated = models.CharField(blank=True, null=True)
     access = models.IntegerField(blank=True, null=True)
     digitized = models.BooleanField(blank=True, null=True)
     spatial_priority = models.CharField(max_length=6, blank=True, null=True)
     dataset = models.CharField(max_length=255, blank=True, null=True)
     group = models.CharField(max_length=255, blank=True, null=True)
+    iiif_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
+        verbose_name="IIIF URL",
+    )
 
     class Meta:
         verbose_name = "Editorial Status"
@@ -90,9 +97,10 @@ class TextDecoration(models.Model):
     )
     text_script = models.CharField(max_length=255, blank=True, null=True)
     label_script = models.CharField(max_length=255, blank=True, null=True)
-    diagrams = models.BooleanField(blank=True, null=True)
-    maps = models.BooleanField(blank=True, null=True)
-    illumination = models.BooleanField(blank=True, null=True)
+    diagrams = models.CharField(blank=True, null=True)
+    maps = models.CharField(blank=True, null=True)
+    illumination = models.CharField(blank=True, null=True)
+    white_vine_work = models.CharField(blank=True, null=True)
     other = models.CharField(max_length=255, blank=True, null=True)
     relative_quality = models.CharField(max_length=255, blank=True, null=True)
 
@@ -278,3 +286,10 @@ class Location(models.Model):
 
     def __str__(self):
         return self.city + ", " + self.country
+
+    # call this "Toponym" and "Toponyms" in the admin
+    class Meta:
+        verbose_name = "Toponym"
+        verbose_name_plural = "Toponyms"
+        ordering = ["city", "country"]
+        unique_together = ["city", "country"]
