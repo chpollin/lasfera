@@ -105,7 +105,7 @@ class Detail(models.Model):
     author_attribution = models.CharField(max_length=255, blank=True, null=True)
     scribe_attribution = models.CharField(max_length=255, blank=True, null=True)
     book_headings = models.BooleanField(blank=True, null=True)
-    book_headigs_notes = models.CharField(max_length=255, blank=True, null=True)
+    book_headings_notes = models.CharField(max_length=255, blank=True, null=True)
     book_initials = models.BooleanField(blank=True, null=True)
     book_initials_notes = models.CharField(max_length=255, blank=True, null=True)
     stanza_headings = models.BooleanField(blank=True, null=True)
@@ -169,10 +169,15 @@ class Stanza(models.Model):
         blank=True,
         null=True,
     )
+    stanza_line_number_on_page = models.IntegerField(
+        blank=True,
+        null=True,
+        help_text="The line number of the stanza on the folio in the manuscript.",
+    )
     stanza_number = models.IntegerField(
         blank=True,
         null=True,
-        help_text="The line number of the stanza in the manuscript.",
+        help_text="The number of the stanza in the manuscript.",
     )
     stanza_text = models.TextField(blank=True, null=True)
     stanza_notes = models.TextField(blank=True, null=True)
@@ -227,18 +232,26 @@ class SingleManuscript(models.Model):
         help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
         verbose_name="IIIF URL",
     )
+    gazetteer_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The URL to an external gazetteer for the manuscript. If there isn't one, leave blank.",
+        verbose_name="Gazetteer URL",
+    )
     # Think about how we might manage multiple authority files
     authority_file = models.URLField(
         max_length=255,
         blank=True,
         null=True,
         help_text="The URL to the authority file for the manuscript. If there isn't one, leave blank.",
+        verbose_name="Authority File",
     )
     purl_url = models.URLField(
         blank=True,
         null=True,
         help_text="The URL to the permanent URL for the manuscript. If there isn't one, leave blank.",
-        verbose_name="PURL",
+        verbose_name="Permanent URL",
     )
 
     provenance = models.TextField(blank=True, null=True)
