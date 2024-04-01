@@ -7,6 +7,7 @@ from manuscript.models import (
     Folio,
     Library,
     Location,
+    LocationAlias,
     ManuscriptLocation,
     Reference,
     SingleManuscript,
@@ -70,6 +71,11 @@ class CodexInline(admin.StackedInline):
     max_num = 1
 
 
+class LocationAliasInline(admin.TabularInline):
+    model = LocationAlias
+    extra = 1
+
+
 # Custom admin models.
 class SingleManuscriptAdmin(admin.ModelAdmin):
     inlines = [
@@ -81,6 +87,13 @@ class SingleManuscriptAdmin(admin.ModelAdmin):
         EditorialStatusInline,
         FolioInline,
     ]
+    list_display = (
+        "shelfmark",
+        "library",
+        "manuscript_lost",
+        "manuscript_destroyed",
+        "id",
+    )
 
 
 class FolioAdmin(admin.ModelAdmin):
@@ -91,6 +104,10 @@ class ReferenceAdmin(admin.ModelAdmin):
     list_display = ("reference", "bert")
 
 
+class LibraryAdmin(admin.ModelAdmin):
+    list_display = ("library", "city", "id")
+
+
 class EditorialStatusAdmin(admin.ModelAdmin):
     list_display = ("siglum", "editorial_priority", "spatial_priority")
 
@@ -99,19 +116,23 @@ class CodexAdmin(admin.ModelAdmin):
     list_display = ("id", "support", "height", "folia", "date")
 
 
+class LocationAdmin(admin.ModelAdmin):
+    inlines = [LocationAliasInline]
+
+
 # Register to the admin interface.
 
-admin.site.register(Library)
-admin.site.register(ManuscriptLocation)
+admin.site.register(Library, LibraryAdmin)
+# admin.site.register(ManuscriptLocation)
 admin.site.register(EditorialStatus, EditorialStatusAdmin)
-admin.site.register(Reference, ReferenceAdmin)
-admin.site.register(Codex, CodexAdmin)
-admin.site.register(TextDecoration)
-admin.site.register(Detail)
+# admin.site.register(Reference, ReferenceAdmin)
+# admin.site.register(Codex, CodexAdmin)
+# admin.site.register(TextDecoration)
+# admin.site.register(Detail)
 admin.site.register(Folio, FolioAdmin)
 
 admin.site.register(Stanza)
-admin.site.register(Location)
+admin.site.register(Location, LocationAdmin)
 
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
 

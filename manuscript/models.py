@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from prose.fields import RichTextField
 
 
 class Library(models.Model):
@@ -35,7 +36,6 @@ class EditorialStatus(models.Model):
     editorial_priority = models.IntegerField(blank=True, null=True)
     collated = models.CharField(blank=True, null=True)
     access = models.IntegerField(blank=True, null=True)
-    digitized = models.BooleanField(blank=True, null=True)
     spatial_priority = models.CharField(max_length=6, blank=True, null=True)
     dataset = models.CharField(max_length=255, blank=True, null=True)
     group = models.CharField(max_length=255, blank=True, null=True)
@@ -110,6 +110,14 @@ class TextDecoration(models.Model):
 
 
 class Detail(models.Model):
+    # 1) stanza headings; 2) marginal rubrics; 3) neither; or 4) unknown.
+    STANZA_RUBRIC_CHOICES = (
+        ("sh", "Stanza Headings"),
+        ("mr", "Marginal Rubrics"),
+        ("ne", "Neither"),
+        ("uk", "Unknown"),
+    )
+
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
@@ -117,31 +125,40 @@ class Detail(models.Model):
     author_attribution = models.CharField(max_length=255, blank=True, null=True)
     scribe_attribution = models.CharField(max_length=255, blank=True, null=True)
     book_headings = models.BooleanField(blank=True, null=True)
-    book_headings_notes = models.CharField(max_length=255, blank=True, null=True)
+    book_headings_notes = RichTextField(blank=True, null=True)
     book_initials = models.BooleanField(blank=True, null=True)
-    book_initials_notes = models.CharField(max_length=255, blank=True, null=True)
-    stanza_headings = models.BooleanField(blank=True, null=True)
-    stanza_headings_notes = models.CharField(max_length=255, blank=True, null=True)
+    book_initials_notes = RichTextField(blank=True, null=True)
+    stanza_headings_marginal_rubrics = models.CharField(
+        max_length=2, choices=STANZA_RUBRIC_CHOICES, blank=True, null=True
+    )
+    stanza_headings_marginal_rubrics_notes = RichTextField(
+        max_length=255, blank=True, null=True
+    )
     stanza_initials = models.BooleanField(blank=True, null=True)
-    stanza_initials_notes = models.CharField(max_length=255, blank=True, null=True)
-    marginal_rubrics = models.BooleanField(blank=True, null=True)
-    marginal_rubrics_notes = models.CharField(max_length=255, blank=True, null=True)
+    stanza_initials_notes = RichTextField(max_length=255, blank=True, null=True)
     filigree = models.BooleanField(blank=True, null=True)
-    filigree_notes = models.CharField(max_length=255, blank=True, null=True)
+    filigree_notes = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Flourished/Filigree Initials",
+    )
     abbreviations = models.BooleanField(blank=True, null=True)
-    abbreviations_notes = models.CharField(max_length=255, blank=True, null=True)
+    abbreviations_notes = RichTextField(max_length=255, blank=True, null=True)
     catchwords = models.BooleanField(blank=True, null=True)
-    catchwords_notes = models.CharField(max_length=255, blank=True, null=True)
+    catchwords_notes = RichTextField(max_length=255, blank=True, null=True)
     mabel_label = models.CharField(max_length=255, blank=True, null=True)
     map_labels = models.BooleanField(blank=True, null=True)
-    map_labels_notes = models.CharField(max_length=255, blank=True, null=True)
+    map_labels_notes = RichTextField(max_length=255, blank=True, null=True)
     distance_lines = models.BooleanField(blank=True, null=True)
     distance_numbers = models.BooleanField(blank=True, null=True)
-    distance_numbers_notes = models.CharField(max_length=255, blank=True, null=True)
+    distance_numbers_notes = RichTextField(max_length=255, blank=True, null=True)
     coat_of_arms = models.BooleanField(blank=True, null=True)
-    coat_of_arms_notes = models.CharField(max_length=255, blank=True, null=True)
+    coat_of_arms_notes = RichTextField(max_length=255, blank=True, null=True)
 
-    is_sea_red = models.BooleanField(blank=True, null=True)
+    is_sea_red = models.BooleanField(
+        blank=True, null=True, verbose_name="Is the Red Sea colored red?"
+    )
     laiazzo = models.BooleanField(blank=True, null=True)
     tabriz = models.BooleanField(blank=True, null=True)
     rhodes_status = models.CharField(max_length=255, blank=True, null=True)
@@ -197,13 +214,14 @@ class Stanza(models.Model):
         max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
     )
     stanza_translation_notes = models.TextField(blank=True, null=True)
-    manuscript = models.ForeignKey(
-        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
-    )
+    # manuscript = models.ForeignKey(
+    #     "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    # )
     locations_mentioned = models.ManyToManyField(
         "Location",
         blank=True,
         help_text="Locations mentioned in the stanza.",
+        verbose_name="Associated toponyms",
     )
 
 
@@ -269,9 +287,10 @@ class SingleManuscript(models.Model):
         blank=True,
         null=True,
         help_text="The URL to the digitized manuscript. If there isn't one, leave blank.",
+        verbose_name="Digitized URL",
     )
 
-    provenance = models.TextField(blank=True, null=True)
+    provenance = RichTextField(blank=True, null=True)
     manuscript_lost = models.BooleanField(blank=True, null=True, default=False)
     manuscript_destroyed = models.BooleanField(blank=True, null=True, default=False)
 
@@ -287,9 +306,11 @@ class SingleManuscript(models.Model):
 
 class Location(models.Model):
     id = models.AutoField(primary_key=True)
-    city = models.CharField(max_length=255, blank=True, null=True)
-    country = models.CharField(max_length=255, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    # city = models.CharField(max_length=255, blank=True, null=True, verbose_name="Placename")
+    country = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name="Modern country"
+    )
+    description = RichTextField(blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)
     authority_file = models.URLField(
@@ -300,11 +321,57 @@ class Location(models.Model):
     )
 
     def __str__(self):
-        return self.city + ", " + self.country
+        aliases = ", ".join(
+            [alias.placename_from_mss for alias in self.locationalias_set.all()]
+        )
+        return f"{self.country} ({aliases})"
 
-    # call this "Toponym" and "Toponyms" in the admin
     class Meta:
         verbose_name = "Toponym"
         verbose_name_plural = "Toponyms"
-        ordering = ["city", "country"]
-        unique_together = ["city", "country"]
+        ordering = ["country"]
+        unique_together = ["country"]
+
+
+class LocationAlias(models.Model):
+    id = models.AutoField(primary_key=True)
+    placename_from_mss = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Transcribed placename",
+        help_text="The placename as it appears in the manuscript.",
+    )
+    placename_standardized = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Standardized placename",
+        help_text="The standardized name of the placename.",
+    )
+    placename_modern = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Modern placename",
+        help_text="The modern name of the placename.",
+    )
+    placename_alias = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Additional aliases",
+        help_text="Additional aliases for the placename.",
+    )
+    location = models.ForeignKey(
+        Location, on_delete=models.CASCADE, blank=True, null=True
+    )
+
+    def __str__(self):
+        return f"{self.placename_from_mss} / {self.placename_standardized} / {self.placename_modern} / {self.placename_alias}"
+
+    class Meta:
+        verbose_name = "Location Alias"
+        verbose_name_plural = "Location Aliases"
+        ordering = ["placename_standardized"]
+        unique_together = ["placename_standardized"]
