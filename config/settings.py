@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.messages",
+    "prose",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",

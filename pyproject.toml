@@ -17,6 +17,7 @@ django-admin-interface = "^0.28.5"
 pandas = "^2.2.1"
 numpy = "^1.26.4"
 openpyxl = "^3.1.2"
+django-prose = "^2.0.0"
 
 
 [build-system]
