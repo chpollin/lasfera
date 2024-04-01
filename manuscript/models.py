@@ -1,6 +1,10 @@
+import logging
+
 from django.conf import settings
 from django.db import models
 from prose.fields import RichTextField
+
+logger = logging.getLogger(__name__)
 
 
 class Library(models.Model):
@@ -234,6 +238,9 @@ class Folio(models.Model):
         verbose_name="IIIF URL",
     )
 
+    def __str__(self):
+        return f"Folio page {self.folio_number} from manuscript: {self.manuscript}"
+
 
 class SingleManuscript(models.Model):
     id = models.AutoField(primary_key=True)
@@ -301,13 +308,20 @@ class SingleManuscript(models.Model):
 
 class Location(models.Model):
     id = models.AutoField(primary_key=True)
-    # city = models.CharField(max_length=255, blank=True, null=True, verbose_name="Placename")
     country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern country"
     )
     description = RichTextField(blank=True, null=True)
-    latitude = models.FloatField(blank=True, null=True)
-    longitude = models.FloatField(blank=True, null=True)
+    latitude = models.FloatField(
+        blank=True,
+        null=True,
+        help_text="Latitude in decimal degrees. If left blank, the system will attempt to geocode the location from the modern placename.",
+    )
+    longitude = models.FloatField(
+        blank=True,
+        null=True,
+        help_text="Longitude in decimal degrees. If left blank, the system will attempt to geocode the location from the modern placename.",
+    )
     authority_file = models.URLField(
         max_length=255,
         blank=True,
@@ -326,6 +340,24 @@ class Location(models.Model):
         verbose_name_plural = "Toponyms"
         ordering = ["country"]
         unique_together = ["country"]
+
+    # On save, the following tries to derive the latlon from the town_city and country
+    # fields. If successful, it stores the latlon in the latlon field.
+    def save(self, *args, **kwargs):
+        if self.latitude is None or self.longitude is None:
+            try:
+                from geopy.geocoders import Nominatim
+
+                geolocator = Nominatim(user_agent="manuscript")
+                location_alias = self.locationalias_set.first()
+                if location_alias is not None:
+                    location = geolocator.geocode(location_alias.placename_modern)
+
+                    self.latitude = str(location.latitude)
+                    self.longitude = str(location.longitude)
+            except Exception as e:
+                logger.warning("Warning in geocoding a toponym: " + str(e) + str(self))
+        super().save(*args, **kwargs)
 
 
 class LocationAlias(models.Model):
