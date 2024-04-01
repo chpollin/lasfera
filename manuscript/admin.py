@@ -34,12 +34,14 @@ class DetailInline(admin.StackedInline):
     model = Detail
     classes = ("collapse",)
     extra = 1
+    max_num = 1
 
 
 class TextDecorationInline(admin.StackedInline):
     model = TextDecoration
     classes = ("collapse",)
     extra = 1
+    max_num = 1
 
 
 class ReferenceInline(admin.StackedInline):
@@ -52,6 +54,7 @@ class EditorialStatusInline(admin.StackedInline):
     model = EditorialStatus
     classes = ("collapse",)
     extra = 1
+    max_num = 1
 
 
 class ViewerNotesInline(admin.StackedInline):
@@ -64,6 +67,7 @@ class CodexInline(admin.StackedInline):
     model = Codex
     classes = ("collapse",)
     extra = 1
+    max_num = 1
 
 
 # Custom admin models.
@@ -86,11 +90,14 @@ class FolioAdmin(admin.ModelAdmin):
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ("reference", "bert")
 
+
 class EditorialStatusAdmin(admin.ModelAdmin):
     list_display = ("siglum", "editorial_priority", "spatial_priority")
 
+
 class CodexAdmin(admin.ModelAdmin):
     list_display = ("id", "support", "height", "folia", "date")
+
 
 # Register to the admin interface.
 
