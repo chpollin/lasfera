@@ -117,6 +117,7 @@ class CodexAdmin(admin.ModelAdmin):
 
 class LocationAdmin(admin.ModelAdmin):
     inlines = [LocationAliasInline]
+    list_display = ("country", "latitude", "longitude", "id")
 
 
 # Register to the admin interface.
