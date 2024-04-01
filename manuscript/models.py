@@ -211,7 +211,7 @@ class Stanza(models.Model):
     locations_mentioned = models.ManyToManyField(
         "Location",
         blank=True,
-        help_text="Locations mentioned in the stanza.",
+        help_text="Toponyms associated with the stanza.",
         verbose_name="Associated toponyms",
     )
 
@@ -237,9 +237,15 @@ class Folio(models.Model):
         help_text="Provide a IIIF manifest to a page in the manuscript. If there isn't one, leave blank.",
         verbose_name="IIIF URL",
     )
+    locations_mentioned = models.ManyToManyField(
+        "Location",
+        blank=True,
+        help_text="Toponyms associated with the folio.",
+        verbose_name="Associated toponyms",
+    )
 
     def __str__(self):
-        return f"Folio page {self.folio_number} from manuscript: {self.manuscript}"
+        return f"Folio {self.folio_number} from manuscript: {self.manuscript}"
 
 
 class SingleManuscript(models.Model):
@@ -341,8 +347,8 @@ class Location(models.Model):
         ordering = ["country"]
         unique_together = ["country"]
 
-    # On save, the following tries to derive the latlon from the town_city and country
-    # fields. If successful, it stores the latlon in the latlon field.
+    # On save, the following tries to derive the latlon from the modern placename
+    # field. If successful, it stores the latlon in the latlon field.
     def save(self, *args, **kwargs):
         if self.latitude is None or self.longitude is None:
             try:
