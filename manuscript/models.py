@@ -18,23 +18,9 @@ class ManuscriptLocation(models.Model):
     library = models.ForeignKey(
         Library, on_delete=models.CASCADE, blank=True, null=True
     )
-    shelfmark = models.CharField(max_length=255, blank=True, null=True)
-    digitized_url = models.URLField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="The URL to the digitized manuscript. If there isn't one, leave blank.",
-    )
 
     def __str__(self):
-        return (
-            self.library.library
-            + ", "
-            + self.library.city
-            + " ("
-            + self.shelfmark
-            + ")"
-        )
+        return self.library.library + ", " + self.library.city
 
     class Meta:
         verbose_name = "Manuscript Location"
@@ -160,16 +146,10 @@ class Detail(models.Model):
     tabriz = models.BooleanField(blank=True, null=True)
     rhodes_status = models.CharField(max_length=255, blank=True, null=True)
 
-class DateSeen(models.Model):
-    date = models.DateField(blank=True, null=True)
-
-    def __str__(self):
-        return self.date.isoformat()
 
 class ViewerNote(models.Model):
     id = models.AutoField(primary_key=True)
-    dates_seen = models.ManyToManyField(DateSeen, blank=True)    # the viewer is a dropdown from available users in the system
-    viewer_initials = models.CharField(max_length=255, blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
     viewer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -252,7 +232,7 @@ class Folio(models.Model):
 
 class SingleManuscript(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, blank=True, null=True)
+    shelfmark = models.CharField(max_length=255, blank=True, null=True)
     library = models.ForeignKey(
         ManuscriptLocation, on_delete=models.CASCADE, blank=True, null=True
     )
@@ -270,8 +250,8 @@ class SingleManuscript(models.Model):
         help_text="The URL to an external gazetteer for the manuscript. If there isn't one, leave blank.",
         verbose_name="Gazetteer URL",
     )
-    # Think about how we might manage multiple authority files
-    authority_file = models.URLField(
+    # TODO: Think about how we might manage multiple authority files
+    authority_file_url = models.URLField(
         max_length=255,
         blank=True,
         null=True,
@@ -284,10 +264,22 @@ class SingleManuscript(models.Model):
         help_text="The URL to the permanent URL for the manuscript. If there isn't one, leave blank.",
         verbose_name="Permanent URL",
     )
+    digitized_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The URL to the digitized manuscript. If there isn't one, leave blank.",
+    )
 
     provenance = models.TextField(blank=True, null=True)
     manuscript_lost = models.BooleanField(blank=True, null=True, default=False)
     manuscript_destroyed = models.BooleanField(blank=True, null=True, default=False)
+
+    def __str__(self) -> str:
+        if self.shelfmark is not None:
+            return self.shelfmark
+        else:
+            return "No shelfmark provided"
 
     class Meta:
         verbose_name = "Manuscript"
