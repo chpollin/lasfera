@@ -14,19 +14,6 @@ class Library(models.Model):
         verbose_name_plural = "Libraries"
 
 
-class ManuscriptLocation(models.Model):
-    id = models.AutoField(primary_key=True)
-    library = models.ForeignKey(
-        Library, on_delete=models.CASCADE, blank=True, null=True
-    )
-
-    def __str__(self):
-        return self.library.library + ", " + self.library.city
-
-    class Meta:
-        verbose_name = "Manuscript Location"
-
-
 class EditorialStatus(models.Model):
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
@@ -252,7 +239,7 @@ class SingleManuscript(models.Model):
     id = models.AutoField(primary_key=True)
     shelfmark = models.CharField(max_length=255, blank=True, null=True)
     library = models.ForeignKey(
-        ManuscriptLocation, on_delete=models.CASCADE, blank=True, null=True
+        Library, on_delete=models.PROTECT, blank=True, null=True
     )
     iiif_url = models.URLField(
         max_length=255,
@@ -296,12 +283,20 @@ class SingleManuscript(models.Model):
 
     def __str__(self) -> str:
         if self.shelfmark is not None:
-            return self.shelfmark
+            return (
+                self.shelfmark
+                + " ("
+                + self.library.library
+                + ", "
+                + self.library.city
+                + ")"
+            )
         else:
             return "No shelfmark provided"
 
     class Meta:
         verbose_name = "Manuscript"
+        verbose_name_plural = "Manuscripts"
 
 
 class Location(models.Model):

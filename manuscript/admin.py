@@ -8,7 +8,6 @@ from manuscript.models import (
     Library,
     Location,
     LocationAlias,
-    ManuscriptLocation,
     Reference,
     SingleManuscript,
     Stanza,
@@ -131,7 +130,7 @@ admin.site.register(EditorialStatus, EditorialStatusAdmin)
 # admin.site.register(Detail)
 admin.site.register(Folio, FolioAdmin)
 
-admin.site.register(Stanza)
+# admin.site.register(Stanza)
 admin.site.register(Location, LocationAdmin)
 
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
