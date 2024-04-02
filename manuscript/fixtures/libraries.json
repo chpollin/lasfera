@@ -1,0 +1,277 @@
+[
+  {
+    "model": "manuscript.Library",
+    "pk": 1,
+    "fields": { "library": "Public Library", "city": "Boston" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 2,
+    "fields": { "library": "Newberry Library", "city": "Chicago" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 3,
+    "fields": { "library": "Bib. del Arch. di Stato", "city": "Florence" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 4,
+    "fields": { "library": "BNCF", "city": "Florence" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 10,
+    "fields": { "library": "Laurenziana", "city": "Florence" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 17,
+    "fields": { "library": "Riccardiana", "city": "Florence" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 24,
+    "fields": { "library": "Bib. Univ.", "city": "Helsinki" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 25,
+    "fields": { "library": "Spencer RL", "city": "Lawrence, KS" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 26,
+    "fields": { "library": "BL", "city": "London" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 28,
+    "fields": { "library": "Biblioteca Statale  ", "city": "Lucca" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 29,
+    "fields": { "library": "BNN", "city": "Naples" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 30,
+    "fields": { "library": "Morgan Library", "city": "New York" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 31,
+    "fields": { "library": "NYPL", "city": "New York" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 34,
+    "fields": { "library": "BnF", "city": "Paris" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 35,
+    "fields": { "library": "BNCR Vitt. Em.", "city": "Rome" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 36,
+    "fields": { "library": "Corsiniana", "city": "Rome" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 37,
+    "fields": { "library": "BAV", "city": "Vatican City" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 64,
+    "fields": { "library": "Bib. Comunale", "city": "Forl\u00ec" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 67,
+    "fields": { "library": "Braidense", "city": "Milan" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 68,
+    "fields": { "library": "Yale, Beinecke", "city": "New Haven" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 71,
+    "fields": { "library": "Bib. Palatina", "city": "Parma" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 72,
+    "fields": { "library": "Bib. Classense", "city": "Ravenna" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 74,
+    "fields": { "library": "AdS (Sperelliana)", "city": "Gubbio" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 75,
+    "fields": {
+      "library": "Biblioteca del Seminario Vescovile",
+      "city": "Padua"
+    }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 77,
+    "fields": { "library": "Bib. Augusta", "city": "Perugia" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 79,
+    "fields": { "library": "Biblioteca Comunale", "city": "Treviso" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 80,
+    "fields": { "library": "BNM", "city": "Venice" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 83,
+    "fields": { "library": "\u00d6NB", "city": "Vienna" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 87,
+    "fields": { "library": "National Library (KBR)", "city": "Brussels" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 89,
+    "fields": { "library": "Biblioteca Reale", "city": "Turin" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 91,
+    "fields": { "library": "University Library", "city": "Basel" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 92,
+    "fields": { "library": "Harvard, Houghton", "city": "Cambridge MA" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 95,
+    "fields": { "library": "Wellcome", "city": "London" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 97,
+    "fields": { "library": "Bodleian Library", "city": "Oxford" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 98,
+    "fields": { "library": "Intronati", "city": "Siena" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 99,
+    "fields": { "library": "Universit\u00e0 di Bologna", "city": "Bologna" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 104,
+    "fields": { "library": "Biblioteca Estense", "city": "Modena" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 107,
+    "fields": { "library": "Lib. of Congress", "city": "Washington DC" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 108,
+    "fields": {
+      "library": "Biblioteca del Comune e dell'Accademia Etrusca",
+      "city": "Cortona"
+    }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 140,
+    "fields": { "library": "Cornell", "city": "Ithaca, NY" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 143,
+    "fields": { "library": "Trivulziana", "city": "Milan" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 148,
+    "fields": { "library": "Bib. Universitaria", "city": "Pavia" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 150,
+    "fields": { "library": "Casanatense", "city": "Rome" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 159,
+    "fields": { "library": "Boies Penrose ", "city": "Unknown" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 160,
+    "fields": { "library": "Boncompagni", "city": "Unknown" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 161,
+    "fields": {
+      "library": "George H. Beans (Jenkintown, PA)",
+      "city": "Unknown"
+    }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 162,
+    "fields": { "library": "Carlo Morbio", "city": "Unknown" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 164,
+    "fields": { "library": "Biblioteca Guarnacci", "city": "Volterra" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 167,
+    "fields": {
+      "library": "Udine, Biblioteca arcivescovile",
+      "city": "Unverified"
+    }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 168,
+    "fields": { "library": "Poppi, Biblioteca comunale", "city": "Unverified" }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 169,
+    "fields": {
+      "library": "Vaduz, Liechtenstein Princely Collection",
+      "city": "Irrelevant"
+    }
+  },
+  {
+    "model": "manuscript.Library",
+    "pk": 170,
+    "fields": { "library": "Milan, Bib. Ambrosiana", "city": "Irrelevant" }
+  }
+]

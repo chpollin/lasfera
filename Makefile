@@ -6,3 +6,7 @@ mm :
 
 migrate :
 	poetry run python manage.py migrate
+
+# data loading
+loadlibraries :
+	poetry run python manage.py loaddata libraries
