@@ -1,9 +1,10 @@
-from django.core.management.base import BaseCommand, CommandParser
-from django.utils.text import slugify
-from manuscript.models import Library
-import pandas as pd
 import numpy as np
+import pandas as pd
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
+from django.utils.text import slugify
+
+from manuscript.models import Library
 
 
 class Command(BaseCommand):
@@ -14,7 +15,7 @@ class Command(BaseCommand):
             "--filepath", type=str, help="filepath of excel file to load"
         )
         parser.add_argument("--sheetname", type=str, help="name of sheet to load")
-    
+
     def handle(self, *args, **options):
         filepath = options.get("filepath")
         sheet_name = options.get("sheetname")
@@ -48,24 +49,27 @@ class Command(BaseCommand):
                 dfs = pd.read_excel(xls, sheet_name=None, header=1)
                 for sheet_name, df in dfs.items():
                     df = df.replace({np.nan: None})
-                    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+                    df.columns = (
+                        df.columns.str.strip().str.lower().str.replace(" ", "_")
+                    )
                     dfs[sheet_name] = df
-            
+
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
                     library_city = row.get("city")
                     library_name = row.get("library")
 
                     try:
-                        self.stdout.write(self.style.SUCCESS(f"Processing row {index + 1} of sheet {sheet_name}"))
-                        library = Library.objects.get(library=library_name, city=library_city)
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Processing row {index + 1} of sheet {sheet_name}"
+                            )
+                        )
+                        library = Library.objects.filter(
+                            library=library_name, city=library_city
+                        ).first()
                     except Library.DoesNotExist:
                         library = Library(library=library_name, city=library_city)
                         library.save()
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error loading data: {e}"))
-
-
-                        
-
-
