@@ -1,10 +1,11 @@
 version: "3.9"
 services:
-  web:
+  app:
     build: .
+    image: "rrchnm/lasfera"
+    container_name: "lasfera-app"
     ports:
       - "8000:8000"
-    env_file: .env
     depends_on:
       db:
         condition: service_healthy
@@ -16,16 +17,16 @@ services:
       - .:/app
   db:
     image: postgres:12
+    container_name: "lasfera-db"
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file: .env
+      - pg-data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lasfera"]
-      interval: 5s
+      interval: 2s
       timeout: 5s
       retries: 5
 
 volumes:
-  postgres_data:
+  pg-data:
