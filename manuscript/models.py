@@ -1,10 +1,20 @@
 import logging
+import re
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from prose.fields import RichTextField
 
 logger = logging.getLogger(__name__)
+
+
+def validate_line_number_code(value):
+    pattern = r"^\d{2}\.\d{2}\.\d{2}(-\d{2}\.\d{2}\.\d{2})?$"
+    if not re.match(pattern, value):
+        raise ValidationError(
+            'Invalid number format. Expected format: "01.01.04" or "01.01.04-01.01.16"'
+        )
 
 
 class Library(models.Model):
@@ -188,32 +198,35 @@ class Stanza(models.Model):
         blank=True,
         null=True,
     )
-    stanza_line_number_on_page = models.IntegerField(
+    # stanza_line_number_on_page = models.IntegerField(
+    #    blank=True,
+    #    null=True,
+    #    help_text="The line number of the stanza on the folio in the manuscript.",
+    # )
+    stanza_location = models.CharField(blank=True, null=True, help_text="")
+    stanza_line_code = models.CharField(
         blank=True,
         null=True,
-        help_text="The line number of the stanza on the folio in the manuscript.",
-    )
-    stanza_number = models.IntegerField(
-        blank=True,
-        null=True,
-        help_text="The number of the stanza in the manuscript.",
+        validators=[validate_line_number_code],
+        max_length=20,
+        help_text="Range of text on page by line numbers annotated by book-stanza-line number. For example: 01.01.01-01.01.07.",
     )
     stanza_text = models.TextField(blank=True, null=True)
     stanza_notes = models.TextField(blank=True, null=True)
-    stanza_translation = models.TextField(blank=True, null=True)
-    stanza_language = models.CharField(
-        max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
-    )
-    stanza_translation_notes = models.TextField(blank=True, null=True)
+    # stanza_translation = models.TextField(blank=True, null=True)
+    # stanza_language = models.CharField(
+    #    max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
+    # )
+    # stanza_translation_notes = models.TextField(blank=True, null=True)
     # manuscript = models.ForeignKey(
     #     "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
     # )
-    locations_mentioned = models.ManyToManyField(
-        "Location",
-        blank=True,
-        help_text="Toponyms associated with the stanza.",
-        verbose_name="Associated toponyms",
-    )
+    # locations_mentioned = models.ManyToManyField(
+    #    "Location",
+    #    blank=True,
+    #    help_text="Toponyms associated with the stanza.",
+    #    verbose_name="Associated toponyms",
+    # )
 
 
 class Folio(models.Model):
