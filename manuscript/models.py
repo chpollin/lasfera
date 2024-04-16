@@ -212,7 +212,12 @@ class Stanza(models.Model):
         max_length=20,
         help_text="Indicate where the folio ends. Input the text by book, stanza, and line number. For example: 01.01.07 refers to book 1, stanza 1, line 7.",
     )
-
+    stanza_line_variation = models.CharField(
+        blank=True,
+        null=True,
+        max_length=1,
+        help_text="Indicate any variations in the line (e.g., 'a,' 'b,' etc.).",
+    )
     stanza_text = RichTextField(blank=True, null=True)
     stanza_notes = RichTextField(blank=True, null=True)
 
