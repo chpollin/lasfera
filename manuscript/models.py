@@ -305,14 +305,6 @@ class SingleManuscript(models.Model):
         help_text="The URL to an external gazetteer for the manuscript. If there isn't one, leave blank.",
         verbose_name="Gazetteer URL",
     )
-    # TODO: Think about how we might manage multiple authority files
-    authority_file_url = models.URLField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="The URL to the authority file for the manuscript. If there isn't one, leave blank.",
-        verbose_name="Authority File",
-    )
     purl_url = models.URLField(
         blank=True,
         null=True,
@@ -347,6 +339,34 @@ class SingleManuscript(models.Model):
     class Meta:
         verbose_name = "Manuscript"
         verbose_name_plural = "Manuscripts"
+
+
+class AuthorityFile(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The name of the authority file",
+    )
+    authority_file_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="The URL to the authority file for the manuscript.",
+        verbose_name="Authority File URL",
+    )
+    manuscript = models.ForeignKey(
+        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.authority_file_url}"
+
+    class Meta:
+        verbose_name = "Authority File"
+        verbose_name_plural = "Authority Files"
 
 
 class Location(models.Model):

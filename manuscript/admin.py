@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from manuscript.models import (
+    AuthorityFile,
     Codex,
     Detail,
     EditorialStatus,
@@ -74,9 +75,15 @@ class LocationAliasInline(admin.TabularInline):
     extra = 1
 
 
+class AuthorityFileInline(admin.TabularInline):
+    model = AuthorityFile
+    extra = 1
+
+
 # Custom admin models.
 class SingleManuscriptAdmin(admin.ModelAdmin):
     inlines = [
+        AuthorityFileInline,
         TextDecorationInline,
         ReferenceInline,
         DetailInline,
