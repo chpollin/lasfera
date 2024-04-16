@@ -198,44 +198,58 @@ class Stanza(models.Model):
         blank=True,
         null=True,
     )
-    # stanza_line_number_on_page = models.IntegerField(
-    #    blank=True,
-    #    null=True,
-    #    help_text="The line number of the stanza on the folio in the manuscript.",
-    # )
-    stanza_location = models.CharField(blank=True, null=True, help_text="")
-    stanza_line_code = models.CharField(
+    stanza_line_code_starts = models.CharField(
         blank=True,
         null=True,
         validators=[validate_line_number_code],
         max_length=20,
-        help_text="Range of text on page by line numbers annotated by book-stanza-line number. For example: 01.01.01-01.01.07.",
+        help_text="Indicate where the folio begins. Input the text by book, stanza, and line number. For example: 01.01.01 refers to book 1, stanza 1, line 1.",
     )
-    stanza_text = models.TextField(blank=True, null=True)
-    stanza_notes = models.TextField(blank=True, null=True)
-    # stanza_translation = models.TextField(blank=True, null=True)
-    # stanza_language = models.CharField(
-    #    max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
-    # )
-    # stanza_translation_notes = models.TextField(blank=True, null=True)
-    # manuscript = models.ForeignKey(
-    #     "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
-    # )
-    # locations_mentioned = models.ManyToManyField(
-    #    "Location",
-    #    blank=True,
-    #    help_text="Toponyms associated with the stanza.",
-    #    verbose_name="Associated toponyms",
-    # )
+    stanza_line_code_ends = models.CharField(
+        blank=True,
+        null=True,
+        validators=[validate_line_number_code],
+        max_length=20,
+        help_text="Indicate where the folio ends. Input the text by book, stanza, and line number. For example: 01.01.07 refers to book 1, stanza 1, line 7.",
+    )
+
+    stanza_text = RichTextField(blank=True, null=True)
+    stanza_notes = RichTextField(blank=True, null=True)
+
+    def __str__(self):
+        if self.stanza_line_code_starts is not None:
+            return self.stanza_line_code_starts
+        elif self.stanza_line_code_ends is not None:
+            return self.stanza_line_code_starts + " - " + self.stanza_line_code_ends
+        else:
+            return ""
+
+    def get_book(self):
+        return int(self.stanza_line_code.split(".")[0])
+
+    def get_stanza(self):
+        return int(self.stanza_line_code.split(".")[1])
+
+    def get_line(self):
+        return int(
+            self.your_field.split(".")[2].split("-")[0]
+        )  # Handle the case of a range
 
 
 class Folio(models.Model):
     """This provides a way to collect several stanzas onto a single page,
     and associate them with a single manuscript."""
 
+    FOLIO_MAP_CHOICES = (
+        ("yes", "Yes"),
+        ("yes_toponyms", "Yes with toponyms"),
+        ("yes_no_toponyms", "Yes without toponyms"),
+        ("no", "No"),
+    )
+
     id = models.AutoField(primary_key=True)
     folio_number = models.IntegerField(blank=True, null=True)
-    folio_notes = models.TextField(blank=True, null=True)
+    folio_notes = RichTextField(blank=True, null=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
     )
@@ -249,6 +263,11 @@ class Folio(models.Model):
         null=True,
         help_text="Provide a IIIF manifest to a page in the manuscript. If there isn't one, leave blank.",
         verbose_name="IIIF URL",
+    )
+    folio_includes_map = models.CharField(
+        blank=True,
+        null=True,
+        choices=FOLIO_MAP_CHOICES,
     )
     locations_mentioned = models.ManyToManyField(
         "Location",

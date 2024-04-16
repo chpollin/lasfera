@@ -20,7 +20,6 @@ from manuscript.models import (
 
 class StanzaInline(admin.StackedInline):
     model = Stanza
-    classes = ("collapse",)
     extra = 1
 
 
