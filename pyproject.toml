@@ -19,6 +19,7 @@ numpy = "^1.26.4"
 openpyxl = "^3.1.2"
 django-prose = "^2.0.0"
 geopy = "^2.4.1"
+django-nested-admin = "^4.0.2"
 
 
 [build-system]

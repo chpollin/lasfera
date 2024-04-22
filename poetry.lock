@@ -395,6 +395,24 @@ docs = ["furo (>=2021.8.17b43,<2021.9.dev0)", "sphinx (>=3.5.0)", "sphinx-notfou
 testing = ["coverage[toml] (>=5.0a4)", "pytest (>=4.6.11)"]
 
 [[package]]
+name = "django-nested-admin"
+version = "4.0.2"
+description = "Django admin classes that allow for nested inlines"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "django-nested-admin-4.0.2.tar.gz", hash = "sha256:79a5ce80b81c41a0f48f778fb556a3721029df48580bfce60a5962ffa2ef2d47"},
+    {file = "django_nested_admin-4.0.2-py3-none-any.whl", hash = "sha256:74d8fc0d0f17862ffcece66d39b8814cb649878b3b6ba8438076145a688ea473"},
+]
+
+[package.dependencies]
+python-monkey-business = ">=1.0.0"
+
+[package.extras]
+dev = ["Pillow", "black", "dj-database-url", "django-selenosis", "flake8", "pytest", "pytest-cov", "pytest-django", "pytest-xdist", "selenium"]
+test = ["Pillow", "dj-database-url", "django-selenosis", "pytest", "pytest-cov", "pytest-django", "pytest-xdist", "selenium"]
+
+[[package]]
 name = "django-prose"
 version = "2.0.0"
 description = "Wonderful rich text for Django"
@@ -864,6 +882,20 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-monkey-business"
+version = "1.0.0"
+description = "Utility functions for monkey-patching python code"
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-monkey-business-1.0.0.tar.gz", hash = "sha256:9976522989766f00b2aaa24ec96eacb91a6de7b7001d1452079323b071988e0e"},
+    {file = "python_monkey_business-1.0.0-py2.py3-none-any.whl", hash = "sha256:6d4cf47f011945db838ccf04643acd49b82f7ad6ab7ecba4c8165385687a828a"},
+]
+
+[package.dependencies]
+six = ">=1.7.0"
+
+[[package]]
 name = "python-slugify"
 version = "8.0.4"
 description = "A Python slugify application that also handles Unicode"
@@ -1039,4 +1071,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "36112b22ae60dcb8b44122f2f9599e0a99b74164e50d61e49597a85cb1f89161"
+content-hash = "8b762af9b177127fca29cce57314786fad09e11cdba300cd907fbe7c79b1d717"
