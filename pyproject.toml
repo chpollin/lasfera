@@ -20,6 +20,7 @@ openpyxl = "^3.1.2"
 django-prose = "^2.0.0"
 geopy = "^2.4.1"
 django-nested-admin = "^4.0.2"
+django-dbml = "^0.7.0"
 
 
 [build-system]

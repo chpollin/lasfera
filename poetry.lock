@@ -379,6 +379,17 @@ files = [
 Pillow = ">=9.0.0"
 
 [[package]]
+name = "django-dbml"
+version = "0.7.0"
+description = "Django extension aimed to generate DBML from all models"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-dbml-0.7.0.tar.gz", hash = "sha256:7d177b6df8f3e23067b458c6e9dcbeb6120dcfcaddaf4e7c5ff5a009bddc6e76"},
+    {file = "django_dbml-0.7.0-py3-none-any.whl", hash = "sha256:0c45c1c1cbd3821373f949dd488d32d2ce4f6513b7dc7ca7aad06f5c2f403ccd"},
+]
+
+[[package]]
 name = "django-environ"
 version = "0.11.2"
 description = "A package that allows you to utilize 12factor inspired environment variables to configure your Django application."
@@ -1071,4 +1082,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "8b762af9b177127fca29cce57314786fad09e11cdba300cd907fbe7c79b1d717"
+content-hash = "bf2351eedceed06c5d724fb800992aa9717db2b5385988dcb4abd4f1a15b4226"

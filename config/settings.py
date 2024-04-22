@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "nested_admin",
+    "django_dbml",
     "accounts",
     "manuscript",
     "map",
