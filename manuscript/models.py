@@ -18,17 +18,24 @@ def validate_line_number_code(value):
 
 
 class Library(models.Model):
+    """Library or collection that holds a manuscript"""
+
     city = models.CharField(max_length=255, blank=True, null=True)
     library = models.CharField(max_length=255, blank=True, null=True)
-
-    def __str__(self):
-        return self.library + ", " + self.city
 
     class Meta:
         verbose_name_plural = "Libraries"
 
+    def __str__(self):
+        return self.library + ", " + self.city
+
+    def natural_key(self):
+        return (self.library, self.city)
+
 
 class EditorialStatus(models.Model):
+    """The editorial status of a manuscript"""
+
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
@@ -48,18 +55,20 @@ class EditorialStatus(models.Model):
         verbose_name="IIIF URL",
     )
 
+    class Meta:
+        verbose_name = "Editorial Status"
+        verbose_name_plural = "Editorial Status"
+
     def __str__(self):
         if self.siglum is not None:
             return self.siglum
         else:
             return "Editorial Status"
 
-    class Meta:
-        verbose_name = "Editorial Status"
-        verbose_name_plural = "Editorial Status"
-
 
 class Reference(models.Model):
+    """References within the manuscript"""
+
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
@@ -72,6 +81,8 @@ class Reference(models.Model):
 
 
 class Codex(models.Model):
+    """Information and details about the manuscript"""
+
     id = models.AutoField(primary_key=True)
     support = models.CharField(max_length=255, blank=True, null=True)
     height = models.IntegerField(blank=True, null=True, help_text="in cm")
@@ -82,14 +93,16 @@ class Codex(models.Model):
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
     )
 
-    def __str__(self):
-        return str(self.id)
-
     class Meta:
         verbose_name_plural = "Codex"
 
+    def __str__(self):
+        return str(self.id)
+
 
 class TextDecoration(models.Model):
+    """Details and information about the text of the manuscript"""
+
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
@@ -111,7 +124,8 @@ class TextDecoration(models.Model):
 
 
 class Detail(models.Model):
-    # 1) stanza headings; 2) marginal rubrics; 3) neither; or 4) unknown.
+    """Details about the manuscript including author, scribe, headings, etc."""
+
     STANZA_RUBRIC_CHOICES = (
         ("sh", "Stanza Headings"),
         ("mr", "Marginal Rubrics"),
@@ -166,6 +180,8 @@ class Detail(models.Model):
 
 
 class ViewerNote(models.Model):
+    """Notes on the manuscript from a particular user"""
+
     id = models.AutoField(primary_key=True)
     date = models.DateField(blank=True, null=True)
     viewer = models.ForeignKey(
@@ -183,7 +199,44 @@ class ViewerNote(models.Model):
     )
 
 
+class StanzaVariant(models.Model):
+    """Notes about variants in a stanza"""
+
+    LINE_VARIANTS = (
+        ("lf", "Lines Flipped"),
+        ("dw", "Different Words"),
+        ("do", "Different Order"),
+        ("dp", "Different Punctuation"),
+        ("ds", "Different Spelling"),
+        ("dc", "Different Capitalization"),
+    )
+
+    # TODO: Ability to have variation in lines
+    id = models.AutoField(primary_key=True)
+    stanza_variation = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Significant Variations",
+        help_text="The variation in the stanza.",
+    )
+    line_code = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The line code for the stanza.",
+    )
+    variation_type = models.CharField(
+        max_length=2, choices=LINE_VARIANTS, blank=True, null=True
+    )
+
+    def __str__(self):
+        return self.line_code + " - " + self.variation_type
+
+
 class Stanza(models.Model):
+    """A stanza from the manuscript."""
+
     STANZA_LANGUAGE = (
         ("en", "English"),
         ("it", "Italian"),
@@ -212,20 +265,28 @@ class Stanza(models.Model):
         max_length=20,
         help_text="Indicate where the folio ends. Input the text by book, stanza, and line number. For example: 01.01.07 refers to book 1, stanza 1, line 7.",
     )
-    stanza_line_variation = models.CharField(
-        blank=True,
-        null=True,
-        max_length=1,
-        help_text="Indicate any variations in the line (e.g., 'a,' 'b,' etc.).",
-    )
     stanza_text = RichTextField(blank=True, null=True)
     stanza_notes = RichTextField(blank=True, null=True)
+    stanza_line_variation = models.ManyToManyField(
+        StanzaVariant,
+        blank=True,
+        help_text="Variations in the stanza.",
+        related_name="line_variation",
+    )
 
     def __str__(self):
         if self.stanza_line_code_starts is not None:
             return self.stanza_line_code_starts
         elif self.stanza_line_code_ends is not None:
             return self.stanza_line_code_starts + " - " + self.stanza_line_code_ends
+        elif self.stanza_line_variation is not None:
+            return (
+                self.stanza_line_code_starts
+                + " - "
+                + self.stanza_line_code_ends
+                + " - "
+                + self.stanza_line_variation
+            )
         else:
             return ""
 
@@ -242,8 +303,7 @@ class Stanza(models.Model):
 
 
 class Folio(models.Model):
-    """This provides a way to collect several stanzas onto a single page,
-    and associate them with a single manuscript."""
+    """This provides a way to collect several stanzas onto a single page, and associate them with a single manuscript."""
 
     FOLIO_MAP_CHOICES = (
         ("yes", "Yes"),
@@ -286,6 +346,8 @@ class Folio(models.Model):
 
 
 class SingleManuscript(models.Model):
+    """A representation of a single manuscript"""
+
     id = models.AutoField(primary_key=True)
     shelfmark = models.CharField(max_length=255, blank=True, null=True)
     library = models.ForeignKey(
@@ -323,6 +385,10 @@ class SingleManuscript(models.Model):
     manuscript_lost = models.BooleanField(blank=True, null=True, default=False)
     manuscript_destroyed = models.BooleanField(blank=True, null=True, default=False)
 
+    class Meta:
+        verbose_name = "Manuscript"
+        verbose_name_plural = "Manuscripts"
+
     def __str__(self) -> str:
         if self.shelfmark is not None:
             return (
@@ -336,12 +402,10 @@ class SingleManuscript(models.Model):
         else:
             return "No shelfmark provided"
 
-    class Meta:
-        verbose_name = "Manuscript"
-        verbose_name_plural = "Manuscripts"
-
 
 class AuthorityFile(models.Model):
+    """Include authority files for various aspects of a manuscript"""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=255,
@@ -370,7 +434,12 @@ class AuthorityFile(models.Model):
 
 
 class Location(models.Model):
+    """Handle the location information and toponyms within a manuscript"""
+
     id = models.AutoField(primary_key=True)
+    placename_id = models.CharField(blank=True, null=True)
+    # TODO: this could be more than one... eg this toponym shows up at 2.3.4 and 1.4.7
+    line_code = models.CharField(blank=True, null=True, help_text="citation line code")
     country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern country"
     )
@@ -392,21 +461,22 @@ class Location(models.Model):
         help_text="The URL to the authority file for the location. If there isn't one, leave blank.",
     )
 
-    def __str__(self):
-        aliases = ", ".join(
-            [alias.placename_from_mss for alias in self.locationalias_set.all()]
-        )
-        return f"{self.country} ({aliases})"
-
     class Meta:
         verbose_name = "Toponym"
         verbose_name_plural = "Toponyms"
         ordering = ["country"]
         unique_together = ["country"]
 
-    # On save, the following tries to derive the latlon from the modern placename
-    # field. If successful, it stores the latlon in the latlon field.
+    def __str__(self):
+        aliases = ", ".join(
+            [alias.placename_from_mss for alias in self.locationalias_set.all()]
+        )
+        return f"{self.country} ({aliases})"
+
     def save(self, *args, **kwargs):
+        # On save, the following tries to derive the latlon from the modern placename
+        # field. If successful, it stores the latlon in the latlon field.
+
         if self.latitude is None or self.longitude is None:
             try:
                 from geopy.geocoders import Nominatim
@@ -424,6 +494,8 @@ class Location(models.Model):
 
 
 class LocationAlias(models.Model):
+    """The alias of a location"""
+
     id = models.AutoField(primary_key=True)
     placename_from_mss = models.CharField(
         max_length=255,
@@ -457,11 +529,11 @@ class LocationAlias(models.Model):
         Location, on_delete=models.CASCADE, blank=True, null=True
     )
 
-    def __str__(self):
-        return f"{self.placename_from_mss} / {self.placename_standardized} / {self.placename_modern} / {self.placename_alias}"
-
     class Meta:
         verbose_name = "Location Alias"
         verbose_name_plural = "Location Aliases"
         ordering = ["placename_standardized"]
         unique_together = ["placename_standardized"]
+
+    def __str__(self):
+        return f"{self.placename_from_mss} / {self.placename_standardized} / {self.placename_modern} / {self.placename_alias}"

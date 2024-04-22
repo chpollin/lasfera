@@ -12,13 +12,13 @@ from manuscript.models import (
     Reference,
     SingleManuscript,
     Stanza,
+    StanzaVariant,
     TextDecoration,
     ViewerNote,
 )
 
-# Inline models
 
-
+# Inline models --------------------------------------------
 class StanzaInline(admin.StackedInline):
     model = Stanza
     extra = 1
@@ -80,7 +80,12 @@ class AuthorityFileInline(admin.TabularInline):
     extra = 1
 
 
-# Custom admin models.
+class StanzaVariationInline(admin.TabularInline):
+    model = StanzaVariant
+    extra = 1
+
+
+# Custom admin models --------------------------------------------
 class SingleManuscriptAdmin(admin.ModelAdmin):
     inlines = [
         AuthorityFileInline,
@@ -99,6 +104,10 @@ class SingleManuscriptAdmin(admin.ModelAdmin):
         "manuscript_destroyed",
         "id",
     )
+
+
+class StanzaAdmin(admin.ModelAdmin):
+    inlines = [StanzaVariationInline]
 
 
 class FolioAdmin(admin.ModelAdmin):
@@ -129,18 +138,11 @@ class LocationAdmin(admin.ModelAdmin):
 # Register to the admin interface.
 
 admin.site.register(Library, LibraryAdmin)
-# admin.site.register(ManuscriptLocation)
 admin.site.register(EditorialStatus, EditorialStatusAdmin)
-# admin.site.register(Reference, ReferenceAdmin)
-# admin.site.register(Codex, CodexAdmin)
-# admin.site.register(TextDecoration)
-# admin.site.register(Detail)
 admin.site.register(Folio, FolioAdmin)
-
-# admin.site.register(Stanza)
 admin.site.register(Location, LocationAdmin)
-
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
+admin.site.register(Stanza, StanzaAdmin)
 
 # fix pluralization of codex
 admin.site.site_header = "La Sfera Admin"
