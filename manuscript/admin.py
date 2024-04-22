@@ -12,7 +12,6 @@ from manuscript.models import (
     Reference,
     SingleManuscript,
     Stanza,
-    StanzaVariant,
     TextDecoration,
     ViewerNote,
 )
@@ -80,11 +79,6 @@ class AuthorityFileInline(admin.TabularInline):
     extra = 1
 
 
-class StanzaVariationInline(admin.TabularInline):
-    model = StanzaVariant
-    extra = 1
-
-
 # Custom admin models --------------------------------------------
 class SingleManuscriptAdmin(admin.ModelAdmin):
     inlines = [
@@ -104,10 +98,6 @@ class SingleManuscriptAdmin(admin.ModelAdmin):
         "manuscript_destroyed",
         "id",
     )
-
-
-class StanzaAdmin(admin.ModelAdmin):
-    inlines = [StanzaVariationInline]
 
 
 class FolioAdmin(admin.ModelAdmin):
@@ -142,7 +132,6 @@ admin.site.register(EditorialStatus, EditorialStatusAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
-admin.site.register(Stanza, StanzaAdmin)
 
 # fix pluralization of codex
 admin.site.site_header = "La Sfera Admin"
