@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 
 from manuscript.models import (
     AuthorityFile,
@@ -12,6 +14,7 @@ from manuscript.models import (
     Reference,
     SingleManuscript,
     Stanza,
+    StanzaVariant,
     TextDecoration,
     ViewerNote,
 )
@@ -20,6 +23,39 @@ from manuscript.models import (
 # Inline models --------------------------------------------
 class StanzaInline(admin.StackedInline):
     model = Stanza
+    extra = 1
+    fields = (
+        "stanza_line_code_starts",
+        "stanza_line_code_ends",
+        "stanza_text",
+        "stanza_notes",
+        "add_stanza_variant_link",
+        "display_stanza_variants",
+    )
+    readonly_fields = (
+        "add_stanza_variant_link",
+        "display_stanza_variants",
+    )
+
+    def add_stanza_variant_link(self, obj):
+        url = reverse("admin:manuscript_stanzavariant_add") + "?stanza=" + str(obj.id)
+        return format_html('<a href="{}">Add Stanza Variant</a>', url)
+
+    add_stanza_variant_link.short_description = "Add Stanza Variant"
+
+    def display_stanza_variants(self, obj):
+        url = (
+            reverse("admin:manuscript_stanzavariant_changelist")
+            + "?stanza__id__exact="
+            + str(obj.id)
+        )
+        return ", ".join([str(variant) for variant in obj.stanzavariant_set.all()])
+
+    display_stanza_variants.short_description = "Stanza Variants"
+
+
+class StanzaVariantInline(admin.StackedInline):
+    model = StanzaVariant
     extra = 1
 
 
@@ -101,7 +137,9 @@ class SingleManuscriptAdmin(admin.ModelAdmin):
 
 
 class FolioAdmin(admin.ModelAdmin):
-    inlines = [StanzaInline]
+    inlines = [
+        StanzaInline,
+    ]
 
 
 class ReferenceAdmin(admin.ModelAdmin):
@@ -125,6 +163,18 @@ class LocationAdmin(admin.ModelAdmin):
     list_display = ("country", "latitude", "longitude", "id")
 
 
+class StanzaAdmin(admin.ModelAdmin):
+    inlines = [StanzaVariantInline]
+
+
+class StanzaVariantAdmin(admin.ModelAdmin):
+    def get_changeform_initial_data(self, request):
+        initial = super().get_changeform_initial_data(request)
+        if "stanza" in request.GET:
+            initial["stanza"] = request.GET["stanza"]
+        return initial
+
+
 # Register to the admin interface.
 
 admin.site.register(Library, LibraryAdmin)
@@ -132,6 +182,8 @@ admin.site.register(EditorialStatus, EditorialStatusAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
+admin.site.register(Stanza, StanzaAdmin)
+admin.site.register(StanzaVariant, StanzaVariantAdmin)
 
 # fix pluralization of codex
 admin.site.site_header = "La Sfera Admin"

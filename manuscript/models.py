@@ -1,6 +1,7 @@
 import logging
 import re
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -213,25 +214,30 @@ class StanzaVariant(models.Model):
 
     # TODO: Ability to have variation in lines
     id = models.AutoField(primary_key=True)
-    stanza_variation = models.CharField(
+    stanza_variation = models.TextField(
         max_length=255,
         blank=True,
         null=True,
         verbose_name="Significant Variations",
         help_text="The variation in the stanza.",
     )
-    line_code = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="The line code for the stanza.",
-    )
     variation_type = models.CharField(
         max_length=2, choices=LINE_VARIANTS, blank=True, null=True
     )
+    stanza = models.ForeignKey(
+        "Stanza", on_delete=models.PROTECT, blank=True, null=True
+    )
+
+    def provide_snippet_of_stanza(self):
+        return self.stanza.stanza_text[:100]
 
     def __str__(self):
-        return self.line_code + " - " + self.variation_type
+        soup = BeautifulSoup(self.stanza_variation, "html.parser")
+        text = soup.get_text()
+
+        full_variation_type_text = dict(self.LINE_VARIANTS)[self.variation_type]
+
+        return full_variation_type_text + ": " + text[:100] + "..."
 
 
 class Stanza(models.Model):
@@ -267,12 +273,6 @@ class Stanza(models.Model):
     )
     stanza_text = RichTextField(blank=True, null=True)
     stanza_notes = RichTextField(blank=True, null=True)
-    stanza_line_variation = models.ManyToManyField(
-        StanzaVariant,
-        blank=True,
-        help_text="Variations in the stanza.",
-        related_name="line_variation",
-    )
 
     def __str__(self):
         if self.stanza_line_code_starts is not None:

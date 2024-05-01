@@ -1,0 +1,18 @@
+<!-- manage_stanza_variations.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Manage Stanza Variations</title>
+  </head>
+  <body>
+    <h1>Manage Stanza Variations for {{ folio }}</h1>
+    <ul>
+      {% for stanza in stanzas %}
+        <li>{{ stanza }}</li>
+      <!-- Render Stanza variations here -->
+      {% endfor %}
+    </ul>
+    <!-- Add options for managing Stanza variations (e.g., add, edit, delete) -->
+  </body>
+</html>
