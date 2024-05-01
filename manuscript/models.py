@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django_prose_editor.fields import ProseEditorField
 from prose.fields import RichTextField
 
 logger = logging.getLogger(__name__)
@@ -215,7 +216,7 @@ class StanzaVariant(models.Model):
     # TODO: Ability to have variation in lines
     id = models.AutoField(primary_key=True)
     stanza_variation = models.TextField(
-        max_length=255,
+        max_length=500,
         blank=True,
         null=True,
         verbose_name="Significant Variations",
