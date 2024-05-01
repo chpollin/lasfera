@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.messages",
     "prose",
+    "django_prose_editor",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",

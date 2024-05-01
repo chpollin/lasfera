@@ -460,6 +460,37 @@ bleach = ">=4.0"
 django = ">=3.2"
 
 [[package]]
+name = "django-prose-editor"
+version = "0.3.4"
+description = "Prose editor for the Django admin based on ProseMirror"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "django_prose_editor-0.3.4-py3-none-any.whl", hash = "sha256:f4cddab025222fe31f9e75e666586cd9fad5be0bf3af59dee14d3adc5c0aaf6b"},
+    {file = "django_prose_editor-0.3.4.tar.gz", hash = "sha256:bbe5b60b8872b01505c1abbd20295e6127b86d4cb1d9b04cdb65d53a5018e259"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+
+[package.extras]
+tests = ["coverage", "nh3"]
+
+[[package]]
+name = "django-tinymce"
+version = "4.0.0"
+description = "A Django application that contains a widget to render a"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django-tinymce-4.0.0.tar.gz", hash = "sha256:13a63c81c5bb3683d135f5b1ec4c7da68bc880cf5138ffb266b608914ba12236"},
+    {file = "django_tinymce-4.0.0-py3-none-any.whl", hash = "sha256:2b495dca8a6d36831ffd256e930e0919361468862eb7e5ff26f9631bc42061e0"},
+]
+
+[package.dependencies]
+django = ">=3.2"
+
+[[package]]
 name = "et-xmlfile"
 version = "1.1.0"
 description = "An implementation of lxml.xmlfile for the standard library"
@@ -1114,4 +1145,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "b4159250f4370b647d37060a35939beed852df27852c872bcfac7962cb088d56"
+content-hash = "1905997dc908bc596aecbd94e85cca58861e16decf0cfcc86a91fe73cc61924c"
