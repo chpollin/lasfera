@@ -238,7 +238,10 @@ class StanzaVariant(models.Model):
 
         full_variation_type_text = dict(self.LINE_VARIANTS)[self.variation_type]
 
-        return full_variation_type_text + ": " + text[:100] + "..."
+        if full_variation_type_text is not None:
+            return full_variation_type_text + ": " + text[:100] + "..."
+        else:
+            return text[:100] + "..."
 
 
 class Stanza(models.Model):
@@ -334,6 +337,7 @@ class Folio(models.Model):
         blank=True,
         null=True,
         choices=FOLIO_MAP_CHOICES,
+        verbose_name="Does the folio include a map?",
     )
     locations_mentioned = models.ManyToManyField(
         "Location",
