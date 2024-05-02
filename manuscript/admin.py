@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 
 from manuscript.models import (
     AuthorityFile,
@@ -44,12 +44,8 @@ class StanzaInline(admin.StackedInline):
     add_stanza_variant_link.short_description = "Add Stanza Variant"
 
     def display_stanza_variants(self, obj):
-        url = (
-            reverse("admin:manuscript_stanzavariant_changelist")
-            + "?stanza__id__exact="
-            + str(obj.id)
-        )
-        return ", ".join([str(variant) for variant in obj.stanzavariant_set.all()])
+        variants = ["- {}".format(variant) for variant in obj.stanzavariant_set.all()]
+        return format_html("<br>".join(variants))
 
     display_stanza_variants.short_description = "Stanza Variants"
 
@@ -140,6 +136,10 @@ class FolioAdmin(admin.ModelAdmin):
     inlines = [
         StanzaInline,
     ]
+
+    def add_link_to_edit_stanzas(self, obj):
+        url = reverse("admin:manuscript_stanza_add") + "?folio=" + str(obj.id)
+        return format_html('<a href="{}">Add Stanza</a>', url)
 
 
 class ReferenceAdmin(admin.ModelAdmin):
