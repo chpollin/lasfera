@@ -29,7 +29,7 @@ class Library(models.Model):
         verbose_name_plural = "Libraries"
 
     def __str__(self):
-        return self.library + ", " + self.city
+        return self.city + " - " + self.library
 
     def natural_key(self):
         return (self.library, self.city)
@@ -40,9 +40,9 @@ class EditorialStatus(models.Model):
 
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
-        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+        "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
-    siglum = models.CharField(max_length=255, blank=True, null=True)
+    siglum = models.CharField(max_length=255, blank=True, null=True, unique=True)
     editorial_priority = models.IntegerField(blank=True, null=True)
     collated = models.CharField(blank=True, null=True)
     access = models.IntegerField(blank=True, null=True)
@@ -73,7 +73,7 @@ class Reference(models.Model):
 
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
-        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+        "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
     bert = models.CharField(max_length=6, blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
@@ -137,47 +137,43 @@ class Detail(models.Model):
 
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
-        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+        "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
     author_attribution = models.CharField(max_length=255, blank=True, null=True)
     scribe_attribution = models.CharField(max_length=255, blank=True, null=True)
-    book_headings = models.BooleanField(blank=True, null=True)
+    book_headings = models.CharField(blank=True, null=True)
     book_headings_notes = RichTextField(blank=True, null=True)
-    book_initials = models.BooleanField(blank=True, null=True)
-    book_initials_notes = RichTextField(blank=True, null=True)
+    book_initials = RichTextField(blank=True, null=True)
     stanza_headings_marginal_rubrics = models.CharField(
         max_length=2, choices=STANZA_RUBRIC_CHOICES, blank=True, null=True
     )
     stanza_headings_marginal_rubrics_notes = RichTextField(
         max_length=255, blank=True, null=True
     )
-    stanza_initials = models.BooleanField(blank=True, null=True)
-    stanza_initials_notes = RichTextField(max_length=255, blank=True, null=True)
-    filigree = models.BooleanField(blank=True, null=True)
-    filigree_notes = models.CharField(
-        max_length=255,
+    stanza_initials = RichTextField(max_length=255, blank=True, null=True)
+    stanzas_separated = models.CharField(blank=True, null=True)
+    stanzas_ed = models.CharField(blank=True, null=True)
+    filigree = models.CharField(
+        max_length=450,
         blank=True,
         null=True,
         verbose_name="Flourished/Filigree Initials",
     )
-    abbreviations = models.BooleanField(blank=True, null=True)
-    abbreviations_notes = RichTextField(max_length=255, blank=True, null=True)
-    catchwords = models.BooleanField(blank=True, null=True)
-    catchwords_notes = RichTextField(max_length=255, blank=True, null=True)
+    standard_water = models.CharField(blank=True, null=True)
+    abbreviations = RichTextField(max_length=255, blank=True, null=True)
+    catchwords = RichTextField(max_length=255, blank=True, null=True)
     mabel_label = models.CharField(max_length=255, blank=True, null=True)
-    map_labels = models.BooleanField(blank=True, null=True)
+    map_labels = models.CharField(blank=True, null=True)
     map_labels_notes = RichTextField(max_length=255, blank=True, null=True)
-    distance_lines = models.BooleanField(blank=True, null=True)
-    distance_numbers = models.BooleanField(blank=True, null=True)
-    distance_numbers_notes = RichTextField(max_length=255, blank=True, null=True)
-    coat_of_arms = models.BooleanField(blank=True, null=True)
-    coat_of_arms_notes = RichTextField(max_length=255, blank=True, null=True)
+    distance_lines = models.CharField(blank=True, null=True)
+    distance_numbers = RichTextField(max_length=255, blank=True, null=True)
+    coat_of_arms = RichTextField(max_length=255, blank=True, null=True)
 
-    is_sea_red = models.BooleanField(
+    is_sea_red = models.CharField(
         blank=True, null=True, verbose_name="Is the Red Sea colored red?"
     )
-    laiazzo = models.BooleanField(blank=True, null=True)
-    tabriz = models.BooleanField(blank=True, null=True)
+    laiazzo = models.CharField(blank=True, null=True)
+    tabriz = models.CharField(blank=True, null=True)
     rhodes_status = models.CharField(max_length=255, blank=True, null=True)
 
 
@@ -257,7 +253,7 @@ class Stanza(models.Model):
     id = models.AutoField(primary_key=True)
     related_folio = models.ForeignKey(
         "Folio",
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
     )
@@ -320,7 +316,7 @@ class Folio(models.Model):
     folio_number = models.IntegerField(blank=True, null=True)
     folio_notes = RichTextField(blank=True, null=True)
     manuscript = models.ForeignKey(
-        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+        "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
     image = models.ImageField(
         null=True,
@@ -354,6 +350,7 @@ class SingleManuscript(models.Model):
     """A representation of a single manuscript"""
 
     id = models.AutoField(primary_key=True)
+    # item_id = models.IntegerField(blank=False, null=False, unique=True)
     shelfmark = models.CharField(max_length=255, blank=True, null=True)
     library = models.ForeignKey(
         Library, on_delete=models.PROTECT, blank=True, null=True
@@ -379,7 +376,7 @@ class SingleManuscript(models.Model):
         verbose_name="Permanent URL",
     )
     digitized_url = models.URLField(
-        max_length=255,
+        max_length=500,
         blank=True,
         null=True,
         help_text="The URL to the digitized manuscript. If there isn't one, leave blank.",
@@ -395,17 +392,13 @@ class SingleManuscript(models.Model):
         verbose_name_plural = "Manuscripts"
 
     def __str__(self) -> str:
-        if self.shelfmark is not None:
-            return (
-                self.shelfmark
-                + " ("
-                + self.library.library
-                + ", "
-                + self.library.city
-                + ")"
-            )
+        siglum = self.editorialstatus_set.first()
+        if siglum is not None and siglum.siglum is not None:
+            return "Siglum: " + siglum.siglum
+        elif self.shelfmark is not None:
+            return self.shelfmark
         else:
-            return "No shelfmark provided"
+            return "Manuscript"
 
 
 class AuthorityFile(models.Model):
