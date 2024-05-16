@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
+from import_export.admin import ImportExportModelAdmin
 
 from manuscript.models import (
     AuthorityFile,
@@ -17,6 +18,11 @@ from manuscript.models import (
     StanzaVariant,
     TextDecoration,
     ViewerNote,
+)
+from manuscript.resources import (
+    EditorialStatusResource,
+    ReferenceResource,
+    SingleManuscriptResource,
 )
 
 
@@ -112,7 +118,7 @@ class AuthorityFileInline(admin.TabularInline):
 
 
 # Custom admin models --------------------------------------------
-class SingleManuscriptAdmin(admin.ModelAdmin):
+class SingleManuscriptAdmin(ImportExportModelAdmin):
     inlines = [
         AuthorityFileInline,
         TextDecorationInline,
@@ -124,12 +130,35 @@ class SingleManuscriptAdmin(admin.ModelAdmin):
         FolioInline,
     ]
     list_display = (
+        "siglum",
         "shelfmark",
         "library",
         "manuscript_lost",
         "manuscript_destroyed",
         "id",
     )
+    resource_class = SingleManuscriptResource
+
+    def siglum(self, obj):
+        editorial_status = obj.editorialstatus_set.first()
+        if editorial_status:
+            return editorial_status.siglum
+        else:
+            return "No siglum provided"
+
+    siglum.short_description = "Siglum"
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "library":
+            kwargs["queryset"] = Library.objects.order_by("city")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    # def get_readonly_fields(self, request, obj=None):
+    #     return ['item_id'] + super().get_readonly_fields(request, obj=obj)
+
+    # def get_fields(self, request, obj=None):
+    #     fields = super().get_fields(request, obj=obj)
+    #     return [field for field in fields if field != 'item_id']
 
 
 class FolioAdmin(admin.ModelAdmin):
@@ -142,8 +171,9 @@ class FolioAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">Add Stanza</a>', url)
 
 
-class ReferenceAdmin(admin.ModelAdmin):
+class ReferenceAdmin(ImportExportModelAdmin):
     list_display = ("reference", "bert")
+    resource_class = ReferenceResource
 
 
 class LibraryAdmin(admin.ModelAdmin):
@@ -152,6 +182,7 @@ class LibraryAdmin(admin.ModelAdmin):
 
 class EditorialStatusAdmin(admin.ModelAdmin):
     list_display = ("siglum", "editorial_priority", "spatial_priority")
+    resource_class = EditorialStatusResource
 
 
 class CodexAdmin(admin.ModelAdmin):
