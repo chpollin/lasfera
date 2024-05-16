@@ -1,21 +1,72 @@
-from django.core.management.base import BaseCommand, CommandParser
-from django.utils.text import slugify
-from manuscript.models import SingleManuscript, ManuscriptLocation, DateSeen, EditorialStatus, Reference, Codex, TextDecoration, Detail, ViewerNote
-import pandas as pd
-import numpy as np
-from django.db import transaction
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
+from django.core.management.base import BaseCommand, CommandParser
+from django.db import transaction
+from django.utils.text import slugify
+
+from manuscript.models import (
+    AuthorityFile,
+    Codex,
+    Detail,
+    EditorialStatus,
+    Folio,
+    Library,
+    Location,
+    LocationAlias,
+    Reference,
+    SingleManuscript,
+    Stanza,
+    StanzaVariant,
+    TextDecoration,
+    ViewerNote,
+)
 
 
 class Command(BaseCommand):
     help_text = "Load data from an Excel file. This reads information about the libraries and imports them."
+
+    def handle_error(self, index, e, row, column_name, column_value):
+        self.stdout.write(
+            self.style.ERROR(
+                f"Error loading data at row {index + 1}, column '{column_name}' with value '{column_value}': {type(e)} - {e}"
+            )
+        )
+        self.stdout.write(self.style.ERROR(f"Row data: \n{row}"))
+
+    def process_bool_field(self, row, field_name, default_value=True):
+        try:
+            field_value = str(row.get(field_name)).lower()
+            if "yes" in field_value:
+                return True
+            elif "no" in field_value:
+                return False
+            else:
+                return default_value
+        except Exception as e:
+            print(f"An error occurred in processing a bool field: {e}")
+            return default_value
+
+    def process_field(self, row, field_name, index, is_bool=False):
+        try:
+            if is_bool:
+                return self.process_bool_field(row, field_name)
+            else:
+                field_value = row.get(field_name)
+                if field_value is not None and isinstance(field_value, str):
+                    field_value = field_value.strip()
+                return field_value
+        except Exception as e:
+            self.handle_error(index, e, row, field_name, row.get(field_name))
+            raise e
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--filepath", type=str, help="filepath of excel file to load"
         )
         parser.add_argument("--sheetname", type=str, help="name of sheet to load")
-    
+
     def handle(self, *args, **options):
         filepath = options.get("filepath")
         sheet_name = options.get("sheetname")
@@ -33,127 +84,361 @@ class Command(BaseCommand):
                 self.style.SUCCESS(f"Loading data from {filepath} sheet {sheet_name}")
             )
             xls = pd.ExcelFile(filepath)
-            df = pd.read_excel(xls, sheet_name)
 
             if sheet_name:
                 df = pd.read_excel(xls, sheet_name, header=1)
                 df = df.replace({np.nan: None})
-                df.columns = df.columns.str.strip().str.lower().str.replace('[^\w\s]','').str.replace(" ", "_")
+                df.columns = (
+                    df.columns.str.strip()
+                    .str.lower()
+                    .str.replace("[^\w\s]", "")
+                    .str.replace(" ", "_")
+                )
                 dfs = {sheet_name: df}
             else:
                 dfs = pd.read_excel(xls, sheet_name=None, header=1)
                 for sheet_name, df in dfs.items():
                     df = df.replace({np.nan: None})
-                    df.columns = df.columns.str.strip().str.lower().str.replace('[^\w\s]','').str.replace(" ", "_")
+                    df.columns = (
+                        df.columns.str.strip()
+                        .str.lower()
+                        .str.replace("[^\w\s]", "")
+                        .str.replace(" ", "_")
+                    )
                     dfs[sheet_name] = df
-            
-            # check the column names
-            # for sheet_name, df in dfs.items():
-            #     self.stdout.write(self.style.SUCCESS(f"Sheet {sheet_name} has the following columns: {df.columns}"))
-            
+
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
-                    editorial_status_siglum = row.get("siglum")
-                    editorial_status_access = row.get("access")
-                    editorial_status_iiif = row.get("iiif?")
-                    editorial_status_priority = row.get("ed_priority")
-                    editorial_status_collated = row.get("collated?")
-                    editorial_status_spatial_priority = row.get("spatial_priority")
-                    editorial_status_data_set = row.get("data_set")
-                    editorial_status_spatial_group = row.get("spatial_group")
+                    try:
+                        # Editorial Status fields
+                        editorial_status_siglum = self.process_field(
+                            row, "siglum", index
+                        )
+                        self.stdout.write(
+                            self.style.NOTICE(
+                                f"Processing manuscript {index + 1} with siglum {editorial_status_siglum}"
+                            )
+                        )
+                        editorial_status_access = self.process_field(
+                            row, "access", index
+                        )
+                        editorial_status_iiif = self.process_field(row, "iiif?", index)
+                        editorial_status_priority = self.process_field(
+                            row, "ed_priority", index
+                        )
+                        editorial_status_collated = self.process_field(
+                            row, "collated?", index
+                        )
+                        editorial_status_spatial_priority = self.process_field(
+                            row, "spatial_priority", index
+                        )
+                        editorial_status_data_set = self.process_field(
+                            row, "data_set", index
+                        )
+                        editorial_status_spatial_group = self.process_field(
+                            row, "spatial_group", index
+                        )
 
-                    reference_bert = row.get("bert._#")
-                    reference_reference = row.get("reference")
+                        # Reference fields
+                        reference_bert = self.process_field(row, "bert._#", index)
+                        reference_reference = self.process_field(
+                            row, "reference", index
+                        )
 
-                    codex_support = row.get("support")
-                    codex_height = row.get("height_(cm)")
-                    codex_date = row.get("date")
-                    codex_folia = row.get("folia")
-                    codex_lines = row.get("lines/page")
+                        # Codex fields
+                        codex_support = self.process_field(row, "support", index)
+                        codex_height = self.process_field(row, "height_(cm)", index)
+                        codex_date = self.process_field(row, "date", index)
+                        codex_folia = self.process_field(row, "folia", index)
+                        codex_lines = self.process_field(row, "lines/page", index)
 
-                    decoration_text_script = row.get("text_script")
-                    decoration_label_script = row.get("label_script")
-                    decoration_diagrams = row.get("diagrams?")
-                    decoration_maps = row.get("maps?")
-                    deocration_white_vine_work = row.get("white_vine_work?")
-                    decoration_illumination = row.get("illumination?")
-                    decoration_book_initials = row.get("book_initials")
-                    decoration_stanza_headings = row.get("stanza_headings")
-                    decoration_stanza_initials = row.get("stanza_initials")
-                    decoration_stanza_separated = row.get("stanzas_separated")
-                    decoration_stanza_ed = row.get("stanzas_ed")
-                    decoration_marginal_rubrics = row.get("marginal_rubrics")
-                    decoration_pen_decor = row.get("pen_decor.?filigree_initials")
-                    decoration_abbreviations = row.get("abbrevi-ations")
-                    decoration_catchwords = row.get("catch-words")
-                    decoration_mabel_label = row.get("mabel_label")
-                    decoration_standard_water = row.get("standard_water")
-                    decoration_is_red_sea_red = row.get("is_red_sea_red?")
-                    decoration_laiazza_on_m7 = row.get("laiazza_on_m7")
-                    decoration_tabriz_present = row.get("tabriz_present?")
-                    decoration_rhodes_statues = row.get("rhodes_statues")
-                    decoration_map_labels = row.get("map_labels?")
-                    decoration_distance_lines = row.get("distance_lines?")
-                    decoration_distance_numbers = row.get("distance_numbers?")
-                    decoration_coat_of_arms = row.get("coat_of_arms?")
+                        # Text Decoration fields
+                        decoration_text_script = self.process_field(
+                            row, "text_script", index
+                        )
+                        decoration_label_script = self.process_field(
+                            row, "label_script", index
+                        )
+                        decoration_diagrams = self.process_field(
+                            row, "diagrams?", index
+                        )
+                        decoration_maps = self.process_field(row, "maps?", index)
+                        deocration_white_vine_work = self.process_field(
+                            row, "white_vine_work?", index
+                        )
+                        decoration_illumination = self.process_field(
+                            row, "illumination?", index
+                        )
+                        decoration_other = self.process_field(row, "other?", index)
+                        decoration_relative_quality = self.process_field(
+                            row, "relative_quality", index
+                        )
 
-                    viewer_notes_date_seen = row.get("date_seen")
-                    # date_strings = viewer_notes_date_seen.split(',')
-                    # for date_string in date_strings:
-                    #     date_seen = datetime.fromisoformat(date_string.strip())
-                    #     date_seen_obj, created = DateSeen.objects.get_or_create(date=date_seen)
-                    #     viewer_note.dates_seen.add(date_seen_obj)
-                    viewer_notes_viewer = row.get("viewer")
-                    viewer_notes_notes = row.get("notes")
+                        # Detail fields
+                        detail_author_attribution = self.process_field(
+                            row, "author_attribution?", index
+                        )
+                        detail_scribe_attribution = self.process_field(
+                            row, "scribe_attribution?", index
+                        )
+
+                        decoration_book_headings = self.process_field(
+                            row, "book_headings", index
+                        )
+                        decoration_book_initials = self.process_field(
+                            row, "book_initials", index
+                        )
+
+                        decoration_stanza_headings = self.process_field(
+                            row, "stanza_headings", index
+                        )
+                        decoration_stanza_initials = self.process_field(
+                            row, "stanza_initials", index
+                        )
+                        decoration_stanza_initials_notes = self.process_field(
+                            row, "stanza_initials", index
+                        )
+                        decoration_stanza_separated = self.process_field(
+                            row, "stanzas_separated", index
+                        )
+                        decoration_stanza_ed = self.process_field(
+                            row, "stanzas_#ed", index
+                        )
+
+                        # decoration_marginal_rubrics = row.get("marginal_rubrics")
+
+                        decoration_filigree = self.process_field(
+                            row, "pen_decor.?filigree_initials", index
+                        )
+                        decoration_pen_decor = self.process_field(
+                            row, "pen_decor.?filigree_initials", index
+                        )
+
+                        decoration_abbreviations = self.process_field(
+                            row, "abbrevi-ations", index
+                        )
+                        decoration_catchwords = self.process_field(
+                            row, "catch-words", index
+                        )
+                        decoration_coat_of_arms = self.process_field(
+                            row, "coat_of_arms?", index
+                        )
+                        decoration_distance_lines = self.process_field(
+                            row, "distance_lines?", index
+                        )
+                        decoration_distance_numbers = self.process_field(
+                            row, "distance_numbers?", index
+                        )
+                        decoration_is_red_sea_red = self.process_field(
+                            row, "is_red_sea_red?", index
+                        )
+                        decoration_laiazza_on_m7 = self.process_field(
+                            row, "laiazza_on_m7", index
+                        )
+                        decoration_map_labels = self.process_field(
+                            row, "map_labels?", index
+                        )
+                        decoration_mabel_label = self.process_field(
+                            row, "mabel_label", index
+                        )
+                        decoration_rhodes_status = self.process_field(
+                            row, "rhodes_status", index
+                        )
+                        decoration_standard_water = self.process_field(
+                            row, "standard_water", index
+                        )
+                        decoration_tabriz_present = self.process_field(
+                            row, "tabriz_present?", index
+                        )
+
+                        # Viewer Notes fields
+                        viewer_notes_date_seen = self.process_field(
+                            row, "date_seen", index
+                        )
+                        viewer_notes_viewer = self.process_field(row, "viewer", index)
+                        viewer_notes_notes = self.process_field(row, "notes", index)
+
+                        # Single Manuscript
+                        manuscript_shelfmark = self.process_field(
+                            row, "shelfmark", index
+                        )
+                        manuscript_library = self.process_field(row, "library", index)
+                        manuscript_url = self.process_field(row, "digitized?", index)
+                        # ensure manuscript_url is a URL, otherwise skip
+                        if (
+                            manuscript_url is not None
+                            and not manuscript_url.startswith("http")
+                        ):
+                            manuscript_url = None
+                        manuscript_library_obj = Library.objects.get(
+                            library=manuscript_library
+                        )
+
+                    except Exception as e:
+                        continue  # continue to next row
 
                     try:
-                        self.stdout.write(self.style.SUCCESS(f"Processing row {index + 1} of sheet {sheet_name}"))
-                        editorial_status = EditorialStatus.objects.get(siglum=editorial_status_siglum)
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Processing Editorial Status for row {index + 1} of sheet {sheet_name}"
+                            )
+                        )
+                        editorial_status = EditorialStatus.objects.get(
+                            siglum=editorial_status_siglum
+                        )
                     except EditorialStatus.DoesNotExist:
-                        editorial_status = EditorialStatus(siglum=editorial_status_siglum, access=editorial_status_access, iiif_url=editorial_status_iiif, editorial_priority=editorial_status_priority, collated=editorial_status_collated, spatial_priority=editorial_status_spatial_priority, dataset=editorial_status_data_set, group=editorial_status_spatial_group)
+                        editorial_status = EditorialStatus(
+                            siglum=editorial_status_siglum,
+                            access=editorial_status_access,
+                            iiif_url=editorial_status_iiif,
+                            editorial_priority=editorial_status_priority,
+                            collated=editorial_status_collated,
+                            spatial_priority=editorial_status_spatial_priority,
+                            dataset=editorial_status_data_set,
+                            group=editorial_status_spatial_group,
+                        )
                         editorial_status.save()
 
                     try:
-                        self.stdout.write(self.style.SUCCESS(f"Processing row {index + 1} of sheet {sheet_name}"))
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Processing Reference for row {index + 1} of sheet {sheet_name}"
+                            )
+                        )
                         reference = Reference.objects.get(bert=reference_bert)
                     except Reference.DoesNotExist:
-                        reference = Reference(bert=reference_bert, reference=reference_reference)
+                        reference = Reference(
+                            bert=reference_bert, reference=reference_reference
+                        )
                         reference.save()
 
                     try:
-                        self.stdout.write(self.style.SUCCESS(f"Processing row {index + 1} of sheet {sheet_name}"))
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Processing Codex for row {index + 1} of sheet {sheet_name}"
+                            )
+                        )
                         codex = Codex.objects.get(support=codex_support)
                     except Codex.DoesNotExist:
-                        codex = Codex(support=codex_support, height=codex_height, date=codex_date, folia=codex_folia, lines_per_page=codex_lines)
+                        codex = Codex(
+                            support=codex_support,
+                            height=codex_height,
+                            date=codex_date,
+                            folia=codex_folia,
+                            lines_per_page=codex_lines,
+                        )
                         codex.save()
 
                     try:
-                        self.stdout.write(self.style.SUCCESS(f"Processing row {index + 1} of sheet {sheet_name}"))
-                        text_decoration = TextDecoration.objects.get(text_script=decoration_text_script)
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Processing Text Decoration for row {index + 1} of sheet {sheet_name}"
+                            )
+                        )
+                        text_decoration = TextDecoration.objects.get(
+                            text_script=decoration_text_script
+                        )
                     except TextDecoration.DoesNotExist:
-                        text_decoration = TextDecoration(text_script=decoration_text_script, label_script=decoration_label_script, diagrams=decoration_diagrams, maps=decoration_maps, white_vine_work=deocration_white_vine_work, illumination=decoration_illumination)
+                        text_decoration = TextDecoration(
+                            text_script=decoration_text_script,
+                            label_script=decoration_label_script,
+                            diagrams=decoration_diagrams,
+                            maps=decoration_maps,
+                            illumination=decoration_illumination,
+                            white_vine_work=deocration_white_vine_work,
+                            other=decoration_other,
+                            relative_quality=decoration_relative_quality,
+                        )
                         text_decoration.save()
 
-                    # detail 
-                    # book_initials=decoration_book_initials, stanza_headings=decoration_stanza_headings, stanza_initials=decoration_stanza_initials, stanzas_separated=decoration_stanzas_separated, stanzas_ed=decoration_stanzas_ed, marginal_rubrics=decoration_marginal_rubrics, pen_decor_filigree_initials=decoration_pen_decor, abbreviations=decoration_abbreviations, catchwords=decoration_catchwords, mabel_label=decoration_mabel_label, standard_water=decoration_standard_water, is_red_sea_red=decoration_is_red_sea_red, laiazza_on_m7=decoration_laiazza_on_m7, tabriz_present=decoration_tabriz_present, rhodes_statues=decoration_rhodes_statues, map_labels=decoration_map_labels, distance_lines=decoration_distance_lines, distance_numbers=decoration_distance_numbers, coat_of_arms=decoration_coat_of_arms
-
+                    # Write Detail object
                     try:
-                        self.stdout.write(self.style.SUCCESS(f"Processing row {index + 1} of sheet {sheet_name}"))
-                        if viewer_notes_date_seen is not None:
-                            # if there is a comma, there are multiple dates
-                            if ',' in viewer_notes_date_seen:
-                                date_strings = viewer_notes_date_seen.split(',')
-                            for date_string in date_strings:
-                                date_seen = datetime.fromisoformat(date_string.strip())
-                                date_seen_obj, created = DateSeen.objects.get_or_create(date=date_seen)
-                                try:
-                                    viewer_note = ViewerNote.objects.get(viewer_initials=viewer_notes_viewer, notes=viewer_notes_notes)
-                                except ViewerNote.DoesNotExist:
-                                    viewer_note = ViewerNote(viewer_initials=viewer_notes_viewer, notes=viewer_notes_notes)
-                                    viewer_note.save()
-                                viewer_note.dates_seen.add(date_seen_obj)
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Processing Detail for row {index + 1} of sheet {sheet_name}"
+                            )
+                        )
+                        detail = Detail.objects.get(
+                            book_initials=decoration_book_initials
+                        )
+                    except Detail.DoesNotExist:
+                        detail = Detail(
+                            author_attribution=detail_author_attribution,
+                            scribe_attribution=detail_scribe_attribution,
+                            book_headings=decoration_book_headings,
+                            book_initials=decoration_book_initials,
+                            stanza_headings_marginal_rubrics_notes=decoration_stanza_headings,
+                            stanza_initials=decoration_stanza_initials,
+                            stanzas_separated=decoration_stanza_separated,
+                            stanzas_ed=decoration_stanza_ed,
+                            filigree=decoration_filigree,
+                            abbreviations=decoration_abbreviations,
+                            catchwords=decoration_catchwords,
+                            mabel_label=decoration_mabel_label,
+                            standard_water=decoration_standard_water,
+                            is_sea_red=decoration_is_red_sea_red,
+                            laiazzo=decoration_laiazza_on_m7,
+                            tabriz=decoration_tabriz_present,
+                            rhodes_status=decoration_rhodes_status,
+                            map_labels=decoration_map_labels,
+                            distance_lines=decoration_distance_lines,
+                            distance_numbers=decoration_distance_numbers,
+                            coat_of_arms=decoration_coat_of_arms,
+                        )
+                        detail.save()
+
+                    # try:
+                    #     self.stdout.write(
+                    #         self.style.SUCCESS(
+                    #             f"Processing Viewer Notes row {index + 1} of sheet {sheet_name}"
+                    #         )
+                    #     )
+                    #     if viewer_notes_date_seen is not None:
+                    #         # Convert viewer_notes_date_seen to a string if it's a datetime object
+                    #         if isinstance(viewer_notes_date_seen, datetime.datetime):
+                    #             viewer_notes_date_seen = viewer_notes_date_seen.strftime('%Y-%m-%d %H:%M:%S')
+
+                    #         # if there is a comma, there are multiple dates
+                    #         if "," in viewer_notes_date_seen:
+                    #             date_strings = viewer_notes_date_seen.split(",")
+                    #         for date_string in date_strings:
+                    #             date_seen = datetime.strptime(date_string.strip(), '%Y-%m-%d %H:%M:%S')
+                    #             date_seen_obj, created = ViewerNote.objects.get_or_create(
+                    #                 date=date_seen
+                    #             )
+                    #             try:
+                    #                 viewer_note = ViewerNote.objects.get(
+                    #                     viewer_initials=viewer_notes_viewer,
+                    #                     notes=viewer_notes_notes,
+                    #                 )
+                    #             except ViewerNote.DoesNotExist:
+                    #                 viewer_note = ViewerNote(
+                    #                     viewer_initials=viewer_notes_viewer,
+                    #                     notes=viewer_notes_notes,
+                    #                 )
+                    #                 viewer_note.save()
+                    #             viewer_note.dates_seen.add(date_seen_obj)
+
+                    # Now we load in the manuscript data:
+                    # this will be the shelfmark CharField()
+                    # any potential URL in the digitized? field of the spreadsheet
+                    # the library ForeignKey()
+                    try:
+                        manuscript = SingleManuscript.objects.get(
+                            shelfmark=manuscript_shelfmark
+                        )
+                    except SingleManuscript.DoesNotExist:
+                        manuscript = SingleManuscript(
+                            shelfmark=manuscript_shelfmark,
+                            digitized_url=manuscript_url,
+                            library=manuscript_library_obj,
+                        )
+                        manuscript.save()
+
                     except Exception as e:
-                        self.stdout.write(self.style.ERROR(f"Error loading data at row {index + 1}, column 'date_seen': {e}"))
+                        self.stdout.write(self.style.ERROR(f"Error loading data: {e}"))
+                        raise e
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error loading data: {e}"))
+            raise e
