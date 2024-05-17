@@ -27,8 +27,10 @@ class Library(models.Model):
 
     class Meta:
         verbose_name_plural = "Libraries"
+        unique_together = ["city", "library"]
+        ordering = ["city", "library"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         city = self.city if self.city is not None else "No city name provided"
         library = self.library if self.library is not None else ""
         return city + " - " + library
@@ -44,7 +46,7 @@ class EditorialStatus(models.Model):
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
-    siglum = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    # siglum = models.CharField(max_length=255, blank=True, null=True, unique=True)
     editorial_priority = models.IntegerField(blank=True, null=True)
     collated = models.CharField(blank=True, null=True)
     access = models.IntegerField(blank=True, null=True)
@@ -63,11 +65,10 @@ class EditorialStatus(models.Model):
         verbose_name = "Editorial Status"
         verbose_name_plural = "Editorial Status"
 
-    def __str__(self):
-        if self.siglum is not None:
-            return self.siglum
-        else:
-            return "Editorial Status"
+    def __str__(self) -> str:
+        if self.editorial_priority is not None:
+            return "Editorial Priority: " + str(self.editorial_priority)
+        return "Editorial Status"
 
 
 class Reference(models.Model):
@@ -80,8 +81,10 @@ class Reference(models.Model):
     bert = models.CharField(max_length=6, blank=True, null=True)
     reference = models.CharField(max_length=255, blank=True, null=True)
 
-    def __str__(self):
-        return self.reference
+    def __str__(self) -> str:
+        if self.reference is not None:
+            return self.reference
+        return "Reference"
 
 
 class Codex(models.Model):
@@ -100,7 +103,9 @@ class Codex(models.Model):
     class Meta:
         verbose_name_plural = "Codex"
 
-    def __str__(self):
+    def __str__(self) -> str:
+        if self.id is not None:
+            return str(self.id)
         return str(self.id)
 
 
@@ -120,7 +125,7 @@ class TextDecoration(models.Model):
     other = models.CharField(max_length=255, blank=True, null=True)
     relative_quality = models.CharField(max_length=255, blank=True, null=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.text_script is not None:
             return self.text_script
         else:
@@ -141,40 +146,46 @@ class Detail(models.Model):
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
-    author_attribution = models.CharField(max_length=255, blank=True, null=True)
-    scribe_attribution = models.CharField(max_length=255, blank=True, null=True)
+    author_attribution = models.CharField(max_length=510, blank=True, null=True)
+    scribe_attribution = models.CharField(max_length=510, blank=True, null=True)
     book_headings = RichTextField(blank=True, null=True)
     book_initials = RichTextField(blank=True, null=True)
     stanza_headings_marginal_rubrics = models.CharField(
         max_length=2, choices=STANZA_RUBRIC_CHOICES, blank=True, null=True
     )
     stanza_headings_marginal_rubrics_notes = RichTextField(
-        max_length=255, blank=True, null=True
+        max_length=510, blank=True, null=True
     )
-    stanza_initials = RichTextField(max_length=255, blank=True, null=True)
+    stanza_initials = RichTextField(max_length=510, blank=True, null=True)
     stanzas_separated = models.CharField(blank=True, null=True)
     stanzas_ed = models.CharField(blank=True, null=True)
     filigree = models.CharField(
-        max_length=450,
+        max_length=510,
         blank=True,
         null=True,
         verbose_name="Flourished/Filigree Initials",
     )
     standard_water = models.CharField(blank=True, null=True)
-    abbreviations = RichTextField(max_length=255, blank=True, null=True)
-    catchwords = RichTextField(max_length=255, blank=True, null=True)
-    mabel_label = models.CharField(max_length=255, blank=True, null=True)
-    map_labels = RichTextField(max_length=500, blank=True, null=True)
+    abbreviations = RichTextField(max_length=510, blank=True, null=True)
+    catchwords = RichTextField(max_length=510, blank=True, null=True)
+    mabel_label = models.CharField(max_length=510, blank=True, null=True)
+    map_labels = RichTextField(max_length=510, blank=True, null=True)
     distance_lines = models.CharField(blank=True, null=True)
-    distance_numbers = models.CharField(max_length=255, blank=True, null=True)
-    coat_of_arms = models.CharField(max_length=255, blank=True, null=True)
+    distance_numbers = models.CharField(max_length=510, blank=True, null=True)
+    coat_of_arms = models.CharField(max_length=510, blank=True, null=True)
 
     is_sea_red = models.CharField(
         blank=True, null=True, verbose_name="Is the Red Sea colored red?"
     )
     laiazzo = models.CharField(blank=True, null=True)
     tabriz = models.CharField(blank=True, null=True)
-    rhodes_status = models.CharField(max_length=255, blank=True, null=True)
+    rhodes_status = models.CharField(max_length=510, blank=True, null=True)
+
+    def __str__(self) -> str:
+        if self.id is not None:
+            return str(self.id)
+        else:
+            return "Detail"
 
 
 class ViewerNote(models.Model):
@@ -195,6 +206,11 @@ class ViewerNote(models.Model):
     related_manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
     )
+
+    def __str__(self) -> str:
+        if self.viewer is not None:
+            return self.viewer
+        return "Viewer Note"
 
 
 class StanzaVariant(models.Model):
@@ -228,7 +244,7 @@ class StanzaVariant(models.Model):
     def provide_snippet_of_stanza(self):
         return self.stanza.stanza_text[:100]
 
-    def __str__(self):
+    def __str__(self) -> str:
         soup = BeautifulSoup(self.stanza_variation, "html.parser")
         text = soup.get_text()
 
@@ -274,7 +290,7 @@ class Stanza(models.Model):
     stanza_text = RichTextField(blank=True, null=True)
     stanza_notes = RichTextField(blank=True, null=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.stanza_line_code_starts is not None:
             return self.stanza_line_code_starts
         elif self.stanza_line_code_ends is not None:
@@ -301,6 +317,20 @@ class Stanza(models.Model):
             self.your_field.split(".")[2].split("-")[0]
         )  # Handle the case of a range
 
+    def derive_folio_location(self):
+        # We derive the folio based on the line code.
+        if self.stanza_line_code_starts is not None:
+            line_code = self.stanza_line_code_starts
+        elif self.stanza_line_code_ends is not None:
+            line_code = self.stanza_line_code_ends
+        else:
+            return None
+
+        book, stanza, line = line_code.split(".")
+        return Folio.objects.filter(
+            manuscript=self.related_folio.manuscript, folio_number=book
+        ).first()
+
 
 class Folio(models.Model):
     """This provides a way to collect several stanzas onto a single page, and associate them with a single manuscript."""
@@ -313,7 +343,7 @@ class Folio(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    folio_number = models.IntegerField(blank=True, null=True)
+    folio_number = models.CharField(blank=True, null=True)
     folio_notes = RichTextField(blank=True, null=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
@@ -342,8 +372,10 @@ class Folio(models.Model):
         verbose_name="Associated toponyms",
     )
 
-    def __str__(self):
-        return f"Folio {self.folio_number} from manuscript: {self.manuscript}"
+    def __str__(self) -> str:
+        if self.folio_number is not None:
+            return f"Folio {self.folio_number} from manuscript: {self.manuscript}"
+        return f"Folio associated with {self.manuscript}"
 
 
 class SingleManuscript(models.Model):
@@ -351,6 +383,7 @@ class SingleManuscript(models.Model):
 
     id = models.AutoField(primary_key=True)
     item_id = models.IntegerField(blank=False, null=False, unique=True)
+    siglum = models.CharField(max_length=20, blank=True, null=True, unique=True)
     shelfmark = models.CharField(max_length=255, blank=True, null=True)
     library = models.ForeignKey(
         Library, on_delete=models.PROTECT, blank=True, null=True
@@ -390,12 +423,12 @@ class SingleManuscript(models.Model):
     class Meta:
         verbose_name = "Manuscript"
         verbose_name_plural = "Manuscripts"
+        ordering = ["siglum"]
 
     def __str__(self) -> str:
-        siglum = self.editorialstatus_set.first()
-        if siglum is not None and siglum.siglum is not None:
-            return "Siglum: " + siglum.siglum
-        elif self.shelfmark is not None:
+        if self.siglum:
+            return self.siglum
+        elif self.shelfmark:
             return self.shelfmark
         else:
             return "Manuscript"
@@ -465,7 +498,7 @@ class Location(models.Model):
         ordering = ["country"]
         unique_together = ["country"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         aliases = ", ".join(
             [alias.placename_from_mss for alias in self.locationalias_set.all()]
         )
@@ -533,5 +566,5 @@ class LocationAlias(models.Model):
         ordering = ["placename_standardized"]
         unique_together = ["placename_standardized"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.placename_from_mss} / {self.placename_standardized} / {self.placename_modern} / {self.placename_alias}"
