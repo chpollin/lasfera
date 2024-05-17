@@ -137,32 +137,34 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
         "manuscript_destroyed",
         "item_id",
     )
+    search_fields = ("siglum",)
     resource_class = SingleManuscriptResource
     readonly_fields = ("item_id",)
-
-    def siglum(self, obj):
-        editorial_status = obj.editorialstatus_set.first()
-        if editorial_status:
-            return editorial_status.siglum
-        else:
-            return "No siglum provided"
-
-    siglum.short_description = "Siglum"
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "library":
-            kwargs["queryset"] = Library.objects.order_by("city")
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class FolioAdmin(admin.ModelAdmin):
     inlines = [
         StanzaInline,
     ]
+    list_filter = ("manuscript",)
+    list_display = (
+        "folio_number",
+        "manuscript",
+    )
+    search_fields = (
+        "folio_number",
+        "manuscript__siglum",
+    )
 
     def add_link_to_edit_stanzas(self, obj):
         url = reverse("admin:manuscript_stanza_add") + "?folio=" + str(obj.id)
         return format_html('<a href="{}">Add Stanza</a>', url)
+
+    def manuscript(self, obj):
+        url = reverse(
+            "admin:manuscript_singlemanuscript_change", args=[obj.singlemanuscript.id]
+        )
+        return format_html('<a href="{}">{}</a>', url, obj.singlemanuscript.siglum)
 
 
 class ReferenceAdmin(ImportExportModelAdmin):
@@ -172,10 +174,11 @@ class ReferenceAdmin(ImportExportModelAdmin):
 
 class LibraryAdmin(admin.ModelAdmin):
     list_display = ("library", "city", "id")
+    list_filter = ("city",)
 
 
 class EditorialStatusAdmin(admin.ModelAdmin):
-    list_display = ("siglum", "editorial_priority", "spatial_priority")
+    list_display = ("editorial_priority", "spatial_priority")
     resource_class = EditorialStatusResource
 
 
