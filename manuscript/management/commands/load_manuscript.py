@@ -8,18 +8,12 @@ from django.db import transaction
 from django.utils.text import slugify
 
 from manuscript.models import (
-    AuthorityFile,
     Codex,
     Detail,
     EditorialStatus,
-    Folio,
     Library,
-    Location,
-    LocationAlias,
     Reference,
     SingleManuscript,
-    Stanza,
-    StanzaVariant,
     TextDecoration,
     ViewerNote,
 )
@@ -120,12 +114,6 @@ class Command(BaseCommand):
                     #     )
                     # except ObjectDoesNotExist:
                     # Editorial Status fields
-                    editorial_status_siglum = self.process_field(row, "siglum", index)
-                    self.stdout.write(
-                        self.style.NOTICE(
-                            f"Processing manuscript {index + 1} with siglum {editorial_status_siglum}"
-                        )
-                    )
                     editorial_status_access = self.process_field(row, "access", index)
                     editorial_status_iiif = self.process_field(row, "iiif?", index)
                     editorial_status_priority = self.process_field(
@@ -256,6 +244,7 @@ class Command(BaseCommand):
                     viewer_notes_notes = self.process_field(row, "notes", index)
 
                     # Single Manuscript
+                    manuscript_siglum = self.process_field(row, "siglum", index)
                     manuscript_shelfmark = self.process_field(row, "shelfmark", index)
                     manuscript_library = self.process_field(row, "library", index)
                     manuscript_url = self.process_field(row, "digitized?", index)
@@ -282,6 +271,7 @@ class Command(BaseCommand):
                         manuscript = SingleManuscript.objects.get(item_id=item_id)
                     except SingleManuscript.DoesNotExist:
                         manuscript = SingleManuscript(
+                            siglum=manuscript_siglum,
                             item_id=item_id,
                             shelfmark=manuscript_shelfmark,
                             digitized_url=manuscript_url,
@@ -300,7 +290,6 @@ class Command(BaseCommand):
                         )
 
                         editorial_status = EditorialStatus(
-                            siglum=editorial_status_siglum,
                             access=editorial_status_access,
                             iiif_url=editorial_status_iiif,
                             editorial_priority=editorial_status_priority,
