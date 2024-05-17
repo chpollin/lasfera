@@ -135,9 +135,10 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
         "library",
         "manuscript_lost",
         "manuscript_destroyed",
-        "id",
+        "item_id",
     )
     resource_class = SingleManuscriptResource
+    readonly_fields = ("item_id",)
 
     def siglum(self, obj):
         editorial_status = obj.editorialstatus_set.first()
@@ -152,13 +153,6 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
         if db_field.name == "library":
             kwargs["queryset"] = Library.objects.order_by("city")
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-    # def get_readonly_fields(self, request, obj=None):
-    #     return ['item_id'] + super().get_readonly_fields(request, obj=obj)
-
-    # def get_fields(self, request, obj=None):
-    #     fields = super().get_fields(request, obj=obj)
-    #     return [field for field in fields if field != 'item_id']
 
 
 class FolioAdmin(admin.ModelAdmin):
