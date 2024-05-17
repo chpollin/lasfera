@@ -2,6 +2,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from django.utils.text import slugify
@@ -109,184 +110,195 @@ class Command(BaseCommand):
 
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
+                    check_item_id = self.process_field(row, "item_id", index)
+                    # try:
+                    #     SingleManuscript.objects.get(item_id=check_item_id)
+                    #     self.stdout.write(
+                    #         self.style.NOTICE(
+                    #             f"Item with item_id {check_item_id} already exists, skipping"
+                    #         )
+                    #     )
+                    # except ObjectDoesNotExist:
+                    # Editorial Status fields
+                    editorial_status_siglum = self.process_field(row, "siglum", index)
+                    self.stdout.write(
+                        self.style.NOTICE(
+                            f"Processing manuscript {index + 1} with siglum {editorial_status_siglum}"
+                        )
+                    )
+                    editorial_status_access = self.process_field(row, "access", index)
+                    editorial_status_iiif = self.process_field(row, "iiif?", index)
+                    editorial_status_priority = self.process_field(
+                        row, "ed_priority", index
+                    )
+                    editorial_status_collated = self.process_field(
+                        row, "collated?", index
+                    )
+                    editorial_status_spatial_priority = self.process_field(
+                        row, "spatial_priority", index
+                    )
+                    editorial_status_data_set = self.process_field(
+                        row, "data_set", index
+                    )
+                    editorial_status_spatial_group = self.process_field(
+                        row, "spatial_group", index
+                    )
+
+                    # Reference fields
+                    reference_bert = self.process_field(row, "bert._#", index)
+                    reference_reference = self.process_field(row, "reference", index)
+
+                    # Codex fields
+                    codex_support = self.process_field(row, "support", index)
+                    codex_height = self.process_field(row, "height_(cm)", index)
+                    codex_date = self.process_field(row, "date", index)
+                    codex_folia = self.process_field(row, "folia", index)
+                    codex_lines = self.process_field(row, "lines/page", index)
+
+                    # Text Decoration fields
+                    decoration_text_script = self.process_field(
+                        row, "text_script", index
+                    )
+                    decoration_label_script = self.process_field(
+                        row, "label_script", index
+                    )
+                    decoration_diagrams = self.process_field(row, "diagrams?", index)
+                    decoration_maps = self.process_field(row, "maps?", index)
+                    deocration_white_vine_work = self.process_field(
+                        row, "white_vine_work?", index
+                    )
+                    decoration_illumination = self.process_field(
+                        row, "illumination?", index
+                    )
+                    decoration_other = self.process_field(row, "other?", index)
+                    decoration_relative_quality = self.process_field(
+                        row, "relative_quality", index
+                    )
+
+                    # Detail fields
+                    detail_author_attribution = self.process_field(
+                        row, "author_attribution?", index
+                    )
+                    detail_scribe_attribution = self.process_field(
+                        row, "scribe_attribution?", index
+                    )
+
+                    decoration_book_headings = self.process_field(
+                        row, "book_headings", index
+                    )
+                    decoration_book_initials = self.process_field(
+                        row, "book_initials", index
+                    )
+
+                    decoration_stanza_headings = self.process_field(
+                        row, "stanza_headings", index
+                    )
+                    decoration_stanza_initials = self.process_field(
+                        row, "stanza_initials", index
+                    )
+                    decoration_stanza_initials_notes = self.process_field(
+                        row, "stanza_initials", index
+                    )
+                    decoration_stanza_separated = self.process_field(
+                        row, "stanzas_separated", index
+                    )
+                    decoration_stanza_ed = self.process_field(row, "stanzas_#ed", index)
+
+                    # decoration_marginal_rubrics = row.get("marginal_rubrics")
+
+                    decoration_filigree = self.process_field(
+                        row, "pen_decor.?filigree_initials", index
+                    )
+                    decoration_pen_decor = self.process_field(
+                        row, "pen_decor.?filigree_initials", index
+                    )
+
+                    decoration_abbreviations = self.process_field(
+                        row, "abbrevi-ations", index
+                    )
+                    decoration_catchwords = self.process_field(
+                        row, "catch-words", index
+                    )
+                    decoration_coat_of_arms = self.process_field(
+                        row, "coat_of_arms?", index
+                    )
+                    decoration_distance_lines = self.process_field(
+                        row, "distance_lines?", index
+                    )
+                    decoration_distance_numbers = self.process_field(
+                        row, "distance_numbers?", index
+                    )
+                    decoration_is_red_sea_red = self.process_field(
+                        row, "is_red_sea_red?", index
+                    )
+                    decoration_laiazza_on_m7 = self.process_field(
+                        row, "laiazza_on_m7", index
+                    )
+                    decoration_map_labels = self.process_field(
+                        row, "map_labels?", index
+                    )
+                    decoration_mabel_label = self.process_field(
+                        row, "mabel_label", index
+                    )
+                    decoration_rhodes_status = self.process_field(
+                        row, "rhodes_status", index
+                    )
+                    decoration_standard_water = self.process_field(
+                        row, "standard_water", index
+                    )
+                    decoration_tabriz_present = self.process_field(
+                        row, "tabriz_present?", index
+                    )
+
+                    # Viewer Notes fields
+                    viewer_notes_date_seen = self.process_field(row, "date_seen", index)
+                    viewer_notes_viewer = self.process_field(row, "viewer", index)
+                    viewer_notes_notes = self.process_field(row, "notes", index)
+
+                    # Single Manuscript
+                    manuscript_shelfmark = self.process_field(row, "shelfmark", index)
+                    manuscript_library = self.process_field(row, "library", index)
+                    manuscript_url = self.process_field(row, "digitized?", index)
+                    item_id = self.process_field(row, "item_id", index)
+                    # ensure manuscript_url is a URL, otherwise skip
+                    if manuscript_url is not None and not manuscript_url.startswith(
+                        "http"
+                    ):
+                        manuscript_url = None
                     try:
-                        # Editorial Status fields
-                        editorial_status_siglum = self.process_field(
-                            row, "siglum", index
-                        )
-                        self.stdout.write(
-                            self.style.NOTICE(
-                                f"Processing manuscript {index + 1} with siglum {editorial_status_siglum}"
-                            )
-                        )
-                        editorial_status_access = self.process_field(
-                            row, "access", index
-                        )
-                        editorial_status_iiif = self.process_field(row, "iiif?", index)
-                        editorial_status_priority = self.process_field(
-                            row, "ed_priority", index
-                        )
-                        editorial_status_collated = self.process_field(
-                            row, "collated?", index
-                        )
-                        editorial_status_spatial_priority = self.process_field(
-                            row, "spatial_priority", index
-                        )
-                        editorial_status_data_set = self.process_field(
-                            row, "data_set", index
-                        )
-                        editorial_status_spatial_group = self.process_field(
-                            row, "spatial_group", index
-                        )
-
-                        # Reference fields
-                        reference_bert = self.process_field(row, "bert._#", index)
-                        reference_reference = self.process_field(
-                            row, "reference", index
-                        )
-
-                        # Codex fields
-                        codex_support = self.process_field(row, "support", index)
-                        codex_height = self.process_field(row, "height_(cm)", index)
-                        codex_date = self.process_field(row, "date", index)
-                        codex_folia = self.process_field(row, "folia", index)
-                        codex_lines = self.process_field(row, "lines/page", index)
-
-                        # Text Decoration fields
-                        decoration_text_script = self.process_field(
-                            row, "text_script", index
-                        )
-                        decoration_label_script = self.process_field(
-                            row, "label_script", index
-                        )
-                        decoration_diagrams = self.process_field(
-                            row, "diagrams?", index
-                        )
-                        decoration_maps = self.process_field(row, "maps?", index)
-                        deocration_white_vine_work = self.process_field(
-                            row, "white_vine_work?", index
-                        )
-                        decoration_illumination = self.process_field(
-                            row, "illumination?", index
-                        )
-                        decoration_other = self.process_field(row, "other?", index)
-                        decoration_relative_quality = self.process_field(
-                            row, "relative_quality", index
-                        )
-
-                        # Detail fields
-                        detail_author_attribution = self.process_field(
-                            row, "author_attribution?", index
-                        )
-                        detail_scribe_attribution = self.process_field(
-                            row, "scribe_attribution?", index
-                        )
-
-                        decoration_book_headings = self.process_field(
-                            row, "book_headings", index
-                        )
-                        decoration_book_initials = self.process_field(
-                            row, "book_initials", index
-                        )
-
-                        decoration_stanza_headings = self.process_field(
-                            row, "stanza_headings", index
-                        )
-                        decoration_stanza_initials = self.process_field(
-                            row, "stanza_initials", index
-                        )
-                        decoration_stanza_initials_notes = self.process_field(
-                            row, "stanza_initials", index
-                        )
-                        decoration_stanza_separated = self.process_field(
-                            row, "stanzas_separated", index
-                        )
-                        decoration_stanza_ed = self.process_field(
-                            row, "stanzas_#ed", index
-                        )
-
-                        # decoration_marginal_rubrics = row.get("marginal_rubrics")
-
-                        decoration_filigree = self.process_field(
-                            row, "pen_decor.?filigree_initials", index
-                        )
-                        decoration_pen_decor = self.process_field(
-                            row, "pen_decor.?filigree_initials", index
-                        )
-
-                        decoration_abbreviations = self.process_field(
-                            row, "abbrevi-ations", index
-                        )
-                        decoration_catchwords = self.process_field(
-                            row, "catch-words", index
-                        )
-                        decoration_coat_of_arms = self.process_field(
-                            row, "coat_of_arms?", index
-                        )
-                        decoration_distance_lines = self.process_field(
-                            row, "distance_lines?", index
-                        )
-                        decoration_distance_numbers = self.process_field(
-                            row, "distance_numbers?", index
-                        )
-                        decoration_is_red_sea_red = self.process_field(
-                            row, "is_red_sea_red?", index
-                        )
-                        decoration_laiazza_on_m7 = self.process_field(
-                            row, "laiazza_on_m7", index
-                        )
-                        decoration_map_labels = self.process_field(
-                            row, "map_labels?", index
-                        )
-                        decoration_mabel_label = self.process_field(
-                            row, "mabel_label", index
-                        )
-                        decoration_rhodes_status = self.process_field(
-                            row, "rhodes_status", index
-                        )
-                        decoration_standard_water = self.process_field(
-                            row, "standard_water", index
-                        )
-                        decoration_tabriz_present = self.process_field(
-                            row, "tabriz_present?", index
-                        )
-
-                        # Viewer Notes fields
-                        viewer_notes_date_seen = self.process_field(
-                            row, "date_seen", index
-                        )
-                        viewer_notes_viewer = self.process_field(row, "viewer", index)
-                        viewer_notes_notes = self.process_field(row, "notes", index)
-
-                        # Single Manuscript
-                        manuscript_shelfmark = self.process_field(
-                            row, "shelfmark", index
-                        )
-                        manuscript_library = self.process_field(row, "library", index)
-                        manuscript_url = self.process_field(row, "digitized?", index)
-                        # ensure manuscript_url is a URL, otherwise skip
-                        if (
-                            manuscript_url is not None
-                            and not manuscript_url.startswith("http")
-                        ):
-                            manuscript_url = None
                         manuscript_library_obj = Library.objects.get(
                             library=manuscript_library
                         )
+                    except Library.DoesNotExist:
+                        manuscript_library_obj = Library(library=manuscript_library)
+                        manuscript_library_obj.save()
 
                     except Exception as e:
                         continue  # continue to next row
 
+                    self.stdout.write(self.style.NOTICE("Processing manuscripts:"))
+
                     try:
+                        manuscript = SingleManuscript.objects.get(item_id=item_id)
+                    except SingleManuscript.DoesNotExist:
+                        manuscript = SingleManuscript(
+                            item_id=item_id,
+                            shelfmark=manuscript_shelfmark,
+                            digitized_url=manuscript_url,
+                            library=manuscript_library_obj,
+                        )
+                        manuscript.save()
+
+                        # except Exception as e:
+                        #     self.stdout.write(self.style.ERROR(f"Error loading data: {e}"))
+                        #     raise e
+
                         self.stdout.write(
                             self.style.SUCCESS(
                                 f"Processing Editorial Status for row {index + 1} of sheet {sheet_name}"
                             )
                         )
-                        editorial_status = EditorialStatus.objects.get(
-                            siglum=editorial_status_siglum
-                        )
-                    except EditorialStatus.DoesNotExist:
+
                         editorial_status = EditorialStatus(
                             siglum=editorial_status_siglum,
                             access=editorial_status_access,
@@ -296,49 +308,45 @@ class Command(BaseCommand):
                             spatial_priority=editorial_status_spatial_priority,
                             dataset=editorial_status_data_set,
                             group=editorial_status_spatial_group,
+                            manuscript=manuscript,
                         )
                         editorial_status.save()
 
-                    try:
                         self.stdout.write(
                             self.style.SUCCESS(
                                 f"Processing Reference for row {index + 1} of sheet {sheet_name}"
                             )
                         )
-                        reference = Reference.objects.get(bert=reference_bert)
-                    except Reference.DoesNotExist:
+
                         reference = Reference(
-                            bert=reference_bert, reference=reference_reference
+                            bert=reference_bert,
+                            reference=reference_reference,
+                            manuscript=manuscript,
                         )
                         reference.save()
 
-                    try:
                         self.stdout.write(
                             self.style.SUCCESS(
                                 f"Processing Codex for row {index + 1} of sheet {sheet_name}"
                             )
                         )
-                        codex = Codex.objects.get(support=codex_support)
-                    except Codex.DoesNotExist:
+
                         codex = Codex(
                             support=codex_support,
                             height=codex_height,
                             date=codex_date,
                             folia=codex_folia,
                             lines_per_page=codex_lines,
+                            related_manuscript=manuscript,
                         )
                         codex.save()
 
-                    try:
                         self.stdout.write(
                             self.style.SUCCESS(
                                 f"Processing Text Decoration for row {index + 1} of sheet {sheet_name}"
                             )
                         )
-                        text_decoration = TextDecoration.objects.get(
-                            text_script=decoration_text_script
-                        )
-                    except TextDecoration.DoesNotExist:
+
                         text_decoration = TextDecoration(
                             text_script=decoration_text_script,
                             label_script=decoration_label_script,
@@ -348,20 +356,17 @@ class Command(BaseCommand):
                             white_vine_work=deocration_white_vine_work,
                             other=decoration_other,
                             relative_quality=decoration_relative_quality,
+                            manuscript=manuscript,
                         )
                         text_decoration.save()
 
-                    # Write Detail object
-                    try:
+                        # Write Detail object
                         self.stdout.write(
                             self.style.SUCCESS(
                                 f"Processing Detail for row {index + 1} of sheet {sheet_name}"
                             )
                         )
-                        detail = Detail.objects.get(
-                            book_initials=decoration_book_initials
-                        )
-                    except Detail.DoesNotExist:
+
                         detail = Detail(
                             author_attribution=detail_author_attribution,
                             scribe_attribution=detail_scribe_attribution,
@@ -384,6 +389,7 @@ class Command(BaseCommand):
                             distance_lines=decoration_distance_lines,
                             distance_numbers=decoration_distance_numbers,
                             coat_of_arms=decoration_coat_of_arms,
+                            manuscript=manuscript,
                         )
                         detail.save()
 
@@ -423,21 +429,6 @@ class Command(BaseCommand):
                     # this will be the shelfmark CharField()
                     # any potential URL in the digitized? field of the spreadsheet
                     # the library ForeignKey()
-                    try:
-                        manuscript = SingleManuscript.objects.get(
-                            shelfmark=manuscript_shelfmark
-                        )
-                    except SingleManuscript.DoesNotExist:
-                        manuscript = SingleManuscript(
-                            shelfmark=manuscript_shelfmark,
-                            digitized_url=manuscript_url,
-                            library=manuscript_library_obj,
-                        )
-                        manuscript.save()
-
-                    except Exception as e:
-                        self.stdout.write(self.style.ERROR(f"Error loading data: {e}"))
-                        raise e
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error loading data: {e}"))
