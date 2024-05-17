@@ -29,7 +29,9 @@ class Library(models.Model):
         verbose_name_plural = "Libraries"
 
     def __str__(self):
-        return self.city + " - " + self.library
+        city = self.city if self.city is not None else "No city name provided"
+        library = self.library if self.library is not None else ""
+        return city + " - " + library
 
     def natural_key(self):
         return (self.library, self.city)
@@ -92,7 +94,7 @@ class Codex(models.Model):
     folia = models.CharField(max_length=255, blank=True, null=True)
     lines_per_page = models.CharField(max_length=255, blank=True, null=True)
     related_manuscript = models.ForeignKey(
-        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+        "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
 
     class Meta:
@@ -107,7 +109,7 @@ class TextDecoration(models.Model):
 
     id = models.AutoField(primary_key=True)
     manuscript = models.ForeignKey(
-        "SingleManuscript", on_delete=models.PROTECT, blank=True, null=True
+        "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
     )
     text_script = models.CharField(max_length=255, blank=True, null=True)
     label_script = models.CharField(max_length=255, blank=True, null=True)
@@ -141,8 +143,7 @@ class Detail(models.Model):
     )
     author_attribution = models.CharField(max_length=255, blank=True, null=True)
     scribe_attribution = models.CharField(max_length=255, blank=True, null=True)
-    book_headings = models.CharField(blank=True, null=True)
-    book_headings_notes = RichTextField(blank=True, null=True)
+    book_headings = RichTextField(blank=True, null=True)
     book_initials = RichTextField(blank=True, null=True)
     stanza_headings_marginal_rubrics = models.CharField(
         max_length=2, choices=STANZA_RUBRIC_CHOICES, blank=True, null=True
@@ -163,11 +164,10 @@ class Detail(models.Model):
     abbreviations = RichTextField(max_length=255, blank=True, null=True)
     catchwords = RichTextField(max_length=255, blank=True, null=True)
     mabel_label = models.CharField(max_length=255, blank=True, null=True)
-    map_labels = models.CharField(blank=True, null=True)
-    map_labels_notes = RichTextField(max_length=255, blank=True, null=True)
+    map_labels = RichTextField(max_length=500, blank=True, null=True)
     distance_lines = models.CharField(blank=True, null=True)
-    distance_numbers = RichTextField(max_length=255, blank=True, null=True)
-    coat_of_arms = RichTextField(max_length=255, blank=True, null=True)
+    distance_numbers = models.CharField(max_length=255, blank=True, null=True)
+    coat_of_arms = models.CharField(max_length=255, blank=True, null=True)
 
     is_sea_red = models.CharField(
         blank=True, null=True, verbose_name="Is the Red Sea colored red?"
@@ -350,7 +350,7 @@ class SingleManuscript(models.Model):
     """A representation of a single manuscript"""
 
     id = models.AutoField(primary_key=True)
-    # item_id = models.IntegerField(blank=False, null=False, unique=True)
+    item_id = models.IntegerField(blank=False, null=False, unique=True)
     shelfmark = models.CharField(max_length=255, blank=True, null=True)
     library = models.ForeignKey(
         Library, on_delete=models.PROTECT, blank=True, null=True
