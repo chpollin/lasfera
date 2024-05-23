@@ -19,6 +19,13 @@ def validate_line_number_code(value):
         )
 
 
+def validate_line_number_variant_code(value):
+    # expected: 01.01.04a or 04.05.01b etc.
+    pattern = r"^\d{2}\.\d{2}\.\d{2}[a-z]$"
+    if not re.match(pattern, value):
+        raise ValidationError('Invalid number format. Expected format: "01.01.04a"')
+
+
 class Library(models.Model):
     """Library or collection that holds a manuscript"""
 
@@ -234,9 +241,15 @@ class StanzaVariant(models.Model):
         verbose_name="Significant Variations",
         help_text="The variation in the stanza.",
     )
-    variation_type = models.CharField(
-        max_length=2, choices=LINE_VARIANTS, blank=True, null=True
+    stanza_variation_line_code_starts = models.CharField(
+        blank=True,
+        null=True,
+        validators=[validate_line_number_variant_code],
+        max_length=20,
+        help_text="Stanza variant line code in the form of '01.01.01a'.",
+        verbose_name="Variant line code",
     )
+
     stanza = models.ForeignKey(
         "Stanza", on_delete=models.PROTECT, blank=True, null=True
     )
@@ -248,12 +261,7 @@ class StanzaVariant(models.Model):
         soup = BeautifulSoup(self.stanza_variation, "html.parser")
         text = soup.get_text()
 
-        full_variation_type_text = dict(self.LINE_VARIANTS)[self.variation_type]
-
-        if full_variation_type_text is not None:
-            return full_variation_type_text + ": " + text[:100] + "..."
-        else:
-            return text[:100] + "..."
+        return text[:100] + "..."
 
 
 class Stanza(models.Model):
@@ -267,11 +275,19 @@ class Stanza(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
+    related_manuscript = models.ForeignKey(
+        "SingleManuscript",
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False,
+        help_text="Required. The manuscript to which the stanza belongs.",
+    )
     related_folio = models.ForeignKey(
         "Folio",
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
+        help_text="Optional. The folio to which the stanza belongs.",
     )
     stanza_line_code_starts = models.CharField(
         blank=True,
@@ -468,9 +484,12 @@ class Location(models.Model):
     """Handle the location information and toponyms within a manuscript"""
 
     id = models.AutoField(primary_key=True)
-    placename_id = models.CharField(blank=True, null=True)
+    placename_id = models.CharField(blank=True, null=True, verbose_name="Placename ID")
     # TODO: this could be more than one... eg this toponym shows up at 2.3.4 and 1.4.7
-    line_code = models.CharField(blank=True, null=True, help_text="citation line code")
+    line_code = models.CharField(blank=True, null=True, help_text="Citation line code.")
+    related_folio = models.ForeignKey(
+        Folio, on_delete=models.CASCADE, blank=True, null=True
+    )
     country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern country"
     )
