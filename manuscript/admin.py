@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import reverse
-from django.utils.html import format_html, format_html_join
+from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
 
 from manuscript.models import (
