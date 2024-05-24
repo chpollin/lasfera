@@ -390,8 +390,11 @@ class Folio(models.Model):
 
     def __str__(self) -> str:
         if self.folio_number is not None:
-            return f"Folio {self.folio_number} from manuscript: {self.manuscript}"
-        return f"Folio associated with {self.manuscript}"
+            return f"Folio {self.folio_number}, from manuscript {self.manuscript}"
+        return f"Folio has no folio number but is associated with manuscript {self.manuscript}"
+
+    class Meta:
+        ordering = ["folio_number"]
 
 
 class SingleManuscript(models.Model):
@@ -518,15 +521,20 @@ class Location(models.Model):
         unique_together = ["country"]
 
     def __str__(self) -> str:
-        aliases = ", ".join(
-            [alias.placename_from_mss for alias in self.locationalias_set.all()]
-        )
-        return f"{self.country} ({aliases})"
+        if (
+            self.pk is not None
+        ):  # Only try to access locationalias_set if the Location has been saved
+            return ", ".join(
+                [
+                    alias.placename_from_mss
+                    for alias in self.locationalias_set.all()
+                    if alias.placename_from_mss is not None
+                ]
+            )
+        else:
+            return super().__str__()
 
-    def save(self, *args, **kwargs):
-        # On save, the following tries to derive the latlon from the modern placename
-        # field. If successful, it stores the latlon in the latlon field.
-
+    def geocode(self):
         if self.latitude is None or self.longitude is None:
             try:
                 from geopy.geocoders import Nominatim
@@ -535,12 +543,14 @@ class Location(models.Model):
                 location_alias = self.locationalias_set.first()
                 if location_alias is not None:
                     location = geolocator.geocode(location_alias.placename_modern)
-
-                    self.latitude = str(location.latitude)
-                    self.longitude = str(location.longitude)
+                    if location is not None:
+                        self.latitude = str(location.latitude)
+                        self.longitude = str(location.longitude)
+                        self.save()
             except Exception as e:
-                logger.warning("Warning in geocoding a toponym: " + str(e) + str(self))
-        super().save(*args, **kwargs)
+                logger.warning(
+                    "Warning in geocoding a toponym: %s %s", str(e), str(self)
+                )
 
 
 class LocationAlias(models.Model):

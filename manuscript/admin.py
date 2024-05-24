@@ -190,6 +190,11 @@ class LocationAdmin(admin.ModelAdmin):
     inlines = [LocationAliasInline]
     list_display = ("country", "latitude", "longitude", "id")
 
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        instance = form.instance
+        instance.geocode()
+
 
 class StanzaAdmin(admin.ModelAdmin):
     inlines = [StanzaVariantInline]
