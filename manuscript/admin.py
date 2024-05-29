@@ -139,7 +139,6 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
     )
     search_fields = ("siglum",)
     resource_class = SingleManuscriptResource
-    readonly_fields = ("item_id",)
 
 
 class FolioAdmin(admin.ModelAdmin):
