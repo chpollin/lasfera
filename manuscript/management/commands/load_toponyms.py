@@ -1,25 +1,30 @@
-from datetime import datetime
+import logging
+import traceback
 
 import numpy as np
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand, CommandParser
-from django.db import transaction
-from django.utils.text import slugify
+from django.core.management.base import BaseCommand
+from django.db import IntegrityError, transaction
 
 from manuscript.models import Folio, Location, LocationAlias, SingleManuscript
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     help_text = "Load data from an Excel file. This reads information about the libraries and imports them."
 
     def handle_error(self, index, e, row, column_name, column_value):
-        self.stdout.write(
-            self.style.ERROR(
-                f"Error loading data at row {index + 1}, column '{column_name}' with value '{column_value}': {type(e)} - {e}"
-            )
+        logger.error(
+            "Error loading data at row %s, column '%s' with value '%s': %s - %s",
+            index + 1,
+            column_name,
+            column_value,
+            type(e),
+            e,
         )
-        self.stdout.write(self.style.ERROR(f"Row data: \n{row}"))
+        logger.debug("Row data: \n%s", row)
 
     def process_bool_field(self, row, field_name, default_value=True):
         try:
@@ -30,7 +35,7 @@ class Command(BaseCommand):
                 return False
             else:
                 return default_value
-        except Exception as e:
+        except ValueError as e:
             print(f"An error occurred in processing a bool field: {e}")
             return default_value
 
@@ -47,6 +52,34 @@ class Command(BaseCommand):
             self.handle_error(index, e, row, field_name, row.get(field_name))
             raise e
 
+    # def fetch_manuscript(self, siglum):
+    #     try:
+    #         return SingleManuscript.objects.get(siglum=siglum)
+    #     except ObjectDoesNotExist as exc:
+    #         raise ValueError(f"Manuscript with siglum '{siglum}' does not exist.") from exc
+
+    # def fetch_folio(self, folio_number, manuscript):
+    #     try:
+    #         return Folio.objects.get(folio_number=folio_number, manuscript=manuscript)
+    #     except ObjectDoesNotExist as exc:
+    #         raise ValueError(f"Folio with folio number '{folio_number}' does not exist.") from exc
+
+    def create_location(self, placename_id, country, description):
+        try:
+            location, created = Location.objects.get_or_create(
+                placename_id=placename_id, country=country, description=description
+            )
+            logger.info("Location %s created: %s", location, created)
+        except IntegrityError:
+            location = Location.objects.get(country=country)
+            logger.info("Location already exists: %s", location)
+        return location
+
+    def create_location_alias(self, location, place_name_from_mss):
+        LocationAlias.objects.update_or_create(
+            location=location, placename_from_mss=place_name_from_mss
+        )
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--filepath", type=str, help="filepath of excel file to load"
@@ -60,19 +93,17 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 self.load_data(filepath, sheet_name)
-                self.stdout.write(self.style.SUCCESS("Data loaded successfully"))
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Error loading data: {e}."))
+                logger.info("Data loaded successfully")
+        except FileNotFoundError as e:
+            logger.error("Error loading data: %s.", e)
 
     def load_data(self, filepath: str, sheet_name: str):
         try:
-            self.stdout.write(
-                self.style.SUCCESS(f"Loading data from {filepath} sheet {sheet_name}")
-            )
+            logger.info("Loading data from %s sheet %s", filepath, sheet_name)
             xls = pd.ExcelFile(filepath)
 
             if sheet_name:
-                df = pd.read_excel(xls, sheet_name, header=3)
+                df = pd.read_excel(xls, sheet_name)
                 df = df.replace({np.nan: None})
                 df.columns = (
                     df.columns.str.strip()
@@ -82,7 +113,7 @@ class Command(BaseCommand):
                 )
                 dfs = {sheet_name: df}
             else:
-                dfs = pd.read_excel(xls, sheet_name=None, header=3)
+                dfs = pd.read_excel(xls, sheet_name=None)
                 for sheet_name, df in dfs.items():
                     df = df.replace({np.nan: None})
                     df.columns = (
@@ -95,66 +126,23 @@ class Command(BaseCommand):
 
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
-                    # we want from the Excel file the columns: Placename_ID, Label, Folio, HistEng_Name, and Comments.
-                    # The following columns correspond to the fields in the Location model:
-                    # 1. Placename_ID -> placename_id
-                    # 2. Label -> country
-                    # 3. Folio -> related_folio (this is a FK to the Folio model)
-                    # 4. HistEng_Name -> belongs to the LocationAlias model and the field placename_from_mss
-                    # 5. Comments -> description
-                    placename_id = self.process_field(row, "placename_id", index)
-                    country = self.process_field(row, "label", index)
-                    folio = self.process_field(row, "folio", index)
-                    placename_from_mss = self.process_field(row, "histeng_name", index)
+                    placename_id = self.process_field(row, "place_id", index)
+                    label = self.process_field(row, "label", index)  # alias
+                    histeng_name = self.process_field(row, "histeng_name", index)
                     description = self.process_field(row, "comments", index)
-                    siglum = self.process_field(row, "ms", index)
 
                     try:
-                        manuscript = SingleManuscript.objects.get(siglum=siglum)
-                    except ObjectDoesNotExist:
-                        self.stdout.write(
-                            self.style.ERROR(
-                                f"Manuscript with siglum '{siglum}' does not exist."
-                            )
+                        self.create_location(placename_id, histeng_name, description)
+                    except IntegrityError:
+                        logger.error(
+                            "Error creating location: %s", traceback.format_exc()
                         )
-                        continue
 
-                    try:
-                        folio_obj = Folio.objects.get(
-                            folio_number=folio, manuscript=manuscript
-                        )
-                        self.stdout.write(f"Folio object: {folio_obj}")
-                    except ObjectDoesNotExist:
-                        self.stdout.write(
-                            self.style.ERROR(
-                                f"Folio with folio number '{folio}' does not exist'"
-                            )
-                        )
-                        continue
-
-                    if folio_obj is not None:
-                        try:
-                            print(f"placename_id: {placename_id}")
-                            print(f"country: {country}")
-                            print(f"folio_obj: {folio_obj}")
-                            print(f"description: {description}")
-
-                            with transaction.atomic():
-                                location = Location.objects.get_or_create(
-                                    placename_id=placename_id,
-                                    country=country,
-                                    related_folio=folio_obj,
-                                    description=description,
-                                )
-
-                            if placename_from_mss is not None:
-                                with transaction.atomic():
-                                    LocationAlias.objects.update_or_create(
-                                        location=location,
-                                        placename_from_mss=placename_from_mss,
-                                    )
-                        except Exception as e:
-                            raise e
-
+                    # if placename_from_mss is not None:
+                    #     try:
+                    #         location = Location.objects.get(placename_id=placename_id)
+                    #         self.create_location_alias(location, placename_from_mss)
+                    #     except ObjectDoesNotExist:
+                    #         logger.error("Error creating location alias: %s", traceback.format_exc())
         except Exception as e:
             raise e
