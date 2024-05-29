@@ -3,11 +3,10 @@ import traceback
 
 import numpy as np
 import pandas as pd
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError, transaction
 
-from manuscript.models import Folio, Location, LocationAlias, SingleManuscript
+from manuscript.models import Location, LocationAlias
 
 logger = logging.getLogger(__name__)
 
@@ -51,18 +50,6 @@ class Command(BaseCommand):
         except Exception as e:
             self.handle_error(index, e, row, field_name, row.get(field_name))
             raise e
-
-    # def fetch_manuscript(self, siglum):
-    #     try:
-    #         return SingleManuscript.objects.get(siglum=siglum)
-    #     except ObjectDoesNotExist as exc:
-    #         raise ValueError(f"Manuscript with siglum '{siglum}' does not exist.") from exc
-
-    # def fetch_folio(self, folio_number, manuscript):
-    #     try:
-    #         return Folio.objects.get(folio_number=folio_number, manuscript=manuscript)
-    #     except ObjectDoesNotExist as exc:
-    #         raise ValueError(f"Folio with folio number '{folio_number}' does not exist.") from exc
 
     def create_location(self, placename_id, country, description):
         try:
@@ -127,7 +114,6 @@ class Command(BaseCommand):
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
                     placename_id = self.process_field(row, "place_id", index)
-                    label = self.process_field(row, "label", index)  # alias
                     histeng_name = self.process_field(row, "histeng_name", index)
                     description = self.process_field(row, "comments", index)
 
@@ -138,11 +124,5 @@ class Command(BaseCommand):
                             "Error creating location: %s", traceback.format_exc()
                         )
 
-                    # if placename_from_mss is not None:
-                    #     try:
-                    #         location = Location.objects.get(placename_id=placename_id)
-                    #         self.create_location_alias(location, placename_from_mss)
-                    #     except ObjectDoesNotExist:
-                    #         logger.error("Error creating location alias: %s", traceback.format_exc())
         except Exception as e:
             raise e
