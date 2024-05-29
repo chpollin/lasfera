@@ -186,9 +186,15 @@ class CodexAdmin(admin.ModelAdmin):
     list_display = ("id", "support", "height", "folia", "date")
 
 
-class LocationAdmin(admin.ModelAdmin):
+@admin.register(Location)
+class LocationAdmin(ImportExportModelAdmin):
     inlines = [LocationAliasInline]
-    list_display = ("country", "latitude", "longitude", "id")
+    list_display = ("country", "description_html", "latitude", "longitude", "id")
+
+    def description_html(self, obj):
+        return format_html(obj.description) if obj.description else ""
+
+    description_html.short_description = "Description"
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
@@ -213,12 +219,10 @@ class StanzaVariantAdmin(admin.ModelAdmin):
 admin.site.register(Library, LibraryAdmin)
 admin.site.register(EditorialStatus, EditorialStatusAdmin)
 admin.site.register(Folio, FolioAdmin)
-admin.site.register(Location, LocationAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
 admin.site.register(Stanza, StanzaAdmin)
 admin.site.register(StanzaVariant, StanzaVariantAdmin)
 
-# fix pluralization of codex
 admin.site.site_header = "La Sfera Admin"
 admin.site.site_title = "La Sfera Admin Portal"
 admin.site.index_title = "Welcome to the La Sfera Manuscript Portal"
