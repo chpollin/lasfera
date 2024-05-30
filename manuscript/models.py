@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
 from django_prose_editor.fields import ProseEditorField
 from prose.fields import RichTextField
 
@@ -346,6 +348,9 @@ class Stanza(models.Model):
         return Folio.objects.filter(
             manuscript=self.related_folio.manuscript, folio_number=book
         ).first()
+
+    class Meta:
+        ordering = ["id"]
 
 
 class Folio(models.Model):
