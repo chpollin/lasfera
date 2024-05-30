@@ -4,4 +4,9 @@
 
 {% block content %}
 
+    <h3>Text of the manuscript</h3>
+    {% for stanza in stanzas %}
+        <p>{{ stanza.stanza_text }}</p>
+    {% endfor %}
+
 {% endblock content %}

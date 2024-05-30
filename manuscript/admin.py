@@ -139,7 +139,6 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
     )
     search_fields = ("siglum",)
     resource_class = SingleManuscriptResource
-    readonly_fields = ("item_id",)
 
 
 class FolioAdmin(admin.ModelAdmin):
@@ -204,6 +203,14 @@ class LocationAdmin(ImportExportModelAdmin):
 
 class StanzaAdmin(admin.ModelAdmin):
     inlines = [StanzaVariantInline]
+    list_display = (
+        "stanza_line_code_starts",
+        "stanza_text",
+    )
+    search_fields = (
+        "stanza_text",
+        "stanza_line_code_starts",
+    )
 
 
 class StanzaVariantAdmin(admin.ModelAdmin):
