@@ -57,7 +57,7 @@ class EditorialStatus(models.Model):
     )
     # siglum = models.CharField(max_length=255, blank=True, null=True, unique=True)
     editorial_priority = models.IntegerField(blank=True, null=True)
-    collated = models.CharField(blank=True, null=True)
+    collated = models.CharField(blank=True, null=True, max_length=510)
     access = models.IntegerField(blank=True, null=True)
     spatial_priority = models.CharField(max_length=6, blank=True, null=True)
     dataset = models.CharField(max_length=255, blank=True, null=True)
@@ -127,10 +127,10 @@ class TextDecoration(models.Model):
     )
     text_script = models.CharField(max_length=255, blank=True, null=True)
     label_script = models.CharField(max_length=255, blank=True, null=True)
-    diagrams = models.CharField(blank=True, null=True)
-    maps = models.CharField(blank=True, null=True)
-    illumination = models.CharField(blank=True, null=True)
-    white_vine_work = models.CharField(blank=True, null=True)
+    diagrams = models.CharField(blank=True, null=True, max_length=510)
+    maps = models.CharField(blank=True, null=True, max_length=510)
+    illumination = models.CharField(blank=True, null=True, max_length=510)
+    white_vine_work = models.CharField(blank=True, null=True, max_length=510)
     other = models.CharField(max_length=255, blank=True, null=True)
     relative_quality = models.CharField(max_length=255, blank=True, null=True)
 
@@ -166,28 +166,31 @@ class Detail(models.Model):
         max_length=510, blank=True, null=True
     )
     stanza_initials = RichTextField(max_length=510, blank=True, null=True)
-    stanzas_separated = models.CharField(blank=True, null=True)
-    stanzas_ed = models.CharField(blank=True, null=True)
+    stanzas_separated = models.CharField(blank=True, null=True, max_length=510)
+    stanzas_ed = models.CharField(blank=True, null=True, max_length=510)
     filigree = models.CharField(
         max_length=510,
         blank=True,
         null=True,
         verbose_name="Flourished/Filigree Initials",
     )
-    standard_water = models.CharField(blank=True, null=True)
+    standard_water = models.CharField(blank=True, null=True, max_length=510)
     abbreviations = RichTextField(max_length=510, blank=True, null=True)
     catchwords = RichTextField(max_length=510, blank=True, null=True)
     mabel_label = models.CharField(max_length=510, blank=True, null=True)
     map_labels = RichTextField(max_length=510, blank=True, null=True)
-    distance_lines = models.CharField(blank=True, null=True)
+    distance_lines = models.CharField(blank=True, null=True, max_length=510)
     distance_numbers = models.CharField(max_length=510, blank=True, null=True)
     coat_of_arms = models.CharField(max_length=510, blank=True, null=True)
 
     is_sea_red = models.CharField(
-        blank=True, null=True, verbose_name="Is the Red Sea colored red?"
+        blank=True,
+        null=True,
+        verbose_name="Is the Red Sea colored red?",
+        max_length=510,
     )
-    laiazzo = models.CharField(blank=True, null=True)
-    tabriz = models.CharField(blank=True, null=True)
+    laiazzo = models.CharField(blank=True, null=True, max_length=510)
+    tabriz = models.CharField(blank=True, null=True, max_length=510)
     rhodes_status = models.CharField(max_length=510, blank=True, null=True)
 
     def __str__(self) -> str:
@@ -364,7 +367,7 @@ class Folio(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    folio_number = models.CharField(blank=True, null=True)
+    folio_number = models.CharField(blank=True, null=True, max_length=510)
     folio_notes = RichTextField(blank=True, null=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
@@ -385,6 +388,7 @@ class Folio(models.Model):
         null=True,
         choices=FOLIO_MAP_CHOICES,
         verbose_name="Does the folio include a map?",
+        max_length=510,
     )
     locations_mentioned = models.ManyToManyField(
         "Location",
@@ -492,9 +496,13 @@ class Location(models.Model):
     """Handle the location information and toponyms within a manuscript"""
 
     id = models.AutoField(primary_key=True)
-    placename_id = models.CharField(blank=True, null=True, verbose_name="Placename ID")
+    placename_id = models.CharField(
+        blank=True, null=True, verbose_name="Placename ID", max_length=510
+    )
     # TODO: this could be more than one... eg this toponym shows up at 2.3.4 and 1.4.7
-    line_code = models.CharField(blank=True, null=True, help_text="Citation line code.")
+    line_code = models.CharField(
+        blank=True, null=True, help_text="Citation line code.", max_length=510
+    )
     related_folio = models.ForeignKey(
         Folio, on_delete=models.CASCADE, blank=True, null=True
     )

@@ -1,12 +1,63 @@
-<h2>Homepage</h2>
-
-<p><a href="/admin">Admin</a></p>
+{% extends "base.html" %}
 
 {% block content %}
 
-    <h3>Text of the manuscript</h3>
-    {% for stanza in stanzas %}
-        <p>{{ stanza.stanza_text }}</p>
-    {% endfor %}
+    <h2 class="text-3xl" id="top">Homepage - La Sfera</h2>
+
+    <hr class="my-4">
+
+    <p>This temporary page is for testing that the content is in good order. Displayed here is a table of all the manuscripts in the database, as well as all the available stanzas.</p>
+
+    <div class="p-4">
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <a href="/admin">Admin panel</a>
+        </button>
+
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <a href="#table">Table of manuscripts</a>
+        </button>
+
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <a href="#text">Text of the manuscript</a>
+        </button>
+    </div>
+
+    <hr class="my-4">
+
+    <h3 class="text-2xl pb-8" id="table">Table of manuscripts &mdash; <a href="#top">Back to top &uarr;</a></h3>
+
+    <table class="table-auto">
+        <thead>
+            <tr>
+                <th class="px-4 py-2">ID</th>
+                <th class="px-4 py-2">Siglum</th>
+                <th class="px-4 py-2">Shelfmark</th>
+                <th class="px-4 py-2">Library</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for manuscript in manuscripts %}
+                <tr>
+                    <td class="border px-4 py-2">{{ manuscript.item_id }}</td>
+                    <td class="border px-4 py-2">{{ manuscript.siglum }}</td>
+                    <td class="border px-4 py-2">{{ manuscript.shelfmark }}</td>
+                    <td class="border px-4 py-2">{{ manuscript.library }}</td>
+            <!-- <td class="border px-4 py-2">
+                <a href="/manuscript/{{ manuscript.id }}">Details</a>
+            </td> -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="my-4">
+
+    <h3 class="text-2xl pb-8" id="text">Text of the manuscript &mdash; <a href="#top">Back to top &uarr;</a></h3>
+
+    <div class="prose">
+        {% for stanza in stanzas %}
+            <p><span class="font-serif text-red-700 text-sm">{{ stanza.stanza_line_code_starts }}</span> {{ stanza.stanza_text }}</p>
+        {% endfor %}
+    </div>
 
 {% endblock content %}
