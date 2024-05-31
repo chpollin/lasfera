@@ -43,5 +43,5 @@ for sheet_name, df in dfs.items():
                 }
             )
 
-with open("manuscript/fixtures/libraries.json", "w") as f:
+with open("manuscript/fixtures/libraries.json", "w", encoding="utf-8") as f:
     json.dump(data, f)
