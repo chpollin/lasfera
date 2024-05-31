@@ -23,11 +23,15 @@ services:
       db:
         condition: service_healthy
     command: >
-      sh -c "poetry run python manage.py migrate --skip-checks &&
-      poetry run python manage.py collectstatic --no-input &&
-      poetry run python manage.py runserver 0.0.0.0:8000"
+      sh -c "
+        poetry run python manage.py tailwind install --no-input &&
+        poetry run python manage.py tailwind build --no-input &&
+        poetry run python manage.py collectstatic --no-input &&
+        poetry run python manage.py migrate &&
+        poetry run python manage.py runserver 0.0.0.0:8000
+      "
   db:
-    image: postgres:12
+    image: postgres:16
     container_name: {{ template.name }}_db
     volumes:
       - pg-data:/var/lib/postgresql/data/
