@@ -1,6 +1,7 @@
 db.sqlite3
 .idea/
 lasfera.dbml
+dumpdata.json
 data.json
 
 # Django #

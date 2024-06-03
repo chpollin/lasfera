@@ -1,7 +1,9 @@
 import logging
-import re
 
+import numpy as np
+import pandas as pd
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from manuscript.models import SingleManuscript, Stanza
 
@@ -9,58 +11,98 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Import poem data from a plain text file"
+    help_text = "Load data from an Excel file. This reads information about the libraries and imports them."
+
+    def handle_error(self, index, e, row, column_name, column_value):
+        logger.error(
+            "Error loading data at row %s, column '%s' with value '%s': %s - %s",
+            index + 1,
+            column_name,
+            column_value,
+            type(e),
+            e,
+        )
+        logger.error("Row data: \n%s", row)
+
+    def process_field(self, row, field_name, index):
+        try:
+            field_value = row.get(field_name)
+            if field_value is not None and isinstance(field_value, str):
+                field_value = field_value.strip()
+            return field_value
+        except Exception as e:
+            self.handle_error(index, e, row, field_name, row.get(field_name))
+            raise e
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--filepath", type=str, help="filepath of the plain text file to load"
+            "--filepath",
+            type=str,
+            help="filepath of excel file to load",
         )
+        parser.add_argument("--sheetname", type=str, help="name of sheet to load")
 
     def handle(self, *args, **options):
-        file_path = options.get("filepath")
+        filepath = options.get("filepath")
+        sheet_name = options.get("sheetname")
 
-        with open(file_path, "r", encoding="utf-8-sig") as file:
-            content = file.read()
+        try:
+            with transaction.atomic():
+                self.load_data(filepath, sheet_name)
+                self.stdout.write(self.style.SUCCESS("Data loaded successfully"))
+        except FileNotFoundError as e:
+            self.stdout.write(self.style.ERROR(f"Error loading data: {e}."))
 
-        self.import_poem(content)
+    def load_data(self, filepath: str, sheet_name: str):
+        try:
+            logger.info("Loading data from %s sheet %s", filepath, sheet_name)
+            xls = pd.ExcelFile(filepath)
 
-    def import_poem(self, content):
-        manuscript = SingleManuscript.objects.get(siglum="TEST")
-        book_pattern = re.compile(r"^\s*LIBRO (\d+)", re.MULTILINE)
-        stanza_pattern = re.compile(
-            r"^(\d+)\.\s*(.*?)(?=\n\d+\.|\Z)", re.DOTALL | re.MULTILINE
-        )
-
-        book_matches = book_pattern.split(content)
-        if book_matches[0] == "":
-            book_matches = book_matches[1:]
-
-        for i in range(0, len(book_matches), 2):
-            book_number = int(
-                book_matches[i]
-            )  # Extract book number from "LIBRO X" string
-            book_text = book_matches[
-                i + 1
-            ].strip()  # Get the corresponding book content
-
-            stanza_matches = stanza_pattern.findall(book_text)
-
-            for stanza_number, stanza_text in stanza_matches:
-                stanza_number = int(stanza_number)
-                stanza_text = stanza_text.strip()
-
-                stanza_lines = stanza_text.split("\n")
-
-                for line_number, line_text in enumerate(stanza_lines, start=1):
-                    line_code = (
-                        f"{book_number:02d}.{stanza_number:02d}.{line_number:02d}"
+            if sheet_name:
+                df = pd.read_excel(xls, sheet_name, header=0)
+                df = df.replace({np.nan: None})
+                df.columns = (
+                    df.columns.str.strip()
+                    .str.lower()
+                    .str.replace("[^\w\s]", "")
+                    .str.replace(" ", "_")
+                )
+                dfs = {sheet_name: df}
+            else:
+                dfs = pd.read_excel(xls, sheet_name=None, header=0)
+                for sheet_name, df in dfs.items():
+                    df = df.replace({np.nan: None})
+                    df.columns = (
+                        df.columns.str.strip()
+                        .str.lower()
+                        .str.replace("[^\w\s]", "")
+                        .str.replace(" ", "_")
                     )
-                    # print(f"Line code: {line_code}, Line text: {line_text}")
+                    dfs[sheet_name] = df
 
-                    Stanza.objects.create(
-                        stanza_line_code_starts=line_code,
-                        stanza_text=line_text,
+            for sheet_name, df in dfs.items():
+                for index, row in df.iterrows():
+                    manuscript = SingleManuscript.objects.get(siglum="TEST")
+                    line_code = self.process_field(row, "code", index)
+                    if line_code is None:
+                        logger.error("Missing line code at index %s", index)
+                        continue
+                    text = self.process_field(row, "line", index)
+
+                    # We create a new stanza object with their stanza_line_code_starts and stanza_text
+                    # We need to convert the line code from, e.g., 1.1.2 to 01.01.02.
+                    line_code = line_code.split(".")
+                    line_code = [f"{int(x):02d}" for x in line_code]
+                    line_code = ".".join(line_code)
+                    stanza, created = Stanza.objects.get_or_create(
                         related_manuscript=manuscript,
+                        stanza_line_code_starts=line_code,
+                        stanza_text=text,
                     )
 
-        self.stdout.write(self.style.SUCCESS("Successfully imported the stanzas"))
+                    if created:
+                        logger.info("Created stanza %s", stanza.stanza_line_code_starts)
+
+        except Exception as e:
+            logger.exception("An error occurred:", exc_info=e)
+            raise e
