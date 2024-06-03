@@ -19,15 +19,15 @@ env = environ.FileAwareEnv(
 # ------------------------------------------------------------------------------
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG")
+DEBUG = env("DEBUG", default="False")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("DJANGO_SECRET_KEY")
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure )$-$@6=%dtoet5l+p@-ug)mwssbtclfz*sua+ni+1llkw4lr)o")
 
 TIME_ZONE = "America/New_York"
 LANGUAGE_CODE = "en-us"
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['localhost'])
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=['http://localhost'])
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
@@ -107,7 +107,7 @@ DATABASES = {
         "PORT": env("DB_PORT", default="5432"),
         "NAME": env("DB_NAME", default="lasfera"),
         "USER": env("DB_USER", default="lasfera"),
-        "PASSWORD": env("DB_PASSWORD"),
+        "PASSWORD": env("DB_PASS", default="password"),
     }
 }
 

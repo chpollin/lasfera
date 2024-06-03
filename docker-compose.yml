@@ -10,7 +10,7 @@ services:
       - DEBUG=True
       - DJANGO_SECRET_KEY=thisisnotasecretkey
       - DJANGO_ALLOWED_HOSTS=localhost
-      - DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:8000
+      - DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost
       - DB_HOST=db
       - DB_PORT=5432
       - DB_NAME=lasfera
@@ -21,9 +21,6 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        poetry run python manage.py tailwind install --no-input &&
-        poetry run python manage.py tailwind build --no-input &&
-        poetry run python manage.py collectstatic --no-input &&
         poetry run python manage.py migrate &&
         poetry run python manage.py runserver 0.0.0.0:8000
       "

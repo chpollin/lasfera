@@ -24,9 +24,6 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        poetry run python manage.py tailwind install --no-input &&
-        poetry run python manage.py tailwind build --no-input &&
-        poetry run python manage.py collectstatic --no-input &&
         poetry run python manage.py migrate &&
         poetry run python manage.py runserver 0.0.0.0:8000
       "
