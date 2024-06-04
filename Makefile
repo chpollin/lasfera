@@ -14,6 +14,9 @@ tailwind :
 loadlibraries :
 	poetry run python manage.py loaddata libraries
 
+dumpdata :
+	poetry run python manage.py dumpdata --natural-foreign --natural-primary -e contenttypes -e auth.Permission --indent 4 > dumpdata.json
+
 # get data structure
 dbml :
 	poetry run python manage.py dbml accounts manuscript map > lasfera.dbml

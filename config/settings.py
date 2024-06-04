@@ -19,15 +19,15 @@ env = environ.FileAwareEnv(
 # ------------------------------------------------------------------------------
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG")
+DEBUG = env("DEBUG", default="False")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("DJANGO_SECRET_KEY")
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure )$-$@6=%dtoet5l+p@-ug)mwssbtclfz*sua+ni+1llkw4lr)o")
 
 TIME_ZONE = "America/New_York"
 LANGUAGE_CODE = "en-us"
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['localhost'])
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=['http://localhost'])
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
@@ -47,8 +47,10 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.staticfiles",
+    "tailwind",
+    "theme",
+    "django_browser_reload",
     "import_export",
-    # "nested_admin",
     "django_dbml",
     "accounts",
     "manuscript",
@@ -65,6 +67,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -104,7 +107,7 @@ DATABASES = {
         "PORT": env("DB_PORT", default="5432"),
         "NAME": env("DB_NAME", default="lasfera"),
         "USER": env("DB_USER", default="lasfera"),
-        "PASSWORD": env("DB_PASSWORD"),
+        "PASSWORD": env("DB_PASS", default="password"),
     }
 }
 
@@ -160,8 +163,16 @@ USE_TZ = True
 
 STATIC_ROOT = str(BASE_DIR / "staticfiles")
 STATIC_URL = "static/"
+MEDIA_ROOT = str(BASE_DIR / "media")
+MEDIA_URL = "media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Tailwind CSS
+TAILWIND_APP_NAME = "theme"
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
