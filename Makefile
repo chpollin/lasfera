@@ -7,6 +7,9 @@ mm :
 migrate :
 	poetry run python manage.py migrate
 
+tailwind : 
+	poetry run python manage.py tailwind start
+
 # data loading
 loadlibraries :
 	poetry run python manage.py loaddata libraries
