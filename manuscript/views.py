@@ -7,8 +7,18 @@ from manuscript.models import SingleManuscript, Stanza
 
 
 def index(request: HttpRequest):
+    return render(request, "index.html")
+
+
+def about(request: HttpRequest):
+    return render(request, "about.html")
+
+
+def stanzas(request: HttpRequest):
     stanzas = Stanza.objects.all().order_by("stanza_line_code_starts")
+    return render(request, "stanzas.html", {"stanzas": stanzas})
+
+
+def manuscripts(request: HttpRequest):
     manuscripts = SingleManuscript.objects.all()
-    return render(
-        request, "index.html", {"stanzas": stanzas, "manuscripts": manuscripts}
-    )
+    return render(request, "manuscripts.html", {"manuscripts": manuscripts})

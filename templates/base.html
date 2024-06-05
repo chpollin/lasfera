@@ -3,16 +3,82 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>La Sfera</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>{% block title %}La Sfera{% endblock %}</title>
         {% tailwind_css %}
     </head>
-
-    <body class="bg-gray-50 leading-normal tracking-normal">
-        <div class="container mx-auto">
-            {% block content %}{% endblock content %}
-        </div>
+    <body>
+        <header class="relative h-96 bg-cover bg-center" style="background-image: url('{% static 'images/troy.jpg' %}');">
+            <div class="absolute inset-0 bg-black bg-opacity-50">
+                <div class="container mx-auto p-4 flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'index' %}" class="flex items-center space-x-4">
+                            <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-10">
+                            <h1 class="text-white text-2xl">The La Sfera Project</h1>
+                        </a>
+                    </div>
+                    <nav class="text-white">
+                        <ul class="flex space-x-4">
+                            <li class="group relative">
+                                <a href="#introduction" class="hover:underline inline-flex items-center">Introduction
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </a>
+                                <ul class="absolute left-0 mt-2 w-48 hidden group-hover:block bg-white text-black border border-gray-200 z-10">
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 1</a></li>
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 2</a></li>
+                                </ul>
+                            </li>
+                            <li class="group relative">
+                                <a href="#about" class="hover:underline inline-flex items-center">About
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </a>
+                                <ul class="absolute left-0 mt-2 w-48 hidden group-hover:block bg-white text-black border border-gray-200 z-10">
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 1</a></li>
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 2</a></li>
+                                </ul>
+                            </li>
+                            <li class="group relative">
+                                <a href="#background" class="hover:underline inline-flex items-center">Background
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </a>
+                                <ul class="absolute left-0 mt-2 w-48 hidden group-hover:block bg-white text-black border border-gray-200 z-10">
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 1</a></li>
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 2</a></li>
+                                </ul>
+                            </li>
+                            <li class="group relative">
+                                <a href="#resources" class="hover:underline inline-flex items-center">Resources
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </a>
+                                <ul class="absolute left-0 mt-2 w-48 hidden group-hover:block bg-white text-black border border-gray-200 z-10">
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 1</a></li>
+                                    <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Sub Item 2</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="container mx-auto h-72 flex items-center">
+                    <div class="text-left max-w-md">
+                        <h2 class="text-white text-4xl">La Sfera: The Globe</h2>
+                        <p class="text-white mt-4">The La Sfera Project encompasses a number of different scholarly efforts exploring the Florentine merchant Gregorio Dati's treatise La sfera (The Globe), written sometime around 1430. It began with the <code>#lasferachallenge</code>, the social-media brainchild of Laura Morreale and Ben Albritton, in 2020, but has since expanded in multiple scholarly directions.</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
     </body>
 </html>
+

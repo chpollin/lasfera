@@ -22,12 +22,17 @@ env = environ.FileAwareEnv(
 DEBUG = env("DEBUG", default="False")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure )$-$@6=%dtoet5l+p@-ug)mwssbtclfz*sua+ni+1llkw4lr)o")
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default="django-insecure )$-$@6=%dtoet5l+p@-ug)mwssbtclfz*sua+ni+1llkw4lr)o",
+)
 
 TIME_ZONE = "America/New_York"
 LANGUAGE_CODE = "en-us"
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['localhost'])
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=['http://localhost'])
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
+CSRF_TRUSTED_ORIGINS = env.list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"]
+)
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
@@ -163,6 +168,9 @@ USE_TZ = True
 
 STATIC_ROOT = str(BASE_DIR / "staticfiles")
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 MEDIA_ROOT = str(BASE_DIR / "media")
 MEDIA_URL = "media/"
 
