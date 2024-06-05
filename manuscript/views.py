@@ -1,3 +1,5 @@
+from html import unescape
+
 from django.http import HttpRequest
 from django.shortcuts import render
 from django.urls import reverse
@@ -16,6 +18,8 @@ def about(request: HttpRequest):
 
 def stanzas(request: HttpRequest):
     stanzas = Stanza.objects.all().order_by("stanza_line_code_starts")
+    for stanza in stanzas:
+        stanza.stanza_text = unescape(stanza.stanza_text)
     return render(request, "stanzas.html", {"stanzas": stanzas})
 
 

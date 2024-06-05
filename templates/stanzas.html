@@ -1,22 +1,35 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Stanzas - La Sfera{% endblock title %}
 
 {% block content %}
   <section id="introduction" class="container mx-auto p-4 my-10">
     <h3 class="text-2xl pb-8" id="text">
-      Text of the manuscript &mdash; <a href="#top">Back to top &uarr;</a>
-    </h3>
+      Text of the manuscript</a>
+  </h3>
 
-    <div class="prose">
-      {% for stanza in stanzas %}
-        <p>
-          <span class="font-serif text-red-700 text-sm">
-            {{ stanza.stanza_line_code_starts }}
-          </span>
-          {{ stanza.stanza_text }}
-        </p>
-      {% endfor %}
-    </div>
+  <div class="prose">
+    {% for stanza in stanzas %}
+      <div>
+        <span class="font-serif text-red-700 text-sm mr-2">
+          {{ stanza.stanza_line_code_starts }}
+        </span>
+        <span>
+          {{ stanza.stanza_text|safe }}
+        </span>
+      </div>
+    {% endfor %}
+  </div>
   </section>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="fixed right-0 top-0 h-full w-64 bg-white p-4 transform translate-x-full overflow-auto transition-transform duration-200 ease-in-out shadow-left">
+    <button id="close-button" class="mb-4 bg-red-500 text-white p-2 rounded">&times;</button>
+    <p id="notation-text"></p>
+  </div>
 {% endblock content %}
+
+{% block scripts %}
+  <script src="{% static 'js/stanza.js' %}"></script>
+{% endblock scripts %}
