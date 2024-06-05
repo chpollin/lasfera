@@ -11,6 +11,12 @@
 .shadow-left {
   box-shadow: -8px 0 10px -6px rgba(0, 0, 0, 0.2);
 }
+.dropdown-toggle svg {
+  transition: transform 0.2s;
+}
+.dropdown-open svg {
+  transform: rotate(180deg);
+}
 /* 
 [data-notation]:hover::before {
     content: attr(data-notation);
