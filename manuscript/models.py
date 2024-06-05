@@ -3,11 +3,8 @@ import re
 
 from bs4 import BeautifulSoup
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
-from django.db.models import IntegerField
-from django.db.models.functions import Cast
-from django_prose_editor.fields import ProseEditorField
 from prose.fields import RichTextField
 
 logger = logging.getLogger(__name__)
@@ -228,15 +225,6 @@ class ViewerNote(models.Model):
 class StanzaVariant(models.Model):
     """Notes about variants in a stanza"""
 
-    LINE_VARIANTS = (
-        ("lf", "Lines Flipped"),
-        ("dw", "Different Words"),
-        ("do", "Different Order"),
-        ("dp", "Different Punctuation"),
-        ("ds", "Different Spelling"),
-        ("dc", "Different Capitalization"),
-    )
-
     # TODO: Ability to have variation in lines
     id = models.AutoField(primary_key=True)
     stanza_variation = models.TextField(
@@ -256,17 +244,43 @@ class StanzaVariant(models.Model):
     )
 
     stanza = models.ForeignKey(
-        "Stanza", on_delete=models.PROTECT, blank=True, null=True
+        "Stanza",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        editable=False,
     )
 
     def provide_snippet_of_stanza(self):
-        return self.stanza.stanza_text[:100]
+        return self.stanza.stanza_variation[:100]
+
+    def save(self, *args, **kwargs):
+        # we trim the letter code off the stanza_variation_line_code_starts
+        # so we can look for the FK to the Stanza
+        try:
+            stanza_line_code_starts = self.stanza_variation_line_code_starts[:-1]
+        except TypeError:
+            stanza_line_code_starts = None
+
+        try:
+            self.stanza = Stanza.objects.get(
+                stanza_line_code_starts=stanza_line_code_starts
+            )
+        except ObjectDoesNotExist:
+            pass
+
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        soup = BeautifulSoup(self.stanza_variation, "html.parser")
-        text = soup.get_text()
-
-        return text[:100] + "..."
+        return (
+            "Stanza "
+            + self.stanza_variation_line_code_starts
+            + " associated with "
+            + self.stanza.stanza_line_code_starts
+            + " ("
+            + self.stanza.related_manuscript.siglum
+            + ")"
+        )
 
 
 class Stanza(models.Model):
