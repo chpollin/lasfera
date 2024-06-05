@@ -205,12 +205,25 @@ class StanzaAdmin(admin.ModelAdmin):
     inlines = [StanzaVariantInline]
     list_display = (
         "stanza_line_code_starts",
-        "stanza_text",
+        "formatted_stanza_text",
+        "display_stanza_variants",
     )
     search_fields = (
         "stanza_text",
         "stanza_line_code_starts",
     )
+
+    def formatted_stanza_text(self, obj):
+        return format_html(obj.stanza_text)
+
+    formatted_stanza_text.short_description = "Stanza Text"
+
+    # List any stanza variants associated with a stanza
+    def display_stanza_variants(self, obj):
+        variants = ["- {}".format(variant) for variant in obj.stanzavariant_set.all()]
+        return format_html("<br>".join(variants))
+
+    display_stanza_variants.short_description = "Stanza Variants"
 
 
 class StanzaVariantAdmin(admin.ModelAdmin):
