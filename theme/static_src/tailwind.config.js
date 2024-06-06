@@ -5,6 +5,8 @@
  * https://unpkg.com/browse/tailwindcss@latest/stubs/defaultConfig.stub.js
  */
 
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
   content: [
     /**
@@ -42,6 +44,9 @@ module.exports = {
     // '../../**/*.py'
   ],
   theme: {
+    fontFamily: {
+      serif: ['"Playfair Display"', ...defaultTheme.fontFamily.serif],
+    },
     extend: {
       colors: {
         "link-color": "#1a202c",
