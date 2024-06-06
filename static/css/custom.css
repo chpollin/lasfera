@@ -1,3 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Playfair Display," Georgia, "Times New Roman", Times, serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
 .prose span div {
   display: inline;
 }
@@ -8,15 +19,19 @@
   border: 1px solid black;
   padding: 0 0.2em;
 }
+
 .shadow-left {
   box-shadow: -8px 0 10px -6px rgba(0, 0, 0, 0.2);
 }
+
 .dropdown-toggle svg {
   transition: transform 0.2s;
 }
+
 .dropdown-open svg {
   transform: rotate(180deg);
 }
+
 /* 
 [data-notation]:hover::before {
     content: attr(data-notation);
