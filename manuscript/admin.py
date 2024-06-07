@@ -188,7 +188,14 @@ class CodexAdmin(admin.ModelAdmin):
 @admin.register(Location)
 class LocationAdmin(ImportExportModelAdmin):
     inlines = [LocationAliasInline]
-    list_display = ("country", "description_html", "latitude", "longitude", "id")
+    list_display = (
+        "country",
+        "description_html",
+        "latitude",
+        "longitude",
+        "related_folio",
+        "id",
+    )
 
     def description_html(self, obj):
         return format_html(obj.description) if obj.description else ""
