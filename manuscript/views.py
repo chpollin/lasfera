@@ -40,7 +40,7 @@ def manuscripts(request: HttpRequest):
 
 def manuscript(request: HttpRequest, siglum: str):
     manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
-    folios = manuscript.folio_set.prefetch_related("locations_mentioned").all()
+    folios = manuscript.folio_set.all()
     return render(
         request,
         "manuscript_single.html",
