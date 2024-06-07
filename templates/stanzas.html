@@ -7,7 +7,7 @@
   <div class="flex justify-center mx-auto container">
     <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 my-10">
       <div class="w-full md:w-2/5">
-        <h3 class="text-2xl pb-8" id="text">
+        <h3 class="text-2xl pb-8" id="top">
           Text of the manuscript</a>
       </h3>
 
@@ -15,7 +15,7 @@
 
       <div class="prose border-r border-slate-500">
         {% for book_number, stanzas_by_stanza_number in books.items %}
-          <h2 id="libre-{{book_number}}">Libre {{ book_number }}</h2>
+          <h2 id="libre-{{book_number}}">Libre {{ book_number }} &middot; <a href="#top">Back to top &uarr;</a></h2>
           {% for stanza_number, stanzas in stanzas_by_stanza_number.items %}
             <div id="stanza-{{stanza_number}}" class="mb-6">
               {% for stanza in stanzas %}
