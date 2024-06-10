@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 
-from manuscript.models import SingleManuscript, Stanza
+from manuscript.models import Location, SingleManuscript, Stanza
 
 
 def index(request: HttpRequest):
@@ -34,19 +34,36 @@ def stanzas(request: HttpRequest):
 
 
 def manuscripts(request: HttpRequest):
-    manuscripts = SingleManuscript.objects.all()
-    return render(request, "manuscripts.html", {"manuscripts": manuscripts})
+    manuscript_objs = SingleManuscript.objects.all()
+    return render(request, "manuscripts.html", {"manuscripts": manuscript_objs})
 
 
 def manuscript(request: HttpRequest, siglum: str):
-    manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
-    folios = manuscript.folio_set.all()
+    get_manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
+    folios = get_manuscript.folio_set.prefetch_related("locations_mentioned").all()
     return render(
         request,
         "manuscript_single.html",
         {
-            "manuscript": manuscript,
+            "manuscript": get_manuscript,
             "folios": folios,
-            "iiif_manifest": manuscript.iiif_url,
+            "iiif_manifest": get_manuscript.iiif_url,
         },
+    )
+
+
+def toponyms(request: HttpRequest):
+    toponym_objs = Location.objects.all()
+    return render(request, "toponyms.html", {"toponyms": toponym_objs})
+
+
+def toponym(request: HttpRequest, toponym_param: str):
+    filtered_toponym = get_object_or_404(Location, toponym=toponym_param)
+    filtered_manuscript = get_object_or_404(
+        SingleManuscript, folio__locations_mentioned__toponym=toponym_param
+    )
+    return render(
+        request,
+        "toponym.html",
+        {"toponym": filtered_toponym, "manuscript": filtered_manuscript},
     )

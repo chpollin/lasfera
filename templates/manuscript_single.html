@@ -18,14 +18,7 @@
 
                 <h4 class="text-xl pt-8">Related Toponyms</h4>
                 {% for folio in folios %}
-                    <h5>Folio {{ folio.folio_number }}</h5>
-                    <ul>
-                        {% for location in folio.locations_mentioned.all %}
-                            <li>{{ location.country }}</li>
-                        {% empty %}
-                            <li>No related toponyms.</li>
-                        {% endfor %}
-                    </ul>
+                    <p class="pb-1">Folio {{ folio.folio_number }}: {% for location in folio.locations_mentioned.all %}<a href="#" class="underline hover:no-underline">{{ location.country }}</a>{% empty %}No related toponyms.{% endfor %}<br></p>
                 {% empty %}
                     <p>No related folios.</p>
                 {% endfor %}
