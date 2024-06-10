@@ -22,9 +22,9 @@
                     <td class="border px-4 py-2">{{ manuscript.siglum }}</td>
                     <td class="border px-4 py-2">{{ manuscript.shelfmark }}</td>
                     <td class="border px-4 py-2">{{ manuscript.library }}</td>
-            <!-- <td class="border px-4 py-2">
-                <a href="/manuscript/{{ manuscript.id }}">Details</a>
-            </td> -->
+                    <td class="border px-4 py-2">
+                        <a class="underline hover:no-underline" href="/manuscripts/{{ manuscript.siglum }}">Details</a>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

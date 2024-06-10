@@ -18,7 +18,7 @@
     </head>
     <body class="font-serif">
         {% if request.resolver_match.url_name == 'index' %}
-            <header class="relative h-96 bg-cover bg-center" style="background-image: url('{% static 'images/troy.jpg' %}');">
+            <header class="relative h-screen bg-cover bg-center" style="background-image: url('{% static 'images/troy.jpg' %}');">
                 <div class="absolute inset-0 bg-black bg-opacity-50">
                     <div class="container mx-auto p-4 flex justify-between items-center">
                         <div class="flex items-center space-x-4">
@@ -80,10 +80,25 @@
                             </ul>
                         </nav>
                     </div>
-                    <div class="container mx-auto h-72 flex items-center">
+                    <div class="container mx-auto h-80 flex items-center">
                         <div class="text-left max-w-md">
-                            <h2 class="text-white text-4xl">La Sfera: The Globe</h2>
+                            <h2 class="text-white text-4xl">La Sfera: <em>The Globe</em></h2>
                             <p class="text-white mt-4">The La Sfera Project encompasses a number of different scholarly efforts exploring the Florentine merchant Gregorio Dati's treatise La sfera (The Globe), written sometime around 1430. It began with the <code>#lasferachallenge</code>, the social-media brainchild of Laura Morreale and Ben Albritton, in 2020, but has since expanded in multiple scholarly directions.</p>
+                        </div>
+                    </div>
+
+                    <div class="container mx-auto mt-72 flex justify-between text-white">
+                        <div class="bg-black bg-opacity-50 p-4 mx-20">
+                            <h3 class="text-2xl">The Manuscript.</h3>
+                            <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor,.</p>
+                        </div>
+                        <div class="bg-black bg-opacity-50 p-4 mx-20">
+                            <h3 class="text-2xl">Mapping La Sfera.</h3>
+                            <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor,.</p>
+                        </div>
+                        <div class="bg-black bg-opacity-50 p-4 mx-20">
+                            <h3 class="text-2xl">Tracking La Sfera.</h3>
+                            <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor,.</p>
                         </div>
                     </div>
                 </div>
@@ -165,7 +180,7 @@
                     <h5 class="block mb-6 text-xl antialiased font-semibold leading-snug tracking-normal text-inherit">
                         The La Sfera Project
                     </h5>
-                    <div class="grid justify-between grid-cols-3 gap-4">
+                    <div class="grid justify-between grid-cols-1 gap-4 md:grid-cols-4">
                         <ul>
                             <p
                                 class="block mb-3 text-base antialiased font-medium leading-normal text-blue-gray-900 opacity-40">
@@ -261,18 +276,14 @@
                                     Links
                                 </a>
                             </li>
-                        </ul>
-                        <ul>
-                            <p
-                                class="block mb-3 text-base antialiased font-medium leading-normal text-blue-gray-900 opacity-40">
-                                Administration
-                            </p>
-                            {% if user.is_authenticated %}
-                                <li><a href="{% url 'admin:index' %}" class="underline hover:no-underline block py-1.5 text-sm font-normal leading-relaxed text-gray-700 antialiased transition-colors hover:text-blue-gray-900">Admin</a></li>
-                                <li><a href="{% url 'logout' %}" class="underline hover:no-underline block py-1.5 text-sm font-normal leading-relaxed text-gray-700 antialiased transition-colors hover:text-blue-gray-900">Logout</a></li>
-                            {% else %}
-                                <li><a href="{% url 'login' %}" class="underline hover:no-underline block py-1.5 text-sm font-normal leading-relaxed text-gray-700 antialiased transition-colors hover:text-blue-gray-900">Login</a></li>
-                            {% endif %}
+                            <li class="mt-8">
+                                {% if user.is_authenticated %}
+                                    <li><a href="{% url 'admin:index' %}" class="underline hover:no-underline block py-1.5 text-sm font-normal leading-relaxed text-gray-700 antialiased transition-colors hover:text-blue-gray-900">Admin</a></li>
+                                    <li><a href="{% url 'logout' %}" class="underline hover:no-underline block py-1.5 text-sm font-normal leading-relaxed text-gray-700 antialiased transition-colors hover:text-blue-gray-900">Logout</a></li>
+                                {% else %}
+                                    <li><a href="{% url 'login' %}" class="underline hover:no-underline block py-1.5 text-sm font-normal leading-relaxed text-gray-700 antialiased transition-colors hover:text-blue-gray-900">Login</a></li>
+                                {% endif %}
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -282,7 +293,7 @@
                     class="flex flex-col items-center justify-center w-full py-4 mt-12 border-t border-blue-gray-50 md:flex-row md:justify-between">
                     <p
                         class="block mb-4 text-sm antialiased font-normal leading-normal text-center text-blue-gray-900 md:mb-0">
-                        A project developed by the <a href="https://rrchnm.org">Roy Rosenzweig Center for History and New Media</a> at <a class="underline hover:no-underline" href="https://gmu.edu">George Mason University</a>.
+                        A project developed by the <a class="underline hover:no-underline" href="https://rrchnm.org">Roy Rosenzweig Center for History and New Media</a> at <a class="underline hover:no-underline" href="https://gmu.edu">George Mason University</a>.
                     </p>
                     <div class="flex gap-4 text-blue-gray-900 sm:justify-center">
                         <a href="#"

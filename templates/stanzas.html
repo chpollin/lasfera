@@ -4,32 +4,46 @@
 {% block title %}Stanzas - La Sfera{% endblock title %}
 
 {% block content %}
-  <section id="introduction" class="container mx-auto p-4 my-10">
-    <h3 class="text-2xl pb-8" id="text">
-      Text of the manuscript</a>
-  </h3>
+  <div class="flex justify-center mx-auto container">
+    <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 my-10">
+      <div class="w-full md:w-2/5">
+        <h3 class="text-2xl pb-8" id="top">
+          Text of the manuscript</a>
+      </h3>
 
-  <div class="prose">
-    {% for stanza in stanzas %}
-      <div>
-        <span class="font-serif text-red-700 text-sm mr-2">
-          {{ stanza.stanza_line_code_starts }}
-        </span>
-        <span>
-          {{ stanza.stanza_text|safe }}
-        </span>
+      <p class="mb-5"><a href="#libre-1">Libre 1</a> | <a href="#libre-2">Libre 2</a> | <a href="#libre-3">Libre 3</a> | <a href="#libre-4">Libre 4</a></p>
+
+      <div class="prose border-r border-slate-500">
+        {% for book_number, stanzas_by_stanza_number in books.items %}
+          <h2 id="libre-{{book_number}}">Libre {{ book_number }} &middot; <a href="#top">Back to top &uarr;</a></h2>
+          {% for stanza_number, stanzas in stanzas_by_stanza_number.items %}
+            <div id="stanza-{{stanza_number}}" class="mb-6">
+              {% for stanza in stanzas %}
+                <div>
+                  <span class="font-serif text-red-700 text-sm mr-2">
+                    {{ stanza.stanza_line_code_starts }}
+                  </span>
+                  <span>
+                    {{ stanza.unescaped_stanza_text|safe }}
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        {% endfor %}
       </div>
-    {% endfor %}
-  </div>
+    </div>
   </section>
+  </div>
 
   <!-- Sidebar -->
-  <div id="sidebar" class="fixed right-0 top-0 h-full w-64 bg-white p-4 transform translate-x-full overflow-auto transition-transform duration-200 ease-in-out shadow-left">
-    <button id="close-button" class="mb-4 bg-red-500 text-white p-2 rounded">&times;</button>
-    <p id="notation-text"></p>
+  <div id="sidebar" class="fixed right-0 top-0 h-full w-96 bg-white p-4 transform translate-x-full overflow-auto transition-transform duration-200 ease-in-out shadow-left">
+    <button id="close-button" class="mb-4 bg-red-500 text-white p-2 rounded-full w-7 h-7 flex items-center justify-center text-base">&times;</button>    <p id="notation-text"></p>
+  </div>
   </div>
 {% endblock content %}
 
 {% block scripts %}
   <script src="{% static 'js/stanza.js' %}"></script>
+  <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
 {% endblock scripts %}

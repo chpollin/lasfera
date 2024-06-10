@@ -188,12 +188,24 @@ class CodexAdmin(admin.ModelAdmin):
 @admin.register(Location)
 class LocationAdmin(ImportExportModelAdmin):
     inlines = [LocationAliasInline]
-    list_display = ("country", "description_html", "latitude", "longitude", "id")
+    list_display = (
+        "country",
+        "description_html",
+        "latitude",
+        "longitude",
+        "get_related_folios",
+        "id",
+    )
 
     def description_html(self, obj):
         return format_html(obj.description) if obj.description else ""
 
     description_html.short_description = "Description"
+
+    def get_related_folios(self, obj):
+        return ", ".join([str(folio.folio_number) for folio in obj.folio_set.all()])
+
+    get_related_folios.short_description = "Related folio"
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)

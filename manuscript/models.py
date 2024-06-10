@@ -414,7 +414,7 @@ class Folio(models.Model):
     def __str__(self) -> str:
         if self.folio_number is not None:
             return f"Folio {self.folio_number}, from manuscript {self.manuscript}"
-        return f"Folio has no folio number but is associated with manuscript {self.manuscript}"
+        return f"Folio has no folio number, but is associated with manuscript {self.manuscript}"
 
     class Meta:
         ordering = ["folio_number"]
@@ -517,9 +517,9 @@ class Location(models.Model):
     line_code = models.CharField(
         blank=True, null=True, help_text="Citation line code.", max_length=510
     )
-    related_folio = models.ForeignKey(
-        Folio, on_delete=models.CASCADE, blank=True, null=True
-    )
+    # related_folio = models.ForeignKey(
+    #     Folio, on_delete=models.CASCADE, blank=True, null=True
+    # )
     country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern country"
     )
@@ -548,18 +548,9 @@ class Location(models.Model):
         unique_together = ["country"]
 
     def __str__(self) -> str:
-        if (
-            self.pk is not None
-        ):  # Only try to access locationalias_set if the Location has been saved
-            return ", ".join(
-                [
-                    alias.placename_from_mss
-                    for alias in self.locationalias_set.all()
-                    if alias.placename_from_mss is not None
-                ]
-            )
-        else:
-            return super().__str__()
+        return (
+            self.country if self.country is not None else "Missing modern country name"
+        )
 
     def geocode(self):
         if self.latitude is None or self.longitude is None:
