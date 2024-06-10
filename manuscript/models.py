@@ -414,7 +414,7 @@ class Folio(models.Model):
     def __str__(self) -> str:
         if self.folio_number is not None:
             return f"Folio {self.folio_number}, from manuscript {self.manuscript}"
-        return f"Folio has no folio number but is associated with manuscript {self.manuscript}"
+        return f"Folio has no folio number, but is associated with manuscript {self.manuscript}"
 
     class Meta:
         ordering = ["folio_number"]
