@@ -2,8 +2,32 @@
   "name": "lasfera",
   "version": "0.1.0",
   "volta": {
-    "node": "18.15.0",
+    "node": "20.14.0",
     "npm": "9.6.3"
+  },
+  "description": "Web application for the La Sfera Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chnm/lasfera.git"
+  },
+  "keywords": [
+    "digital",
+    "humanities",
+    "digital",
+    "history",
+    "manuscripts"
+  ],
+  "author": "Jason Heppler",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chnm/lasfera/issues"
+  },
+  "homepage": "https://github.com/chnm/lasfera#readme",
+  "dependencies": {
+    "mirador": "^4.0.0-alpha.2"
   }
 }
-
