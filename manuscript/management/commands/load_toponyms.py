@@ -6,7 +6,7 @@ import pandas as pd
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError, transaction
 
-from manuscript.models import Location, LocationAlias
+from manuscript.models import Folio, Location, LocationAlias, SingleManuscript
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +51,24 @@ class Command(BaseCommand):
             self.handle_error(index, e, row, field_name, row.get(field_name))
             raise e
 
-    def create_location(self, placename_id, country, description):
+    def create_location(self, placename_id, country, description, folio, manuscript):
         try:
             location, created = Location.objects.get_or_create(
-                placename_id=placename_id, country=country, description=description
+                placename_id=placename_id,
+                country=country,
+                description=description,
             )
+
+            # Assign the folio ManyToManyField
+            try:
+                folio = Folio.objects.get(
+                    folio_number=folio, manuscript__siglum=manuscript
+                )
+                folio.locations_mentioned.add(location)
+                folio.save()
+            except Exception as e:
+                logger.error("Error associating folio to location: %s", e)
+
             logger.info("Location %s created: %s", location, created)
         except IntegrityError:
             location = Location.objects.get(country=country)
@@ -116,9 +129,13 @@ class Command(BaseCommand):
                     placename_id = self.process_field(row, "place_id", index)
                     histeng_name = self.process_field(row, "histeng_name", index)
                     description = self.process_field(row, "comments", index)
+                    folio = self.process_field(row, "folio", index)
+                    manuscript = self.process_field(row, "ms", index)
 
                     try:
-                        self.create_location(placename_id, histeng_name, description)
+                        self.create_location(
+                            placename_id, histeng_name, description, folio, manuscript
+                        )
                     except IntegrityError:
                         logger.error(
                             "Error creating location: %s", traceback.format_exc()
