@@ -225,6 +225,11 @@ class ViewerNote(models.Model):
 class StanzaVariant(models.Model):
     """Notes about variants in a stanza"""
 
+    AVAIL_LANGUAGE = (
+        ("en", "English"),
+        ("it", "Italian"),
+    )
+
     # TODO: Ability to have variation in lines
     id = models.AutoField(primary_key=True)
     stanza_variation = models.TextField(
@@ -242,7 +247,6 @@ class StanzaVariant(models.Model):
         help_text="Stanza variant line code in the form of '01.01.01a'.",
         verbose_name="Variant line code",
     )
-
     stanza = models.ForeignKey(
         "Stanza",
         on_delete=models.CASCADE,
@@ -324,6 +328,9 @@ class Stanza(models.Model):
     )
     stanza_text = RichTextField(blank=True, null=True)
     stanza_notes = RichTextField(blank=True, null=True)
+    language = models.CharField(
+        max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
+    )
 
     def __str__(self) -> str:
         if self.stanza_line_code_starts is not None:
@@ -368,6 +375,44 @@ class Stanza(models.Model):
 
     class Meta:
         ordering = ["id"]
+
+
+class StanzaTranslated(models.Model):
+    """This model holds the English version of the stanzas."""
+
+    id = models.AutoField(primary_key=True)
+    stanza = models.ForeignKey(
+        "Stanza",
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False,
+        help_text="The stanza to which the translation belongs.",
+    )
+    stanza_line_code_starts = models.CharField(
+        blank=True,
+        null=True,
+        validators=[validate_line_number_code],
+        max_length=20,
+        help_text="Indicate where the stanza begins. Input the text by book, stanza, and line number. For example: 01.01.01 refers to book 1, stanza 1, line 1.",
+    )
+    stanza_line_code_ends = models.CharField(
+        blank=True,
+        null=True,
+        validators=[validate_line_number_code],
+        max_length=20,
+        help_text="Indicate where the stanza ends. Input the text by book, stanza, and line number. For example: 01.01.07 refers to book 1, stanza 1, line 7.",
+    )
+    stanza_text = RichTextField(blank=True, null=True)
+    language = models.CharField(
+        max_length=2, choices=Stanza.STANZA_LANGUAGE, blank=True, null=True
+    )
+
+    def __str__(self) -> str:
+        return str(self.stanza_translation[:100])
+
+    class Meta:
+        verbose_name = "Stanza Translation"
+        verbose_name_plural = "Stanza Translations"
 
 
 class Folio(models.Model):
