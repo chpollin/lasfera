@@ -562,9 +562,6 @@ class Location(models.Model):
     line_code = models.CharField(
         blank=True, null=True, help_text="Citation line code.", max_length=510
     )
-    # related_folio = models.ForeignKey(
-    #     Folio, on_delete=models.CASCADE, blank=True, null=True
-    # )
     country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern country"
     )

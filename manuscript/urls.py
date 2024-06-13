@@ -8,6 +8,6 @@ urlpatterns = [
     path("manuscripts/", views.manuscripts, name="manuscripts"),
     path("manuscripts/<str:siglum>/", views.manuscript, name="manuscript"),
     path("toponyms/", views.toponyms, name="toponyms"),
-    path("toponyms/<int:pk>/", views.toponym, name="toponym"),
+    path("toponyms/<int:id>/", views.toponym, name="toponym"),
     path("stanzas/", views.stanzas, name="stanzas"),
 ]

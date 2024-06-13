@@ -92,6 +92,6 @@ def toponym(request: HttpRequest, toponym_param: str):
     )
     return render(
         request,
-        "toponym.html",
+        "toponym_single.html",
         {"toponym": filtered_toponym, "manuscript": filtered_manuscript},
     )
