@@ -1,12 +1,28 @@
 from collections import defaultdict
 from html import unescape
 
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 
-from manuscript.models import Location, SingleManuscript, Stanza
+from manuscript.models import Location, SingleManuscript, Stanza, StanzaTranslated
+
+
+def process_stanzas(stanzas, is_translated=False):
+    books = defaultdict(lambda: defaultdict(list))
+    for stanza in stanzas:
+        book_number = int(stanza.stanza_line_code_starts.split(".")[0])
+        stanza_number = int(stanza.stanza_line_code_starts.split(".")[1])
+
+        if is_translated:
+            stanza.unescaped_stanza_text = unescape(stanza.stanza_translation)
+        else:
+            stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
+
+        books[book_number][stanza_number].append(stanza)
+
+    return {k: dict(v) for k, v in books.items()}
 
 
 def index(request: HttpRequest):
@@ -19,18 +35,30 @@ def about(request: HttpRequest):
 
 def stanzas(request: HttpRequest):
     stanzas = Stanza.objects.all().order_by("stanza_line_code_starts")
+    translated_stanzas = StanzaTranslated.objects.all().order_by(
+        "stanza_line_code_starts"
+    )
+    manuscripts = SingleManuscript.objects.all()
+    default_manuscript = SingleManuscript.objects.get(siglum="TEST")
 
-    books = defaultdict(lambda: defaultdict(list))
-    for stanza in stanzas:
-        book_number = int(stanza.stanza_line_code_starts.split(".")[0])
-        stanza_number = int(stanza.stanza_line_code_starts.split(".")[1])
-
-        stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
-        books[book_number][stanza_number].append(stanza)
+    books = process_stanzas(stanzas)
+    translated_books = process_stanzas(translated_stanzas)
 
     books = {k: dict(v) for k, v in books.items()}
+    translated_books = {k: dict(v) for k, v in translated_books.items()}
 
-    return render(request, "stanzas.html", {"stanzas": stanzas, "books": books})
+    return render(
+        request,
+        "stanzas.html",
+        {
+            "stanzas": stanzas,
+            "translated": translated_stanzas,
+            "books": books,
+            "translated_books": translated_books,
+            "manuscripts": manuscripts,
+            "default_manuscript": default_manuscript,
+        },
+    )
 
 
 def manuscripts(request: HttpRequest):
