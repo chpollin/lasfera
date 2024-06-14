@@ -58,7 +58,8 @@ class EditorialStatus(models.Model):
     access = models.IntegerField(blank=True, null=True)
     spatial_priority = models.CharField(max_length=6, blank=True, null=True)
     dataset = models.CharField(max_length=255, blank=True, null=True)
-    group = models.CharField(max_length=255, blank=True, null=True)
+    map_group = models.CharField(max_length=255, blank=True, null=True)
+    decorative_group = models.CharField(max_length=255, blank=True, null=True)
     iiif_url = models.URLField(
         max_length=255,
         blank=True,
@@ -189,6 +190,8 @@ class Detail(models.Model):
     laiazzo = models.CharField(blank=True, null=True, max_length=510)
     tabriz = models.CharField(blank=True, null=True, max_length=510)
     rhodes_status = models.CharField(max_length=510, blank=True, null=True)
+    gion_in_egypt = models.CharField(max_length=510, blank=True, null=True)
+    diagram_sun = models.CharField(max_length=510, blank=True, null=True)
 
     def __str__(self) -> str:
         if self.id is not None:
