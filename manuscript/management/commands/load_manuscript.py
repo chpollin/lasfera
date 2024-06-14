@@ -128,8 +128,11 @@ class Command(BaseCommand):
                     editorial_status_data_set = self.process_field(
                         row, "data_set", index
                     )
-                    editorial_status_spatial_group = self.process_field(
-                        row, "spatial_group", index
+                    editorial_status_map_group = self.process_field(
+                        row, "map_group", index
+                    )
+                    editorial_status_decorative_group = self.process_field(
+                        row, "decorative_group", index
                     )
 
                     # Reference fields
@@ -237,6 +240,12 @@ class Command(BaseCommand):
                     decoration_tabriz_present = self.process_field(
                         row, "tabriz_present?", index
                     )
+                    details_diagram_sun = self.process_field(
+                        row, "diagram_4_(sun)?", index
+                    )
+                    details_gion_in_egypt = self.process_field(
+                        row, "gion_in_egypt?", index
+                    )
 
                     # Viewer Notes fields
                     viewer_notes_date_seen = self.process_field(row, "date_seen", index)
@@ -296,7 +305,8 @@ class Command(BaseCommand):
                             collated=editorial_status_collated,
                             spatial_priority=editorial_status_spatial_priority,
                             dataset=editorial_status_data_set,
-                            group=editorial_status_spatial_group,
+                            map_group=editorial_status_map_group,
+                            decorative_group=editorial_status_decorative_group,
                             manuscript=manuscript,
                         )
                         editorial_status.save()
@@ -378,6 +388,8 @@ class Command(BaseCommand):
                             distance_lines=decoration_distance_lines,
                             distance_numbers=decoration_distance_numbers,
                             coat_of_arms=decoration_coat_of_arms,
+                            gion_in_egypt=details_gion_in_egypt,
+                            diagram_sun=details_diagram_sun,
                             manuscript=manuscript,
                         )
                         detail.save()
