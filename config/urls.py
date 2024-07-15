@@ -6,6 +6,7 @@ urlpatterns = [
     path("", include("manuscript.urls")),
     path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
+    path("toponyms/", include(("manuscript.urls", "toponyms"), namespace="toponyms")),
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("prose/", include("prose.urls")),
