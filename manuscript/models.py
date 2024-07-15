@@ -361,17 +361,45 @@ class Stanza(models.Model):
 
     def derive_folio_location(self):
         # We derive the folio based on the line code.
-        if self.stanza_line_code_starts is not None:
-            line_code = self.stanza_line_code_starts
-        elif self.stanza_line_code_ends is not None:
-            line_code = self.stanza_line_code_ends
-        else:
-            return None
+        # if self.stanza_line_code_starts is not None:
+        #     line_code = self.stanza_line_code_starts
+        # elif self.stanza_line_code_ends is not None:
+        #     line_code = self.stanza_line_code_ends
+        # else:
+        #     return None
+        #
+        # book, stanza, line = line_code.split(".")
+        # return Folio.objects.filter(
+        #     manuscript=self.related_folio.manuscript, folio_number=book
+        # ).first()
+        start_book, start_stanza, start_line = map(int, start_line.split("."))
+        end_book, end_stanza, end_line = map(int, end_line.split("."))
 
-        book, stanza, line = line_code.split(".")
-        return Folio.objects.filter(
-            manuscript=self.related_folio.manuscript, folio_number=book
-        ).first()
+        for line in range(start_line, end_line + 1):
+            line_code = f"{start_book:02d}.{start_stanza:02d}.{line:02d}"
+            existing_stanzas = Stanza.objects.filter(
+                stanza_line_code_starts__startswith=line_code
+            )
+            variant_code = line_code + chr(ord("a") + existing_stanza.count())
+
+            try:
+                self.stanza = Stanza.objects.get(stanza_line_code_starts=variant_code)
+            except ObjectDoesNotExist:
+                pass
+
+            folio = Folio.objects.filter(
+                manuscript=self.related_folio.manuscript, folio_number=start_book
+            ).first()
+
+            Stanza.objects.create(
+                related_manuscript=self.related_folio.manuscript,
+                related_folio=folio,
+                stanza_line_code_starts=variant_code,
+                stanza_line_code_end=variant_code,
+                stanza_text=self.stanza_text,
+                stanza_notes=self.stanza_notes,
+                language=self.language,
+            )
 
     class Meta:
         ordering = ["id"]
