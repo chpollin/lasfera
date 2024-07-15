@@ -53,6 +53,17 @@
                                     </ul>
                                 </li>
                                 <li class="relative">
+                                    <button class="dropdown-toggle hover:underline inline-flex items-center">Manuscript
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
+                                        <li><a href="{% url 'stanzas' %}" class="block px-4 py-2 hover:bg-gray-200">Poetic Text</a></li>
+                                        <li><a href="{% url 'manuscripts' %}" class="block px-4 py-2 hover:bg-gray-200">Table of manuscripts</a></li>
+                                    </ul>
+                                </li>
+                                <li class="relative">
                                     <button class="dropdown-toggle hover:underline inline-flex items-center">Background
                                         <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -138,6 +149,18 @@
                                         <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Author</a></li>
                                     </ul>
                                 </li>
+                                <li class="relative">
+                                    <button class="dropdown-toggle hover:underline inline-flex items-center">Manuscript
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
+                                        <li><a href="{% url 'stanzas' %}" class="block px-4 py-2 hover:bg-gray-200">Poetic Text</a></li>
+                                        <li><a href="{% url 'manuscripts' %}" class="block px-4 py-2 hover:bg-gray-200">Table of manuscripts</a></li>
+                                    </ul>
+                                </li>
+
                                 <li class="relative">
                                     <button class="dropdown-toggle hover:underline inline-flex items-center">Background
                                         <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -329,6 +352,7 @@
             </div>
         </footer>
 
+        <script src="https://unpkg.com/htmx.org@1.6.1"></script>
         <script src="{% static 'js/main.js' %}"></script>
         {% block scripts %}
         {% endblock scripts %}

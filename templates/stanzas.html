@@ -4,41 +4,103 @@
 {% block title %}Stanzas - La Sfera{% endblock title %}
 
 {% block content %}
-  <div class="flex justify-center mx-auto container">
-    <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 my-10">
-      <div class="w-full md:w-2/5">
-        <h3 class="text-2xl pb-8" id="top">
-          Text of the manuscript</a>
-      </h3>
+  <div class="mx-auto container">
+    <section id="manuscript" class="w-full p-4 my-10">
+      <div>
+        <h3 class="text-4xl pb-8 font-bold" id="top">
+          Poetic Text
+        </h3>
 
-      <p class="mb-5"><a href="#libre-1">Libre 1</a> | <a href="#libre-2">Libre 2</a> | <a href="#libre-3">Libre 3</a> | <a href="#libre-4">Libre 4</a></p>
+        <div class="flex flex-col md:flex-row pb-8 mb-8 border-b border-slate-500">
+        {% comment %} Column 1: Manuscript Dropdown {% endcomment %}
+          <div class="w-full md:w-1/3 mb-4 md:mb-0 md:pr-4">
+            <label for="manuscript" class="block text-gray-700 text-sm font-bold mb-2">Select a Manuscript:</label>
+            <div class="relative">
+              <select id="manuscript" class="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                {% for manuscript in manuscripts %}
+                  <option value="{{ manuscript.siglum }}" {% if manuscript.siglum == "TEST" %}selected{% endif %}>{{ manuscript.siglum }}</option>
+                {% endfor %}
+              </select>
 
-      <div class="prose border-r border-slate-500">
-        {% for book_number, stanzas_by_stanza_number in books.items %}
-          <h2 id="libre-{{book_number}}">Libre {{ book_number }} &middot; <a href="#top">Back to top &uarr;</a></h2>
-          {% for stanza_number, stanzas in stanzas_by_stanza_number.items %}
-            <div id="stanza-{{stanza_number}}" class="mb-6">
-              {% for stanza in stanzas %}
-                <div>
-                  <span class="font-serif text-red-700 text-sm mr-2">
-                    {{ stanza.stanza_line_code_starts }}
-                  </span>
-                  <span>
-                    {{ stanza.unescaped_stanza_text|safe }}
-                  </span>
+            </div>
+          </div>
+        {% comment %} Column 2: Book Links {% endcomment %}
+          <div class="w-full md:w-1/3 mb-4 md:mb-0 md:px-2">
+            <label for="manuscript" class="block text-gray-700 text-sm font-bold mb-2">Jump to a book:</label>
+            <p class="mb-5"><a href="#libre-1">Libro 1</a> | <a href="#libre-2">Libro 2</a> | <a href="#libre-3">Libro 3</a> | <a href="#libre-4">Libro 4</a></p>
+          </div>
+        {% comment %} Column 3: Checkboxes {% endcomment %}
+          <div class="w-full md:w-1/3">
+            <div class="mb-4">
+              <input type="checkbox" id="toggleLineCodes" class="mr-2" checked>
+              <label for="toggleLineCodes">Show line codes</label>
+            </div>
+            <div class="mb-4">
+              <input type="checkbox" id="toggleLineCodeShortened" class="mr-2">
+              <label for="toggleLineCodeShortened">Shorten line codes</label>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="flex">
+          <div class="prose w-2/6 border-r border-slate-500">
+            {% for book_number, stanzas_by_stanza_number in books.items %}
+              <h2 id="libre-{{book_number}}">Libro {{ book_number }}</h2>
+              {% for stanza_number, stanzas in stanzas_by_stanza_number.items %}
+                <div id="stanza-{{stanza_number}}" class="mb-6">
+                  {% for stanza in stanzas %}
+                    <div>
+                      <span class="line-code font-serif text-red-700 text-sm mr-2">
+                        {{ stanza.stanza_line_code_starts }}
+              <!-- anchor to line codes -->
+              <!-- linking to the folio in the manuscript to the stanza; hyperlink the line code? display only lin enumber for the code -->
+              <!-- mirador viewer switches to the correct location? -->
+                      </span>
+                      <span>
+                        {{ stanza.unescaped_stanza_text|safe }}
+                      </span>
+                    </div>
+                  {% endfor %}
                 </div>
               {% endfor %}
-            </div>
-          {% endfor %}
-        {% endfor %}
+            {% endfor %}
+          </div>
+          <div class="prose w-3/6 ml-4">
+            {% for book_number, stanzas_by_stanza_number in translated_books.items %}
+              <h2 id="libre-{{book_number}}">Book {{ book_number }}</h2>
+              {% for stanza_number, stanzas in stanzas_by_stanza_number.items %}
+                <div id="stanza-{{stanza_number}}" class="mb-6">
+                  {% for stanza in stanzas %}
+                    <div>
+                      <span>
+                        {{ stanza.unescaped_stanza_text|safe }}
+                      </span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            {% endfor %}
+          </div>
+          <div class="prose w-1/6 ml-4">
+            <h2 id="iiif-viewer">IIIF</a></h2>
+          <p>Placeholder.</p>
+        </div>
       </div>
-    </div>
-  </section>
+
+      {% comment %} Return to top component {% endcomment %}
+      <div id="return-to-top" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-100 rounded-full shadow-lg p-2 opacity-0 transition duration-500 ease-in-out invisible hover:-translate-y-1 hover:scale-110 hover:bg-white">
+        <a href="#top">Return to top &uarr;</a>
+      </div>
+    </section>
   </div>
 
-  <!-- Sidebar -->
-  <div id="sidebar" class="fixed right-0 top-0 h-full w-96 bg-white p-4 transform translate-x-full overflow-auto transition-transform duration-200 ease-in-out shadow-left">
-    <button id="close-button" class="mb-4 bg-red-500 text-white p-2 rounded-full w-7 h-7 flex items-center justify-center text-base">&times;</button>    <p id="notation-text"></p>
+{% comment %} Sidebar component {% endcomment %}
+  <div id="sidebar"
+       class="fixed right-0 top-0 h-full w-96 bg-white p-4 transform translate-x-full overflow-auto transition-transform duration-200 ease-in-out shadow-left">
+    <button id="close-button"
+            class="mb-4 bg-red-500 text-white p-2 rounded-full w-7 h-7 flex items-center justify-center text-base">&times;</button>
+    <p id="notation-text"></p>
   </div>
   </div>
 {% endblock content %}

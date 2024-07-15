@@ -228,6 +228,11 @@ class ViewerNote(models.Model):
 class StanzaVariant(models.Model):
     """Notes about variants in a stanza"""
 
+    AVAIL_LANGUAGE = (
+        ("en", "English"),
+        ("it", "Italian"),
+    )
+
     # TODO: Ability to have variation in lines
     id = models.AutoField(primary_key=True)
     stanza_variation = models.TextField(
@@ -245,7 +250,6 @@ class StanzaVariant(models.Model):
         help_text="Stanza variant line code in the form of '01.01.01a'.",
         verbose_name="Variant line code",
     )
-
     stanza = models.ForeignKey(
         "Stanza",
         on_delete=models.CASCADE,
@@ -327,6 +331,9 @@ class Stanza(models.Model):
     )
     stanza_text = RichTextField(blank=True, null=True)
     stanza_notes = RichTextField(blank=True, null=True)
+    language = models.CharField(
+        max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
+    )
 
     def __str__(self) -> str:
         if self.stanza_line_code_starts is not None:
@@ -357,20 +364,86 @@ class Stanza(models.Model):
 
     def derive_folio_location(self):
         # We derive the folio based on the line code.
-        if self.stanza_line_code_starts is not None:
-            line_code = self.stanza_line_code_starts
-        elif self.stanza_line_code_ends is not None:
-            line_code = self.stanza_line_code_ends
-        else:
-            return None
+        # if self.stanza_line_code_starts is not None:
+        #     line_code = self.stanza_line_code_starts
+        # elif self.stanza_line_code_ends is not None:
+        #     line_code = self.stanza_line_code_ends
+        # else:
+        #     return None
+        #
+        # book, stanza, line = line_code.split(".")
+        # return Folio.objects.filter(
+        #     manuscript=self.related_folio.manuscript, folio_number=book
+        # ).first()
+        start_book, start_stanza, start_line = map(int, start_line.split("."))
+        end_book, end_stanza, end_line = map(int, end_line.split("."))
 
-        book, stanza, line = line_code.split(".")
-        return Folio.objects.filter(
-            manuscript=self.related_folio.manuscript, folio_number=book
-        ).first()
+        for line in range(start_line, end_line + 1):
+            line_code = f"{start_book:02d}.{start_stanza:02d}.{line:02d}"
+            existing_stanzas = Stanza.objects.filter(
+                stanza_line_code_starts__startswith=line_code
+            )
+            variant_code = line_code + chr(ord("a") + existing_stanza.count())
+
+            try:
+                self.stanza = Stanza.objects.get(stanza_line_code_starts=variant_code)
+            except ObjectDoesNotExist:
+                pass
+
+            folio = Folio.objects.filter(
+                manuscript=self.related_folio.manuscript, folio_number=start_book
+            ).first()
+
+            Stanza.objects.create(
+                related_manuscript=self.related_folio.manuscript,
+                related_folio=folio,
+                stanza_line_code_starts=variant_code,
+                stanza_line_code_end=variant_code,
+                stanza_text=self.stanza_text,
+                stanza_notes=self.stanza_notes,
+                language=self.language,
+            )
 
     class Meta:
         ordering = ["id"]
+
+
+class StanzaTranslated(models.Model):
+    """This model holds the English version of the stanzas."""
+
+    id = models.AutoField(primary_key=True)
+    stanza = models.ForeignKey(
+        "Stanza",
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False,
+        help_text="The stanza to which the translation belongs.",
+    )
+    stanza_line_code_starts = models.CharField(
+        blank=True,
+        null=True,
+        validators=[validate_line_number_code],
+        max_length=20,
+        help_text="Indicate where the stanza begins. Input the text by book, stanza, and line number. For example: 01.01.01 refers to book 1, stanza 1, line 1.",
+    )
+    stanza_line_code_ends = models.CharField(
+        blank=True,
+        null=True,
+        validators=[validate_line_number_code],
+        max_length=20,
+        help_text="Indicate where the stanza ends. Input the text by book, stanza, and line number. For example: 01.01.07 refers to book 1, stanza 1, line 7.",
+    )
+    stanza_text = RichTextField(blank=True, null=True)
+    language = models.CharField(
+        max_length=2, choices=Stanza.STANZA_LANGUAGE, blank=True, null=True
+    )
+
+    def __str__(self) -> str:
+        return str(self.stanza_translation[:100])
+
+    class Meta:
+        verbose_name = "Stanza Translation"
+        verbose_name_plural = "Stanza Translations"
 
 
 class Folio(models.Model):
@@ -520,9 +593,6 @@ class Location(models.Model):
     line_code = models.CharField(
         blank=True, null=True, help_text="Citation line code.", max_length=510
     )
-    # related_folio = models.ForeignKey(
-    #     Folio, on_delete=models.CASCADE, blank=True, null=True
-    # )
     country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern country"
     )

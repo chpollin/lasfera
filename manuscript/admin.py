@@ -15,6 +15,7 @@ from manuscript.models import (
     Reference,
     SingleManuscript,
     Stanza,
+    StanzaTranslated,
     StanzaVariant,
     TextDecoration,
     ViewerNote,
@@ -213,17 +214,29 @@ class LocationAdmin(ImportExportModelAdmin):
         instance.geocode()
 
 
+@admin.action(description="Set language of the selected stanza to Italian")
+def set_language_to_italian(modeladmin, request, queryset):
+    queryset.update(language="it")
+
+
+@admin.action(description="Set language of the selected stanza to English")
+def set_language_to_english(modeladmin, request, queryset):
+    queryset.update(language="en")
+
+
 class StanzaAdmin(admin.ModelAdmin):
     inlines = [StanzaVariantInline]
     list_display = (
         "stanza_line_code_starts",
         "formatted_stanza_text",
         "display_stanza_variants",
+        "language",
     )
     search_fields = (
         "stanza_text",
         "stanza_line_code_starts",
     )
+    actions = [set_language_to_italian, set_language_to_english]
 
     def formatted_stanza_text(self, obj):
         return format_html(obj.stanza_text)
@@ -254,6 +267,7 @@ admin.site.register(Folio, FolioAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
 admin.site.register(Stanza, StanzaAdmin)
 admin.site.register(StanzaVariant, StanzaVariantAdmin)
+admin.site.register(StanzaTranslated)
 
 admin.site.site_header = "La Sfera Admin"
 admin.site.site_title = "La Sfera Admin Portal"

@@ -18,7 +18,11 @@
 
                 <h4 class="text-xl pt-8">Related Toponyms</h4>
                 {% for folio in folios %}
-                    <p class="pb-1">Folio {{ folio.folio_number }}: {% for location in folio.locations_mentioned.all %}<a href="#" class="underline hover:no-underline">{{ location.country }}</a>{% empty %}No related toponyms.{% endfor %}<br></p>
+                    <p class="pb-1">Folio {{ folio.folio_number }}:</p>
+                    {% for location in folio.locations_mentioned.all %}
+                        <ul class="list-disc">
+                            <li class="ml-8"><a href="#" class="underline hover:no-underline">{{ location.country }}</a></li>{% empty %}<li class="ml-8">No related toponyms.</li>{% endfor %}
+                    </ul>
                 {% empty %}
                     <p>No related folios.</p>
                 {% endfor %}
@@ -27,7 +31,8 @@
 
             <div class="w-full md:w-3/5 p-2">
                 {% if manuscript.iiif_url %}
-                    <div id="iiif-viewer" style="width: 100%; height: 600px;"></div>
+                    <h2 class="text-3xl">TEST MANIFEST</h2>
+                    <div id="iiif-viewer" style="width: 100%; height: 600px; position: relative;"></div>
                 {% else %}
                     <h3 class="text-lg">No IIIF manifest provided.</h3>
                 {% endif %}
@@ -41,28 +46,20 @@
 {% block scripts %}
     <script src="{% static 'js/stanza.js' %}"></script>
     <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.1/openseadragon.min.js" integrity="sha512-LbaoUnRCul2C+I4cdS/EMnMbynmZMU58AApBnZkhMzp/r8rOS7htjTsox7g6rf5ZXkSx56F5dDYmhLwqV1Zt4A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-        const iiifUrl = "{{ iiif_url }}";
-        const viewer = OpenSeadragon({
-            id: "iiif-viewer",
-            preserveViewport: true,
-            visibilityRatio:    1,
-            minZoomLevel:       1,
-            defaultZoomLevel:   1,
-            sequenceMode:       true,
-            tileSources:   [{
-                "@context": "http://iiif.io/api/image/2/context.json",
-                "@id": iiifUrl,
-                "height": 7200,
-                "width": 5233,
-                "profile": [ "http://iiif.io/api/image/2/level2.json" ],
-                "protocol": "http://iiif.io/api/image",
-                "tiles": [{
-                    "scaleFactors": [ 1, 2, 4, 8, 16, 32 ],
-                    "width": 1024
-                }]
-            }]
+    <script type="text/javascript">
+        var mirador = Mirador.viewer({
+            "id": "iiif-viewer",
+            "manifests": {
+                "{{manuscript.iiif_url}}": {
+                }
+            },
+            "windows": [
+                {
+                    "loadedManifest": "{{manuscript.iiif_url}}",
+                    "canvasIndex": 2,
+                    "thumbnailNavigationPosition": 'far-bottom'
+                }
+            ]
         });
     </script>
 {% endblock scripts %}
