@@ -5,8 +5,10 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
+from rest_framework import viewsets
 
 from manuscript.models import Location, SingleManuscript, Stanza, StanzaTranslated
+from manuscript.serializers import ToponymSerializer
 
 
 def process_stanzas(stanzas, is_translated=False):
@@ -82,10 +84,10 @@ def manuscript(request: HttpRequest, siglum: str):
 
 def toponyms(request: HttpRequest):
     toponym_objs = Location.objects.all()
-    return render(request, "toponyms.html", {"toponyms": toponym_objs})
+    return render(request, "gazetteer/gazetteer_index.html", {"toponyms": toponym_objs})
 
 
-def toponym(request: HttpRequest, toponym_param: str):
+def toponym(request: HttpRequest, toponym_param: int):
     filtered_toponym = get_object_or_404(Location, toponym=toponym_param)
     filtered_manuscript = get_object_or_404(
         SingleManuscript, folio__locations_mentioned__toponym=toponym_param
@@ -95,3 +97,19 @@ def toponym(request: HttpRequest, toponym_param: str):
         "toponym_single.html",
         {"toponym": filtered_toponym, "manuscript": filtered_manuscript},
     )
+
+
+def search_toponyms(request):
+    query = request.GET.get("q", "")
+    if query:
+        toponym_results = Location.objects.filter(country__icontains=query)
+    else:
+        toponym_results = Location.objects.all()
+    return render(
+        request, "gazetteer/gazetteer_results.html", {"toponyms": toponym_results}
+    )
+
+
+class ToponymViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = ToponymSerializer
