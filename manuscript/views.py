@@ -1,10 +1,8 @@
 from collections import defaultdict
 from html import unescape
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
-from django.views import generic
 from rest_framework import viewsets
 
 from manuscript.models import Location, SingleManuscript, Stanza, StanzaTranslated
@@ -88,14 +86,52 @@ def toponyms(request: HttpRequest):
 
 
 def toponym(request: HttpRequest, toponym_param: int):
-    filtered_toponym = get_object_or_404(Location, toponym=toponym_param)
-    filtered_manuscript = get_object_or_404(
-        SingleManuscript, folio__locations_mentioned__toponym=toponym_param
-    )
+    print("toponym_param", toponym_param)
+    filtered_toponym = get_object_or_404(Location, pk=toponym_param)
+    filtered_manuscripts = SingleManuscript.objects.filter(
+        folio__locations_mentioned=toponym_param
+    ).distinct()
+    processed_aliases = []
+
+    for alias in filtered_toponym.locationalias_set.all():
+        placename_alias = (
+            [name.strip() for name in alias.placename_alias.split(",")]
+            if alias.placename_alias
+            else []
+        )
+        placename_modern = (
+            [name.strip() for name in alias.placename_modern.split(",")]
+            if alias.placename_modern
+            else []
+        )
+        placename_standardized = (
+            [name.strip() for name in alias.placename_standardized.split(",")]
+            if alias.placename_standardized
+            else []
+        )
+        placename_from_mss = (
+            [name.strip() for name in alias.placename_from_mss.split(",")]
+            if alias.placename_from_mss
+            else []
+        )
+
+        processed_aliases.append(
+            {
+                "placename_alias": placename_alias,
+                "placename_modern": placename_modern,
+                "placename_standardized": placename_standardized,
+                "placename_from_mss": placename_from_mss,
+            }
+        )
+
     return render(
         request,
-        "toponym_single.html",
-        {"toponym": filtered_toponym, "manuscript": filtered_manuscript},
+        "gazetteer/gazetteer_single.html",
+        {
+            "toponym": filtered_toponym,
+            "manuscripts": filtered_manuscripts,
+            "aliases": processed_aliases,
+        },
     )
 
 
@@ -111,5 +147,16 @@ def search_toponyms(request):
 
 
 class ToponymViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Location.objects.all()
+    # queryset = Location.objects.all()
     serializer_class = ToponymSerializer
+
+    def get_queryset(self):
+        """
+        Optionally filters the queryset based on the 'q' query parameter
+        and returns all objects if no specific filter is applied.
+        """
+        queryset = Location.objects.all()
+        query = self.request.query_params.get("q", None)
+        if query is not None:
+            queryset = queryset.filter(country__icontains=query)
+        return queryset
