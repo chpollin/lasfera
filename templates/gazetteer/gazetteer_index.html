@@ -20,11 +20,12 @@
             {# Left column #}
                 <div class="w-1/3 md:w-1/4 h-screen overflow-auto border p-3 m-3">
                     <input name="q" type="text" placeholder="Filter toponyms..." class="p-2 border border-gray-300 rounded mt-4 mb-2 w-full" id="searchToponyms" hx-get="{% url 'search_toponyms' %}" hx-trigger="keyup changed delay:500ms" hx-target="#toponymsList">
+                    <hr class="border-gray-300">
                     <div id="toponymsList">
                         <ul>
                             {% for toponym in toponyms %}
                                 <li class="p-2 hover:bg-gray-100">
-                                    <a class="underline hover:no-underline" href="{% url 'toponyms:toponym' toponym.id %}">{{ toponym.country }}</a>
+                                    <a class="underline hover:no-underline" href="{% url 'toponym_detail' toponym.id %}">{{ toponym.country }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -38,14 +39,14 @@
     </div>
 
     <script>
-        const map = L.map('map').setView([41.9028, 12.4964], 5);
+        const map = L.map('map').setView([41.163, 28.766], 4);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
             maxZoom: 18,
         }).addTo(map);
 
     // Initialize the marker cluster group
-        var markers = L.markerClusterGroup();
+        const markers = L.markerClusterGroup();
 
         fetch("/api/toponyms")
             .then(response => response.json())
@@ -55,7 +56,7 @@
                     if (toponym.latitude === null || toponym.longitude === null) {
                         return;
                     }
-                    var marker = L.marker([toponym.latitude, toponym.longitude])
+                    const marker = L.marker([toponym.latitude, toponym.longitude])
                         .bindPopup(`<a href="/toponyms/${toponym.id}">${toponym.country}</a>`);
                     markers.addLayer(marker); // Add marker to the cluster group
                 });

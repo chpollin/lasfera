@@ -7,7 +7,7 @@
 
     <div class="flex justify-center mx-auto container">
         <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 my-10">
-            <div class="w-full md:w-2/5 p-2">
+            <div class="w-full md:w-3/5 p-2">
                 <h3 class="text-2xl pb-8" id="text">
                     Manuscript Metadata
                 </h3>
@@ -15,13 +15,19 @@
                 <p><strong>Siglum:</strong> {{ manuscript.siglum }}</p>
                 <p><strong>Library:</strong> {{ manuscript.library }}</p>
                 <p><strong>Shelfmark:</strong> {{ manuscript.shelfmark }}</p>
+                {% if manuscript.digitized_url %}
+                    <p><strong>View the manuscript</strong>: <a class="underline hover:no-underline" href="{{ manuscript.digitized_url }}" target="_blank" rel="noopener noreferrer">{{ manuscript.digitized_url }}</a> <i class="fa-solid fa-up-right-from-square"></i></p>
+                {% endif %}
 
                 <h4 class="text-xl pt-8">Related Toponyms</h4>
                 {% for folio in folios %}
                     <p class="pb-1">Folio {{ folio.folio_number }}:</p>
                     {% for location in folio.locations_mentioned.all %}
                         <ul class="list-disc">
-                            <li class="ml-8"><a href="#" class="underline hover:no-underline">{{ location.country }}</a></li>{% empty %}<li class="ml-8">No related toponyms.</li>{% endfor %}
+                            <li class="ml-8"><a href="{% url 'toponym_detail' location.id %}" class="underline hover:no-underline">{{ location.country }}</a></li>
+                    {% empty %}
+                        <li class="ml-8">No related toponyms.</li>
+                    {% endfor %}
                     </ul>
                 {% empty %}
                     <p>No related folios.</p>
@@ -31,7 +37,6 @@
 
             <div class="w-full md:w-3/5 p-2">
                 {% if manuscript.iiif_url %}
-                    <h2 class="text-3xl">TEST MANIFEST</h2>
                     <div id="iiif-viewer" style="width: 100%; height: 600px; position: relative;"></div>
                 {% else %}
                     <h3 class="text-lg">No IIIF manifest provided.</h3>
@@ -44,7 +49,6 @@
 {% endblock content %}
 
 {% block scripts %}
-    <script src="{% static 'js/stanza.js' %}"></script>
     <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
     <script type="text/javascript">
         var mirador = Mirador.viewer({
