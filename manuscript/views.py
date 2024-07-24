@@ -91,6 +91,7 @@ def toponym(request: HttpRequest, toponym_param: int):
     filtered_manuscripts = SingleManuscript.objects.filter(
         folio__locations_mentioned=toponym_param
     ).distinct()
+    filtered_folios = filtered_toponym.folio_set.all()
     processed_aliases = []
 
     for alias in filtered_toponym.locationalias_set.all():
@@ -124,6 +125,10 @@ def toponym(request: HttpRequest, toponym_param: int):
             }
         )
 
+    # Get associated iiif_url fields from SingleManuscript
+    for manuscript in filtered_manuscripts:
+        manuscript.iiif_url = manuscript.iiif_url
+
     return render(
         request,
         "gazetteer/gazetteer_single.html",
@@ -131,6 +136,8 @@ def toponym(request: HttpRequest, toponym_param: int):
             "toponym": filtered_toponym,
             "manuscripts": filtered_manuscripts,
             "aliases": processed_aliases,
+            "folios": filtered_folios,
+            "iiif_manifest": filtered_manuscripts[0].iiif_url,
         },
     )
 
