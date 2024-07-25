@@ -13,8 +13,9 @@
             <div class="flex flex-col md:flex-row w-full p-2 gap-x-1">
         {# Left column: display toponym details #}
                 <div class="w-full md:w-1/2 p-2">
+                    <p class="pb-2">&larr; <a class="underline hover:no-underline" href="{% url 'toponyms' %}">Return to gazetteer</a>.</p>
                 {# display the location aliases if any #}
-                    {% if aliases is not None %}
+                    {% if aliases %}
                         <div class="aliases mb-4">
                             <h4>The toponym <strong><span class="border-b border-red-700">{{ toponym }}</span></strong> has the following aliases:</h4>
                             <ul class="list-disc ml-4">
@@ -34,8 +35,9 @@
                                 {% endfor %}
                             </ul>
                         </div>
+                    {% else %}
+                        <p class="pb-2">There are no aliases associated with this toponym.</p>
                     {% endif %}
-                    <p class="pb-2">&larr; <a class="underline hover:no-underline" href="{% url 'toponyms' %}">Return to gazetteer</a>.</p>
                     <p class="pt-2 pb-2">The following manuscripts contain the toponym <strong><span class="border-b border-red-700">{{ toponym }}</span></strong>:</p>
                     <table class="table-auto">
                         <thead>
@@ -108,15 +110,19 @@
             })
             .catch(error => console.error('Error fetching toponym data:', error));
 
+        let iiif_manifest = "{{ iiif_manifest }}"; // This should come from your backend
+        let photograph = "{{ photograph }}"; // This should come from your backend
+
+        const manifestToUse = iiif_manifest ? iiif_manifest : photograph;
+
         const mirador = Mirador.viewer({
             "id": "iiif-viewer",
             "manifests": {
-                "{{ iiif_manifest }}": {
-                }
+                [manifestToUse]: {}
             },
             "windows": [
                 {
-                    "loadedManifest": "{{ iiif_manifest}}",
+                    "loadedManifest": manifestToUse,
                     "canvasIndex": 2,
                     "thumbnailNavigationPosition": 'far-bottom'
                 }
