@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from manuscript.models import Location
+from manuscript.models import Location, SingleManuscript
 
 
 class ToponymSerializer(serializers.ModelSerializer):
@@ -16,4 +16,25 @@ class ToponymSerializer(serializers.ModelSerializer):
             "country": obj.country,
             "latitude": obj.latitude,
             "longitude": obj.longitude,
+        }
+
+
+class SingleManuscriptSerializer(serializers.ModelSerializer):
+    manuscript = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SingleManuscript
+        fields = ["id", "siglum", "iiif_url", "photographs", "manuscript"]
+
+    def get_manuscript(self, obj):
+        photographs = (
+            obj.photographs.url
+            if obj.photographs and hasattr(obj.photographs, "url")
+            else None
+        )
+        return {
+            "id": obj.id,
+            "siglum": obj.siglum,
+            "iiif_url": obj.iiif_url,
+            "photographs": photographs,
         }

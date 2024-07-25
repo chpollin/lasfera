@@ -1,12 +1,12 @@
 from collections import defaultdict
 from html import unescape
 
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
 
 from manuscript.models import Location, SingleManuscript, Stanza, StanzaTranslated
-from manuscript.serializers import ToponymSerializer
+from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
 
 
 def process_stanzas(stanzas, is_translated=False):
@@ -16,7 +16,7 @@ def process_stanzas(stanzas, is_translated=False):
         stanza_number = int(stanza.stanza_line_code_starts.split(".")[1])
 
         if is_translated:
-            stanza.unescaped_stanza_text = unescape(stanza.stanza_translation)
+            stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
         else:
             stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
 
@@ -154,7 +154,6 @@ def search_toponyms(request):
 
 
 class ToponymViewSet(viewsets.ReadOnlyModelViewSet):
-    # queryset = Location.objects.all()
     serializer_class = ToponymSerializer
 
     def get_queryset(self):
@@ -166,4 +165,20 @@ class ToponymViewSet(viewsets.ReadOnlyModelViewSet):
         query = self.request.query_params.get("q", None)
         if query is not None:
             queryset = queryset.filter(country__icontains=query)
+        return queryset
+
+
+class SingleManuscriptViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = SingleManuscriptSerializer
+    lookup_field = "siglum"
+
+    def get_queryset(self):
+        """
+        Optionally filters the queryset based on the 'q' query parameter
+        and returns all objects if no specific filter is applied.
+        """
+        queryset = SingleManuscript.objects.all()
+        query = self.request.query_params.get("q", None)
+        if query is not None:
+            queryset = queryset.filter(siglum__icontains=query)
         return queryset

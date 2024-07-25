@@ -6,6 +6,9 @@ from . import views
 router = DefaultRouter()
 router.register(r"toponyms", views.ToponymViewSet, basename="toponyms")
 router.register(r"toponym-detail", views.ToponymViewSet, basename="toponym-detail")
+router.register(
+    r"manuscript-detail", views.SingleManuscriptViewSet, basename="manuscript-detail"
+)
 
 urlpatterns = [
     path("", views.index, name="index"),
