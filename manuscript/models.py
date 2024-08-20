@@ -40,6 +40,18 @@ class LineCode(models.Model):
         help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
         verbose_name="Associated IIIF URL",
     )
+    associated_toponym = models.ForeignKey(
+        "Location",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    associated_folio = models.ForeignKey(
+        "Folio",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
 
     def __str__(self) -> str:
         return str(self.code)
@@ -629,11 +641,6 @@ class Location(models.Model):
     )
     placename_id = models.CharField(
         blank=True, null=True, verbose_name="Placename ID", max_length=510
-    )
-    line_code = models.ManyToManyField(
-        LineCode,
-        blank=True,
-        help_text="Citation line codes where the toponym appears.",
     )
     country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern country"
