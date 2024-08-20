@@ -119,6 +119,11 @@ class AuthorityFileInline(admin.TabularInline):
     extra = 1
 
 
+class LineCodeInline(admin.TabularInline):
+    model = LineCode
+    extra = 1
+
+
 # Custom admin models --------------------------------------------
 class SingleManuscriptAdmin(ImportExportModelAdmin):
     inlines = [
@@ -200,7 +205,7 @@ class LocationAdmin(ImportExportModelAdmin):
         "id",
     )
     search_fields = ("country", "description")
-    inlines = [LocationAliasInline]
+    inlines = [LocationAliasInline, LineCodeInline]
 
     def description_html(self, obj):
         return format_html(obj.description) if obj.description else ""
