@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from html import unescape
 
@@ -86,14 +87,16 @@ def toponyms(request: HttpRequest):
 
 
 def toponym(request: HttpRequest, toponym_param: int):
-    print("toponym_param", toponym_param)
+    # The following variables filter the data based on the toponym_param
     filtered_toponym = get_object_or_404(Location, pk=toponym_param)
     filtered_manuscripts = SingleManuscript.objects.filter(
         folio__locations_mentioned=toponym_param
     ).distinct()
     filtered_folios = filtered_toponym.folio_set.all()
-    processed_aliases = []
+    filtered_linecodes = filtered_toponym.linecode_set.all()
 
+    # Process the aliases
+    processed_aliases = []
     for alias in filtered_toponym.locationalias_set.all():
         placename_alias = (
             [name.strip() for name in alias.placename_alias.split(",")]
@@ -129,6 +132,40 @@ def toponym(request: HttpRequest, toponym_param: int):
     for manuscript in filtered_manuscripts:
         manuscript.iiif_url = manuscript.iiif_url
 
+    # Get associated iiif_url from the Folio
+    iiif_urls = []
+    for line_code in filtered_linecodes:
+        if line_code.associated_iiif_url:
+            folio = line_code.associated_folio
+            if folio:
+                manuscript = folio.manuscript
+                iiif_urls.append(
+                    {
+                        "iiif_url": line_code.associated_iiif_url,
+                        "manuscript": manuscript.siglum,
+                    }
+                )
+
+    # The line codes should indicate which folio and manuscript they belong to.
+    line_codes = []
+    for line_code in filtered_linecodes:
+        # Retrieve the Folio object through the associated_folio field
+        folio = line_code.associated_folio
+        # we create a variable that strips out the characters from the folio number so we're left
+        # with just the number
+        folio_number = re.sub(r"\D", "", folio.folio_number) if folio else None
+        if folio:
+            # Retrieve the Manuscript object through the Folio model
+            manuscript = folio.manuscript
+            line_codes.append(
+                {
+                    "line_code": line_code.code,
+                    "manuscript": manuscript.siglum,
+                    "folio": folio.folio_number,
+                    "folio_number": folio_number,
+                }
+            )
+
     return render(
         request,
         "gazetteer/gazetteer_single.html",
@@ -138,6 +175,8 @@ def toponym(request: HttpRequest, toponym_param: int):
             "aliases": processed_aliases,
             "folios": filtered_folios,
             "iiif_manifest": filtered_manuscripts[0].iiif_url,
+            "iiif_urls": iiif_urls,
+            "line_codes": line_codes,
         },
     )
 
