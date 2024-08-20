@@ -12,8 +12,7 @@
         <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 my-10">
             <div class="flex flex-col md:flex-row w-full p-2 gap-x-1">
         {# Left column: display toponym details #}
-                <div class="w-full md:w-1/2 p-2">
-                    <p class="pb-2">&larr; <a class="underline hover:no-underline" href="{% url 'toponyms' %}">Return to gazetteer</a>.</p>
+                <div class="lg:w-1/2 p-4">
                 {# display the location aliases if any #}
                     {% if aliases %}
                         <div class="aliases mb-4">
@@ -21,16 +20,16 @@
                             <ul class="list-disc ml-4">
                                 {% for alias in aliases %}
                                     {% for name in alias.placename_alias %}
-                                        <li>Additional alias: {{ name }}</li>
+                                        <li><strong>Additional alias</strong>: <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-black ring-1 ring-inset ring-blue-700/10">{{ name }}</span></li>
                                     {% endfor %}
                                     {% for name in alias.placename_modern %}
-                                        <li>Modern name: {{ name }}</li>
+                                        <li><strong>Modern name</strong>: <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-black ring-1 ring-inset ring-blue-700/10">{{ name }}</span></li>
                                     {% endfor %}
                                     {% for name in alias.placename_standardized %}
-                                        <li>Standardized name: {{ name }}</li>
+                                        <li><strong>Standardized name</strong>: <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-black ring-1 ring-inset ring-blue-700/10">{{ name }}</span></li>
                                     {% endfor %}
                                     {% for name in alias.placename_from_mss %}
-                                        <li>Manuscript name: {{ name }}</li>
+                                        <li><strong>Manuscript name</strong>: <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-black ring-1 ring-inset ring-blue-700/10">{{ name }}</span></li>
                                     {% endfor %}
                                 {% endfor %}
                             </ul>
@@ -38,13 +37,14 @@
                     {% else %}
                         <p class="pb-2">There are no aliases associated with this toponym.</p>
                     {% endif %}
+                    <p class="pb-2">&larr; <a class="underline hover:no-underline" href="{% url 'toponyms' %}">Return to gazetteer</a>.</p>
+
                     <p class="pt-2 pb-2">The following manuscripts contain the toponym <strong><span class="border-b border-red-700">{{ toponym }}</span></strong>:</p>
                     <table class="table-auto">
                         <thead>
                             <tr>
                                 <th class="px-4 py-2">ID</th>
                                 <th class="px-4 py-2">Siglum</th>
-                                <th class="px-4 py-2">Shelfmark</th>
                                 <th class="px-4 py-2">Library</th>
                             </tr>
                         </thead>
@@ -53,7 +53,6 @@
                                 <tr>
                                     <td class="border px-4 py-2">{{ manuscript.item_id }}</td>
                                     <td class="border px-4 py-2"><a class="underline hover:no-underline" href="/manuscripts/{{ manuscript.siglum }}">{{ manuscript.siglum }}</a></td>
-                                    <td class="border px-4 py-2">{{ manuscript.shelfmark }}</td>
                                     <td class="border px-4 py-2">{{ manuscript.library }}</td>
                                 </tr>
                             {% empty %}
@@ -66,20 +65,72 @@
                 </div> {# end: left column #}
 
         {# Right column #}
-                <div class="w-full md:w-1/2 p-2 flex flex-col">
-                {# Map content #}
+                <div class="lg:w-1/2 p-4 space-y-4">
+            {# Map content #}
                     <div class="flex-auto mb-2">
-                        <div id="map" style="height: 200px; width: auto">Map of the location {{ toponym }}</div>
+                        <div id="map" class="-z-50" style="height: 255px; width: 500px;">Map of the location {{ toponym }}</div>
                     </div>
-                {# IIIF content #}
+
+            {# Line codes for the toponym #}
+                {# we list all of the line_code values #}
+                    <div class="flex-auto mb-2">
+                        <h4 class="text-lg">Line codes for the toponym <strong><span class="border-b border-red-700">{{ toponym }}</span></strong>:</h4>
+                        <table class="table-auto">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2">Line Code</th>
+                                    <th class="px-4 py-2">Manuscript</th>
+                                    <th class="px-4 py-2">Folio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line_code in line_codes %}
+                                    <tr>
+                                        <td class="border px-4 py-2">
+                                            <a class="underline hover:no-underline" href="{% url 'stanzas' %}#{{ line_code.line_code }}">{{ line_code.line_code }}</a>
+                                        </td>
+
+                                        <td class="border px-4 py-2"><a class="underline hover:no-underline" href="/manuscripts/{{ line_code.manuscript }}">{{ line_code.manuscript }}</a></td>
+
+                                        <td class="border px-4 py-2">
+                                            {{ line_code.folio }}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="px-6 py-4 whitespace-nowrap text-center">No line codes available for this toponym.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+            {# IIIF content #}
                     <div class="flex-auto">
-                        {% if iiif_manifest %}
-                            <div id="iiif-viewer" style="width: 100%; height: 600px; position: relative;"></div>
-                        {% else %}
-                            <h3 class="text-lg">No IIIF manifest provided.</h3>
-                        {% endif %}
+                        <h4 class="text-lg">IIIF URLs:</h4>
+                        <ul class="list-disc ml-4">
+                            {% for iiif_url in iiif_urls %}
+                                <ul>
+                                    {% for iiif_url in iiif_urls %}
+                                        <li><a class="underline hover:no-underline" href="#" data-iiif-url="{{ iiif_url.iiif_url }}" data-manuscript="{{ iiif_url.manuscript }}" data-folio-number="{{ iiif_url.folio_number}}" onclick="openMiradorModal(this)">IIIF viewer for manuscript {{ iiif_url.manuscript }}</a></li>
+                                    {% endfor %}
+                                </ul>
+
+                        <!-- Modal Structure -->
+                                <div id="miradorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 shadow-lg rounded-md bg-white z-50">
+                                        <div id="miradorViewer" style="height: 600px;"></div>
+                                        <div class="absolute bottom-4 right-4 z-50">
+                                            <button class="text-white hover:bg-red-700 bg-red-500 p-2 rounded" onclick="closeMiradorModal()">Close viewer</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <li>No IIIF URLs available for this toponym.</li>
+                            {% endfor %}
+                        </ul>
                     </div>
-                </div> {# end: right column #}
+                </div>{# end: right column #}
             </div>
         </section>
     </div>
@@ -88,8 +139,6 @@
 {% block scripts %}
     <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
     <script>
-    // Replace '/api/toponyms/{id}/' with the actual path to your API endpoint
-    // Make sure to replace {id} with the actual ID of the toponym you want to fetch
         fetch('/api/toponyms/{{ toponym.id }}')
             .then(response => response.json())
             .then(data => {
@@ -110,23 +159,30 @@
             })
             .catch(error => console.error('Error fetching toponym data:', error));
 
-        let iiif_manifest = "{{ iiif_manifest }}"; // This should come from your backend
-        let photograph = "{{ photograph }}"; // This should come from your backend
+            // Handle the mirador viewer
+        function openMiradorModal(element) {
+            const iiifUrl = element.getAttribute('data-iiif-url');
+            const manuscript = element.getAttribute('data-manuscript');
+            const folio_number = element.getAttribute('data-folio-number');
 
-        const manifestToUse = iiif_manifest ? iiif_manifest : photograph;
+            // Initialize Mirador
+            Mirador.viewer({
+                id: 'miradorViewer',
+                windows: [{
+                    manifestId: iiifUrl,
+                    canvasIndex: folio_number
+                }]
+            });
 
-        const mirador = Mirador.viewer({
-            "id": "iiif-viewer",
-            "manifests": {
-                [manifestToUse]: {}
-            },
-            "windows": [
-                {
-                    "loadedManifest": manifestToUse,
-                    "canvasIndex": 2,
-                    "thumbnailNavigationPosition": 'far-bottom'
-                }
-            ]
-        });
+            // Display the modal
+            document.getElementById('miradorModal').classList.remove('hidden');
+        }
+
+        function closeMiradorModal() {
+            // Hide the modal
+            document.getElementById('miradorModal').classList.add('hidden');
+            // Clear the Mirador viewer content
+            document.getElementById('miradorViewer').innerHTML = '';
+        }
     </script>
 {% endblock scripts %}
