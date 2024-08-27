@@ -1,4 +1,5 @@
 {% load static tailwind_tags i18n %}
+{% load wagtailcore_tags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -54,15 +55,7 @@
 
                                 <span class="text-white">&middot;</span>
                                 <li class="relative">
-                                    <button class="dropdown-toggle hover:underline inline-flex items-center">About
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
-                                        <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Project Team</a></li>
-                                        <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Technical Specifications</a></li>
-                                    </ul>
+                                    <a href="{% slugurl 'about' %}"><button class="hover:underline inline-flex items-center">About</button></a>
                                 </li>
                             </ul>
                         </nav>
@@ -132,17 +125,8 @@
                                 <span class="text-white">&middot;</span>
 
                                 <li class="relative">
-                                    <button class="dropdown-toggle hover:underline inline-flex items-center">About
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
-                                        <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Project Team</a></li>
-                                        <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Technical Specifications</a></li>
-                                    </ul>
+                                    <a href="{% slugurl 'about' %}"><button class="hover:underline inline-flex items-center">About</button></a>
                                 </li>
-
                             </ul>
                         </nav>
                     </div>
