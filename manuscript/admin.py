@@ -10,6 +10,7 @@ from manuscript.models import (
     EditorialStatus,
     Folio,
     Library,
+    LineCode,
     Location,
     LocationAlias,
     Reference,
@@ -118,6 +119,11 @@ class AuthorityFileInline(admin.TabularInline):
     extra = 1
 
 
+class LineCodeInline(admin.TabularInline):
+    model = LineCode
+    extra = 1
+
+
 # Custom admin models --------------------------------------------
 class SingleManuscriptAdmin(ImportExportModelAdmin):
     inlines = [
@@ -188,15 +194,18 @@ class CodexAdmin(admin.ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(ImportExportModelAdmin):
-    inlines = [LocationAliasInline]
     list_display = (
+        "placename_id",
         "country",
         "description_html",
         "latitude",
         "longitude",
+        "toponym_type",
         "get_related_folios",
         "id",
     )
+    search_fields = ("country", "description")
+    inlines = [LocationAliasInline, LineCodeInline]
 
     def description_html(self, obj):
         return format_html(obj.description) if obj.description else ""
@@ -259,6 +268,12 @@ class StanzaVariantAdmin(admin.ModelAdmin):
         return initial
 
 
+class StanzaTranslatedAdmin(admin.ModelAdmin):
+    list_display = ("stanza", "stanza_text", "language")
+    search_fields = ("stanza", "stanza_text")
+    list_filter = ("language",)
+
+
 # Register to the admin interface.
 
 admin.site.register(Library, LibraryAdmin)
@@ -267,7 +282,8 @@ admin.site.register(Folio, FolioAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
 admin.site.register(Stanza, StanzaAdmin)
 admin.site.register(StanzaVariant, StanzaVariantAdmin)
-admin.site.register(StanzaTranslated)
+admin.site.register(StanzaTranslated, StanzaTranslatedAdmin)
+admin.site.register(LineCode)
 
 admin.site.site_header = "La Sfera Admin"
 admin.site.site_title = "La Sfera Admin Portal"

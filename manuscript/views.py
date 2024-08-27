@@ -1,12 +1,19 @@
+import re
 from collections import defaultdict
 from html import unescape
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
-from django.views import generic
+from rest_framework import viewsets
 
-from manuscript.models import Location, SingleManuscript, Stanza, StanzaTranslated
+from manuscript.models import (
+    Location,
+    LocationAlias,
+    SingleManuscript,
+    Stanza,
+    StanzaTranslated,
+)
+from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
 
 
 def process_stanzas(stanzas, is_translated=False):
@@ -16,7 +23,7 @@ def process_stanzas(stanzas, is_translated=False):
         stanza_number = int(stanza.stanza_line_code_starts.split(".")[1])
 
         if is_translated:
-            stanza.unescaped_stanza_text = unescape(stanza.stanza_translation)
+            stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
         else:
             stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
 
@@ -82,16 +89,163 @@ def manuscript(request: HttpRequest, siglum: str):
 
 def toponyms(request: HttpRequest):
     toponym_objs = Location.objects.all()
-    return render(request, "toponyms.html", {"toponyms": toponym_objs})
+    return render(request, "gazetteer/gazetteer_index.html", {"toponyms": toponym_objs})
 
 
-def toponym(request: HttpRequest, toponym_param: str):
-    filtered_toponym = get_object_or_404(Location, toponym=toponym_param)
-    filtered_manuscript = get_object_or_404(
-        SingleManuscript, folio__locations_mentioned__toponym=toponym_param
-    )
+def toponym(request: HttpRequest, toponym_param: int):
+    # The following variables filter the data based on the toponym_param
+    filtered_toponym = get_object_or_404(Location, pk=toponym_param)
+    filtered_manuscripts = SingleManuscript.objects.filter(
+        folio__locations_mentioned=toponym_param
+    ).distinct()
+    filtered_folios = filtered_toponym.folio_set.all()
+    filtered_linecodes = filtered_toponym.linecode_set.all()
+
+    # Process the aliases
+    processed_aliases = []
+    aggregated_aliases = {
+        "placename_aliases": [],
+        "placename_moderns": [],
+        "placename_standardizeds": [],
+        "placename_from_msss": [],
+    }
+    for alias in filtered_toponym.locationalias_set.all():
+        placename_alias = (
+            [name.strip() for name in alias.placename_alias.split(",")]
+            if alias.placename_alias
+            else []
+        )
+        placename_modern = (
+            [name.strip() for name in alias.placename_modern.split(",")]
+            if alias.placename_modern
+            else []
+        )
+        placename_standardized = (
+            [name.strip() for name in alias.placename_standardized.split(",")]
+            if alias.placename_standardized
+            else []
+        )
+        placename_from_mss = (
+            [name.strip() for name in alias.placename_from_mss.split(",")]
+            if alias.placename_from_mss
+            else []
+        )
+
+        processed_aliases.append(
+            {
+                "placename_alias": placename_alias,
+                "placename_modern": placename_modern,
+                "placename_standardized": placename_standardized,
+                "placename_from_mss": placename_from_mss,
+            }
+        )
+
+        # Aggregate the aliases
+        aggregated_aliases["placename_aliases"].extend(placename_alias)
+        aggregated_aliases["placename_moderns"].extend(placename_modern)
+        aggregated_aliases["placename_standardizeds"].extend(placename_standardized)
+        aggregated_aliases["placename_from_msss"].extend(placename_from_mss)
+
+        processed_aliases.append(
+            {
+                "placename_alias": placename_alias,
+                "placename_modern": placename_modern,
+                "placename_standardized": placename_standardized,
+                "placename_from_mss": placename_from_mss,
+            }
+        )
+
+    # Get associated iiif_url fields from SingleManuscript
+    for manuscript in filtered_manuscripts:
+        manuscript.iiif_url = manuscript.iiif_url
+
+    # Get associated iiif_url from the Folio
+    iiif_urls = []
+    for line_code in filtered_linecodes:
+        if line_code.associated_iiif_url:
+            folio = line_code.associated_folio
+            if folio:
+                manuscript = folio.manuscript
+                iiif_urls.append(
+                    {
+                        "iiif_url": line_code.associated_iiif_url,
+                        "manuscript": manuscript.siglum,
+                    }
+                )
+
+    # The line codes should indicate which folio and manuscript they belong to.
+    line_codes = []
+    for line_code in filtered_linecodes:
+        # Retrieve the Folio object through the associated_folio field
+        folio = line_code.associated_folio
+        # we create a variable that strips out the characters from the folio number so we're left
+        # with just the number
+        folio_number = re.sub(r"\D", "", folio.folio_number) if folio else None
+        if folio:
+            # Retrieve the Manuscript object through the Folio model
+            manuscript = folio.manuscript
+            line_codes.append(
+                {
+                    "line_code": line_code.code,
+                    "manuscript": manuscript.siglum,
+                    "folio": folio.folio_number,
+                    "folio_number": folio_number,
+                }
+            )
+
     return render(
         request,
-        "toponym_single.html",
-        {"toponym": filtered_toponym, "manuscript": filtered_manuscript},
+        "gazetteer/gazetteer_single.html",
+        {
+            "toponym": filtered_toponym,
+            "manuscripts": filtered_manuscripts,
+            "aliases": processed_aliases,
+            "aggregated_aliases": aggregated_aliases,
+            "folios": filtered_folios,
+            "iiif_manifest": filtered_manuscripts[0].iiif_url,
+            "iiif_urls": iiif_urls,
+            "line_codes": line_codes,
+        },
     )
+
+
+def search_toponyms(request):
+    query = request.GET.get("q", "")
+    if query:
+        toponym_results = Location.objects.filter(country__icontains=query)
+    else:
+        toponym_results = Location.objects.all()
+    return render(
+        request, "gazetteer/gazetteer_results.html", {"toponyms": toponym_results}
+    )
+
+
+class ToponymViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ToponymSerializer
+
+    def get_queryset(self):
+        """
+        Optionally filters the queryset based on the 'q' query parameter
+        and returns all objects if no specific filter is applied.
+        """
+        queryset = Location.objects.all()
+        query = self.request.query_params.get("q", None)
+        if query is not None:
+            queryset = queryset.filter(country__icontains=query)
+        return queryset
+
+
+class SingleManuscriptViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = SingleManuscriptSerializer
+    lookup_field = "siglum"
+
+    def get_queryset(self):
+        """
+        Optionally filters the queryset based on the 'q' query parameter
+        and returns all objects if no specific filter is applied.
+        """
+        queryset = SingleManuscript.objects.all()
+        query = self.request.query_params.get("q", None)
+        if query is not None:
+            queryset = queryset.filter(siglum__icontains=query)
+        return queryset
