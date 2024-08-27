@@ -1,3 +1,4 @@
+import logging
 import re
 from collections import defaultdict
 from html import unescape
@@ -14,6 +15,8 @@ from manuscript.models import (
     StanzaTranslated,
 )
 from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
+
+logger = logging.getLogger(__name__)
 
 
 def process_stanzas(stanzas, is_translated=False):
@@ -211,13 +214,17 @@ def toponym(request: HttpRequest, toponym_param: int):
 
 def search_toponyms(request):
     query = request.GET.get("q", "")
-    if query:
-        toponym_results = Location.objects.filter(country__icontains=query)
-    else:
-        toponym_results = Location.objects.all()
-    return render(
-        request, "gazetteer/gazetteer_results.html", {"toponyms": toponym_results}
-    )
+    try:
+        if query:
+            toponym_results = Location.objects.filter(country__icontains=query)
+        else:
+            toponym_results = Location.objects.all()
+        return render(
+            request, "gazetteer/gazetteer_results.html", {"toponyms": toponym_results}
+        )
+    except Exception as e:
+        logger.error("Error in search_toponyms: %s", e)
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 class ToponymViewSet(viewsets.ReadOnlyModelViewSet):

@@ -87,7 +87,7 @@ class Command(BaseCommand):
                     if line_code is None:
                         logger.error("Missing line code at index %s", index)
                         continue
-                    text = self.process_field(row, "line", index)
+                    text = self.process_field(row, "italian", index)
 
                     # We create a new stanza object with their stanza_line_code_starts and stanza_text
                     # We need to convert the line code from, e.g., 1.1.2 to 01.01.02.

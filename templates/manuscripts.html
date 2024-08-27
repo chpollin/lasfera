@@ -4,30 +4,32 @@
 
 {% block content %}
     <section id="table" class="container mx-auto p-4 my-10">
-        <h3 class="text-2xl pb-8" id="table">Table of manuscripts</a></h3>
+        <h3 class="text-4xl pb-8 font-bold" id="top">
+            Manuscript Traditions
+        </h3>
 
-    <table class="table-auto">
-        <thead>
-            <tr>
-                <th class="px-4 py-2">ID</th>
-                <th class="px-4 py-2">Siglum</th>
-                <th class="px-4 py-2">Shelfmark</th>
-                <th class="px-4 py-2">Library</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for manuscript in manuscripts %}
+        <table class="table-auto">
+            <thead>
                 <tr>
-                    <td class="border px-4 py-2">{{ manuscript.item_id }}</td>
-                    <td class="border px-4 py-2">{{ manuscript.siglum }}</td>
-                    <td class="border px-4 py-2">{{ manuscript.shelfmark }}</td>
-                    <td class="border px-4 py-2">{{ manuscript.library }}</td>
-                    <td class="border px-4 py-2">
-                        <a class="underline hover:no-underline" href="/manuscripts/{{ manuscript.siglum }}">Details</a>
-                    </td>
+                    <th class="px-4 py-2">ID</th>
+                    <th class="px-4 py-2">Siglum</th>
+                    <th class="px-4 py-2">Shelfmark</th>
+                    <th class="px-4 py-2">Library</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for manuscript in manuscripts %}
+                    <tr>
+                        <td class="border px-4 py-2">{{ manuscript.item_id }}</td>
+                        <td class="border px-4 py-2">{{ manuscript.siglum }}</td>
+                        <td class="border px-4 py-2">{{ manuscript.shelfmark }}</td>
+                        <td class="border px-4 py-2">{{ manuscript.library }}</td>
+                        <td class="border px-4 py-2">
+                            <a class="underline hover:no-underline" href="/manuscripts/{{ manuscript.siglum }}">Details</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </section>
 {% endblock content %}
