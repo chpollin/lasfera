@@ -49,6 +49,19 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.documents",
+    "wagtail.images",
+    "wagtail.search",
+    "wagtail.admin",
+    "wagtail",
+    "modelcluster",
+    "taggit",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.staticfiles",
@@ -62,6 +75,7 @@ INSTALLED_APPS = [
     "accounts",
     "manuscript",
     "map",
+    "pages",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +89,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -173,12 +188,26 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_ROOT = str(BASE_DIR / "staticfiles")
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 MEDIA_ROOT = str(BASE_DIR / "media")
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
+
+# Wagtail settings
+WAGTAIL_SITE_NAME = "La Sfera"
+WAGTAILADMIN_BASE_URL = "https://dev.lasfera.rrchnm.org"
+WAGTAILDOCS_EXTENSIONS = [
+    "csv",
+    "docx",
+    "key",
+    "odt",
+    "pdf",
+    "rtf",
+    "txt",
+    "xlsx",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
