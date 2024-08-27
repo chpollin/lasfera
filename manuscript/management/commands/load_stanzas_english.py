@@ -87,7 +87,7 @@ class Command(BaseCommand):
                     if line_code is None:
                         logger.error("Missing line code at index %s", index)
                         continue
-                    text = self.process_field(row, "line", index)
+                    text = self.process_field(row, "english", index)
 
                     # We create a new stanza object with their stanza_line_code_starts and stanza_text
                     # We need to convert the line code from, e.g., 1.1.2 to 01.01.02.
@@ -95,16 +95,24 @@ class Command(BaseCommand):
                     line_code = [f"{int(x):02d}" for x in line_code]
                     line_code = ".".join(line_code)
 
+                    logger.info("Processing line code: %s", line_code)
+
                     # We need to connect the translation to the stanza. They share a line code
                     # in the form of 01.01.01, so we can match against these to create the foreign key.
-                    related_stanza = Stanza.objects.get(
-                        stanza_line_code_starts=line_code
-                    )
+                    try:
+                        related_stanza = Stanza.objects.get(
+                            stanza_line_code_starts=line_code
+                        )
+                    except Stanza.MultipleObjectsReturned:
+                        logger.error(
+                            "Multiple objects returned for line code: %s", line_code
+                        )
+                        continue
 
                     stanza, created = StanzaTranslated.objects.get_or_create(
                         stanza=related_stanza,
                         stanza_line_code_starts=line_code,
-                        stanza_translation=text,
+                        stanza_text=text,
                         language="en",
                     )
 
