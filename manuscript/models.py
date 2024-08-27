@@ -643,7 +643,7 @@ class Location(models.Model):
         blank=True, null=True, verbose_name="Placename ID", max_length=510
     )
     country = models.CharField(
-        max_length=255, blank=True, null=True, verbose_name="Modern country"
+        max_length=255, blank=True, null=True, verbose_name="Modern location"
     )
     description = RichTextField(blank=True, null=True)
     latitude = models.FloatField(
@@ -675,22 +675,31 @@ class Location(models.Model):
         )
 
     def geocode(self):
-        if self.latitude is None or self.longitude is None:
-            try:
-                from geopy.geocoders import Nominatim
+        try:
+            from geopy.geocoders import Nominatim
 
-                geolocator = Nominatim(user_agent="manuscript")
-                location_alias = self.locationalias_set.first()
-                if location_alias is not None:
-                    location = geolocator.geocode(location_alias.placename_modern)
-                    if location is not None:
-                        self.latitude = str(location.latitude)
-                        self.longitude = str(location.longitude)
-                        self.save()
-            except Exception as e:
-                logger.warning(
-                    "Warning in geocoding a toponym: %s %s", str(e), str(self)
-                )
+            geolocator = Nominatim(user_agent="lasfera_manuscript")
+
+            if self.country:
+                # Define the bounding box for Europe and Africa
+                europe_africa_bbox = {
+                    "viewbox": [
+                        (
+                            -31.266001,
+                            -34.83333,
+                        ),  # Southwest corner (longitude, latitude)
+                        (63.33333, 71.20868),  # Northeast corner (longitude, latitude)
+                    ],
+                    "bounded": True,
+                }
+
+                location = geolocator.geocode(self.country, **europe_africa_bbox)
+                if location is not None:
+                    self.latitude = str(location.latitude)
+                    self.longitude = str(location.longitude)
+                    self.save()
+        except Exception as e:
+            logger.warning("Warning in geocoding a toponym: %s %s", str(e), str(self))
 
     def save(self, *args, **kwargs):
         # We attempt to automatically set the toponym type based on the code_id

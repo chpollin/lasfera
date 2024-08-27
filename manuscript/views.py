@@ -6,7 +6,13 @@ from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
 
-from manuscript.models import Location, SingleManuscript, Stanza, StanzaTranslated
+from manuscript.models import (
+    Location,
+    LocationAlias,
+    SingleManuscript,
+    Stanza,
+    StanzaTranslated,
+)
 from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
 
 
@@ -97,6 +103,12 @@ def toponym(request: HttpRequest, toponym_param: int):
 
     # Process the aliases
     processed_aliases = []
+    aggregated_aliases = {
+        "placename_aliases": [],
+        "placename_moderns": [],
+        "placename_standardizeds": [],
+        "placename_from_msss": [],
+    }
     for alias in filtered_toponym.locationalias_set.all():
         placename_alias = (
             [name.strip() for name in alias.placename_alias.split(",")]
@@ -118,6 +130,21 @@ def toponym(request: HttpRequest, toponym_param: int):
             if alias.placename_from_mss
             else []
         )
+
+        processed_aliases.append(
+            {
+                "placename_alias": placename_alias,
+                "placename_modern": placename_modern,
+                "placename_standardized": placename_standardized,
+                "placename_from_mss": placename_from_mss,
+            }
+        )
+
+        # Aggregate the aliases
+        aggregated_aliases["placename_aliases"].extend(placename_alias)
+        aggregated_aliases["placename_moderns"].extend(placename_modern)
+        aggregated_aliases["placename_standardizeds"].extend(placename_standardized)
+        aggregated_aliases["placename_from_msss"].extend(placename_from_mss)
 
         processed_aliases.append(
             {
@@ -173,6 +200,7 @@ def toponym(request: HttpRequest, toponym_param: int):
             "toponym": filtered_toponym,
             "manuscripts": filtered_manuscripts,
             "aliases": processed_aliases,
+            "aggregated_aliases": aggregated_aliases,
             "folios": filtered_folios,
             "iiif_manifest": filtered_manuscripts[0].iiif_url,
             "iiif_urls": iiif_urls,

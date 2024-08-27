@@ -53,11 +53,15 @@
                     if (toponym.latitude === null || toponym.longitude === null) {
                         return;
                     }
-                    const marker = L.marker([toponym.latitude, toponym.longitude])
-                        .bindPopup(`<a href="/toponyms/${toponym.id}">${toponym.country}</a>`);
-                    markers.addLayer(marker); // Add marker to the cluster group
+                    const circleMarker = L.circleMarker([toponym.latitude, toponym.longitude], {
+                        radius: 6,
+                        color: 'none',
+                        fillColor: '#B91C1C',
+                        fillOpacity: 0.4
+                    }).bindPopup(`<a href="/toponyms/${toponym.id}">${toponym.country}</a>`);
+                    circleMarker.addTo(map);
                 });
-                map.addLayer(markers);
-            });
+            })
+            .catch(error => console.error('Error fetching toponym data:', error));
     </script>
 {% endblock %}
