@@ -39,17 +39,10 @@ SILENCED_SYSTEM_CHECKS = ["security.W019"]
 # Application definition
 
 INSTALLED_APPS = [
-    "admin_interface",
-    "colorfield",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.messages",
-    "prose",
-    "django_prose_editor",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "wagtail.contrib.forms",
+    "accounts",
+    "manuscript",
+    "map",
+    "pages",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
     "wagtail.sites",
@@ -62,6 +55,16 @@ INSTALLED_APPS = [
     "wagtail",
     "modelcluster",
     "taggit",
+    "admin_interface",
+    "colorfield",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.messages",
+    "prose",
+    "django_prose_editor",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.staticfiles",
@@ -72,10 +75,6 @@ INSTALLED_APPS = [
     "django_browser_reload",
     "import_export",
     "django_dbml",
-    "accounts",
-    "manuscript",
-    "map",
-    "pages",
 ]
 
 MIDDLEWARE = [
@@ -195,6 +194,11 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = str(BASE_DIR / "media")
 MEDIA_URL = "/media/"
 
+ADMINS = [
+    ("Jason Heppler", "jheppler@gmu.edu"),
+]
+MANAGERS = ADMINS
+
 # Wagtail settings
 WAGTAIL_SITE_NAME = "La Sfera"
 WAGTAILADMIN_BASE_URL = "https://dev.lasfera.rrchnm.org"
@@ -208,6 +212,7 @@ WAGTAILDOCS_EXTENSIONS = [
     "txt",
     "xlsx",
 ]
+TAGGIT_CASE_INSENSITIVE = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
