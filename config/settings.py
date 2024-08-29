@@ -39,6 +39,22 @@ SILENCED_SYSTEM_CHECKS = ["security.W019"]
 # Application definition
 
 INSTALLED_APPS = [
+    "accounts",
+    "manuscript",
+    "map",
+    "pages",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.documents",
+    "wagtail.images",
+    "wagtail.search",
+    "wagtail.admin",
+    "wagtail",
+    "modelcluster",
+    "taggit",
     "admin_interface",
     "colorfield",
     "django.contrib.admin",
@@ -59,9 +75,6 @@ INSTALLED_APPS = [
     "django_browser_reload",
     "import_export",
     "django_dbml",
-    "accounts",
-    "manuscript",
-    "map",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +88,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -173,12 +187,32 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_ROOT = str(BASE_DIR / "staticfiles")
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 MEDIA_ROOT = str(BASE_DIR / "media")
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
+
+ADMINS = [
+    ("Jason Heppler", "jheppler@gmu.edu"),
+]
+MANAGERS = ADMINS
+
+# Wagtail settings
+WAGTAIL_SITE_NAME = "La Sfera"
+WAGTAILADMIN_BASE_URL = "https://dev.lasfera.rrchnm.org"
+WAGTAILDOCS_EXTENSIONS = [
+    "csv",
+    "docx",
+    "key",
+    "odt",
+    "pdf",
+    "rtf",
+    "txt",
+    "xlsx",
+]
+TAGGIT_CASE_INSENSITIVE = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
