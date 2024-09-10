@@ -45,13 +45,16 @@ class Command(BaseCommand):
 
     def process_field(self, row, field_name, index, is_bool=False):
         try:
-            if is_bool:
-                return self.process_bool_field(row, field_name)
-            else:
-                field_value = row.get(field_name)
-                if field_value is not None and isinstance(field_value, str):
-                    field_value = field_value.strip()
-                return field_value
+            field_value = row.get(field_name)
+            if field_value is None:
+                print(f"Row {index}: {field_name} is None")
+            elif isinstance(field_value, str):
+                field_value = field_value.strip()
+                if not field_value:
+                    print(
+                        f"Row {index}: {field_name} is an empty string after stripping"
+                    )
+            return field_value
         except Exception as e:
             self.handle_error(index, e, row, field_name, row.get(field_name))
             raise e
@@ -81,7 +84,7 @@ class Command(BaseCommand):
             xls = pd.ExcelFile(filepath)
 
             if sheet_name:
-                df = pd.read_excel(xls, sheet_name, header=1)
+                df = pd.read_excel(xls, sheet_name, header=0)
                 df = df.replace({np.nan: None})
                 df.columns = (
                     df.columns.str.strip()
@@ -105,14 +108,20 @@ class Command(BaseCommand):
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
                     check_item_id = self.process_field(row, "item_id", index)
-                    # try:
-                    #     SingleManuscript.objects.get(item_id=check_item_id)
-                    #     self.stdout.write(
-                    #         self.style.NOTICE(
-                    #             f"Item with item_id {check_item_id} already exists, skipping"
-                    #         )
-                    #     )
-                    # except ObjectDoesNotExist:
+                    try:
+                        SingleManuscript.objects.get(item_id=check_item_id)
+                        self.stdout.write(
+                            self.style.NOTICE(
+                                f"Item with item_id {check_item_id} already exists, skipping"
+                            )
+                        )
+                    except ObjectDoesNotExist:
+                        self.stdout.write(
+                            self.style.NOTICE(
+                                f"Item with item_id {check_item_id} does not exist, creating"
+                            )
+                        )
+
                     # Editorial Status fields
                     editorial_status_access = self.process_field(row, "access", index)
                     editorial_status_iiif = self.process_field(row, "iiif?", index)
@@ -142,6 +151,12 @@ class Command(BaseCommand):
                     # Codex fields
                     codex_support = self.process_field(row, "support", index)
                     codex_height = self.process_field(row, "height_(cm)", index)
+                    # if height is not a number, skip it
+                    if codex_height is not None:
+                        try:
+                            codex_height = float(codex_height)
+                        except ValueError:
+                            codex_height = None
                     codex_date = self.process_field(row, "date", index)
                     codex_folia = self.process_field(row, "folia", index)
                     codex_lines = self.process_field(row, "lines/page", index)
