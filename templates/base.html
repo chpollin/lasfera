@@ -122,8 +122,22 @@
                                 <li class="relative">
                                     <a href="{% url 'manuscripts' %}"><button class="hover:underline inline-flex items-center">Manuscript Tradition</button></a>
                                 </li>
-                                <span class="text-white">&middot;</span>
 
+                                <span class="text-white">&middot;</span>
+                                <li class="relative">
+                                    <button class="dropdown-toggle hover:underline inline-flex items-center">Resources
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
+                                        <li><a href="/pages/education/" class="block px-4 py-2 hover:bg-gray-200 text-sm">La Sfera in the Classroom</a></li>
+                                        <li><a href="/pages/data/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Data</a></li>
+                                        <li><a href="/pages/talks/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Talks &amp; Presentations </a></li>
+                                    </ul>
+                                </li>
+
+                                <span class="text-white">&middot;</span>
                                 <li class="relative">
                                     <a href="/pages/about/"><button class="hover:underline inline-flex items-center">About</button></a>
                                 </li>

@@ -6,7 +6,7 @@
 {% block content %}
     <div class="mx-auto container pt-3">
         <h3 class="text-4xl pb-8 font-bold" id="text">
-            Manuscripts with the toponym <span class="border-b border-red-700 font-normal">{{ toponym }}</span>.
+            Manuscripts with the toponym <span class="border-b border-red-700 font-normal">{{ aggregated_aliases.placename_moderns.0 }}</span>.
         </h3>
 
         <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 my-10">
@@ -16,12 +16,12 @@
                 {# display the location aliases if any #}
                     {% if aliases %}
                         <div class="aliases mb-4">
-                            <h4>The toponym <strong><span class="border-b border-red-700">{{ toponym }}</span></strong> has the following aliases:</h4>
+                            <h4>The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_moderns.0 }}</span></strong> has the following aliases:</h4>
                             <ul class="list-disc ml-4">
                                 {% if aggregated_aliases.placename_moderns %}
                                     <li><strong>Modern name</strong>:
                                         {% for modern in aggregated_aliases.placename_moderns %}
-                                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-black ring-1 ring-inset ring-blue-700/10">
+                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700 ml-2">
                                                 {{ modern }}
                                             </span>
                                         {% endfor %}
@@ -30,7 +30,7 @@
                                 {% if aggregated_aliases.placename_standardizeds %}
                                     <li><strong>Standardized name</strong>:
                                         {% for standardized in aggregated_aliases.placename_standardizeds %}
-                                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-black ring-1 ring-inset ring-blue-700/10">
+                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700 ml-2">
                                                 {{ standardized }}
                                             </span>
                                         {% endfor %}
@@ -39,8 +39,17 @@
                                 {% if aggregated_aliases.placename_from_msss %}
                                     <li><strong>Manuscript name</strong>:
                                         {% for from_mss in aggregated_aliases.placename_from_msss %}
-                                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-black ring-1 ring-inset ring-blue-700/10">
+                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700 ml-2">
                                                 {{ from_mss }}
+                                            </span>
+                                        {% endfor %}
+                                    </li>
+                                {% endif %}
+                                {% if aggregated_aliases.placename_ancient %}
+                                    <li><strong>Ancient name</strong>:
+                                        {% for ancient_name in aggregated_aliases.placename_ancient %}
+                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700 ml-2">
+                                                {{ ancient_name }}
                                             </span>
                                         {% endfor %}
                                     </li>
@@ -52,7 +61,7 @@
                     {% endif %}
                     <p class="pb-2">&larr; <a class="underline hover:no-underline" href="{% url 'toponyms' %}">Return to gazetteer</a>.</p>
 
-                    <p class="pt-2 pb-2">The following manuscripts contain the toponym <strong><span class="border-b border-red-700">{{ toponym }}</span></strong>:</p>
+                    <p class="pt-2 pb-2">The following manuscripts contain the toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_moderns.0 }}</span></strong>:</p>
                     <table class="table-auto">
                         <thead>
                             <tr>
@@ -87,7 +96,7 @@
             {# Line codes for the toponym #}
                 {# we list all of the line_code values #}
                     <div class="flex-auto mb-2">
-                        <h4 class="text-lg">Line codes for the toponym <strong><span class="border-b border-red-700">{{ toponym }}</span></strong>:</h4>
+                        <h4 class="text-lg">Line codes for the toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_moderns.0 }}</span></strong>:</h4>
 
                         {% for line_code in line_codes %}
                             <table class="table-auto">
