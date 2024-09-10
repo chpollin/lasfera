@@ -51,12 +51,27 @@ class Command(BaseCommand):
             self.handle_error(index, e, row, field_name, row.get(field_name))
             raise e
 
-    def create_location(self, placename_id, country, description, folio, manuscript):
+    def create_location(
+        self,
+        placename_id,
+        description,
+        place_type,
+        latitude,
+        longitude,
+        georef,
+        country,
+        folio,
+        manuscript,
+    ):
         try:
             location, created = Location.objects.get_or_create(
                 placename_id=placename_id,
-                country=country,
                 description=description,
+                place_type=place_type,
+                latitude=latitude,
+                longitude=longitude,
+                authority_file=georef,
+                modern_country=country,
             )
 
             # Assign the folio ManyToManyField
@@ -71,20 +86,25 @@ class Command(BaseCommand):
 
             logger.info("Location %s created: %s", location, created)
         except IntegrityError:
-            location = Location.objects.get(country=country)
+            location = Location.objects.get(placename_id=placename_id)
             logger.info("Location already exists: %s", location)
         return location
 
-    def create_location_alias(self, location, place_name_from_mss):
+    def create_location_alias(self, placename_id, place_name_from_mss):
         LocationAlias.objects.update_or_create(
-            location=location, placename_from_mss=place_name_from_mss
+            placename_id=placename_id, placename_from_mss=place_name_from_mss
         )
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--filepath", type=str, help="filepath of excel file to load"
+            "--filepath",
+            type=str,
+            help="filepath of excel file to load",
+            default="data/tt_place_lasfera.xlsx",
         )
-        parser.add_argument("--sheetname", type=str, help="name of sheet to load")
+        parser.add_argument(
+            "--sheetname", type=str, help="name of sheet to load", default="Place_IDs"
+        )
 
     def handle(self, *args, **options):
         filepath = options.get("filepath")
@@ -127,14 +147,26 @@ class Command(BaseCommand):
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
                     placename_id = self.process_field(row, "place_id", index)
-                    histeng_name = self.process_field(row, "histeng_name", index)
                     description = self.process_field(row, "comments", index)
+                    place_type = self.process_field(row, "place_type", index)
+                    latitude = self.process_field(row, "latitude", index)
+                    longitude = self.process_field(row, "longitude", index)
+                    georef = self.process_field(row, "geo_ref", index)
+                    modern_country = self.process_field(row, "mod_name", index)
                     folio = self.process_field(row, "folio", index)
                     manuscript = self.process_field(row, "ms", index)
 
                     try:
                         self.create_location(
-                            placename_id, histeng_name, description, folio, manuscript
+                            placename_id,
+                            description,
+                            place_type,
+                            latitude,
+                            longitude,
+                            georef,
+                            modern_country,
+                            folio,
+                            manuscript,
                         )
                     except IntegrityError:
                         logger.error(
