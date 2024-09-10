@@ -23,7 +23,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--filepath", type=str, help="filepath of excel file to load"
+            "--filepath",
+            type=str,
+            help="filepath of excel file to load",
+            default="tt_place_lasfera.xlsx",
         )
         parser.add_argument("--sheetname", type=str, help="name of sheet to load")
 
@@ -48,25 +51,59 @@ class Command(BaseCommand):
             self.handle_error(index, e, row, field_name, row.get(field_name))
             raise e
 
-    def create_location_alias(self, place_id, toponym):
+    def create_location_alias(
+        self,
+        placename_id,
+        mss_transcription,
+        modern_name,
+        ancient_name,
+        country,
+        place_type,
+        geo_ref,
+        latitude,
+        longitude,
+        comments,
+    ):
         try:
             # Look up the Location instance using place_id
-            locations = Location.objects.filter(placename_id=place_id)
+            locations = Location.objects.filter(placename_id=placename_id)
 
             if not locations.exists():
-                logger.error("Location with placename_id %s does not exist", place_id)
+                logger.error(
+                    "Location with placename_id %s does not exist", placename_id
+                )
                 return
 
             for location in locations:
                 # Create or get the LocationAlias
                 location_alias, created = LocationAlias.objects.get_or_create(
                     location=location,
-                    placename_from_mss=toponym,
+                    placename_from_mss=mss_transcription,
+                    placename_modern=modern_name,
+                    placename_ancient=ancient_name,
                 )
                 if created:
                     logger.info("Created new LocationAlias: %s", location_alias)
                 else:
                     logger.info("LocationAlias already exists: %s", location_alias)
+
+            for location in locations:
+                try:
+                    location_update = Location.objects.get(placename_id=placename_id)
+                    # We update the records with more data
+                    location_update.modern_country = country
+                    location_update.place_type = place_type
+                    location_update.authority_file = geo_ref
+                    location_update.latitude = latitude
+                    location_update.longitude = longitude
+                    location_update.description = comments
+
+                    location_update.save()
+                except Location.DoesNotExist:
+                    logger.error(
+                        "Location with placename_id %s does not exist", placename_id
+                    )
+
         except IntegrityError as e:
             logger.error("Integrity error creating LocationAlias: %s", e)
         except IntegrityError as e:
@@ -114,13 +151,31 @@ class Command(BaseCommand):
 
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
-                    place_id = self.process_field(row, "place_id", index)
-                    toponym = self.process_field(row, "toponym", index)
-
+                    placename_id = self.process_field(row, "place_id", index)
+                    mss_transcription = self.process_field(row, "ex_label", index)
+                    modern_name = self.process_field(row, "mod_name", index)
+                    ancient_name = self.process_field(row, "anc_name", index)
+                    country = self.process_field(row, "country", index)
+                    place_type = self.process_field(row, "place_type", index)
+                    geo_ref = self.process_field(row, "geo_ref", index)
+                    latitude = self.process_field(row, "latitude", index)
+                    longitude = self.process_field(row, "longitude", index)
+                    comments = self.process_field(row, "comments", index)
                     try:
-                        self.create_location_alias(place_id, toponym)
+                        self.create_location_alias(
+                            placename_id,
+                            mss_transcription,
+                            modern_name,
+                            ancient_name,
+                            country,
+                            place_type,
+                            geo_ref,
+                            latitude,
+                            longitude,
+                            comments,
+                        )
                     except IntegrityError as e:
-                        logger.error("Integrity error creating LocationAlias: %s", e)
+                        logger.error("", e)
                     except Exception as e:
                         logger.error("Error creating LocationAlias: %s", e)
 
