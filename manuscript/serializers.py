@@ -1,21 +1,24 @@
 from rest_framework import serializers
 
-from manuscript.models import Location, SingleManuscript
+from manuscript.models import Location, LocationAlias, SingleManuscript
 
 
 class ToponymSerializer(serializers.ModelSerializer):
-    detailed_toponym = serializers.SerializerMethodField()
+    aliases = serializers.SerializerMethodField()
 
     class Meta:
         model = Location
-        fields = ["id", "country", "latitude", "longitude", "detailed_toponym"]
+        fields = ["id", "modern_country", "latitude", "longitude", "aliases"]
 
-    def get_detailed_toponym(self, obj):
+    def get_aliases(self, obj):
+        aliases = (
+            LocationAlias.objects.filter(location=obj)
+            .values_list("placename_modern", flat=True)
+            .distinct()
+        )
         return {
             "id": obj.id,
-            "country": obj.country,
-            "latitude": obj.latitude,
-            "longitude": obj.longitude,
+            "placename_modern": list(aliases),
         }
 
 
