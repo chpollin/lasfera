@@ -585,10 +585,8 @@ class SingleManuscript(models.Model):
     def __str__(self) -> str:
         if self.siglum:
             return self.siglum
-        elif self.shelfmark:
-            return self.shelfmark
         else:
-            return "Manuscript"
+            return "No siglum provided"
 
     def has_pdf_or_images(self):
         if self.photographs:
@@ -642,10 +640,10 @@ class Location(models.Model):
     placename_id = models.CharField(
         blank=True, null=True, verbose_name="Placename ID", max_length=510
     )
-    country = models.CharField(
-        max_length=255, blank=True, null=True, verbose_name="Modern location"
-    )
     description = RichTextField(blank=True, null=True)
+    modern_country = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name="Modern Country"
+    )
     latitude = models.FloatField(
         blank=True,
         null=True,
@@ -662,17 +660,16 @@ class Location(models.Model):
         null=True,
         help_text="The URL to the authority file for the location. If there isn't one, leave blank.",
     )
+    place_type = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         verbose_name = "Toponym"
         verbose_name_plural = "Toponyms"
-        ordering = ["country"]
-        unique_together = ["country"]
+        ordering = ["placename_id"]
+        unique_together = ["placename_id"]
 
     def __str__(self) -> str:
-        return (
-            self.country if self.country is not None else "Missing modern country name"
-        )
+        return str(self.placename_id)
 
     def geocode(self):
         try:
@@ -680,24 +677,28 @@ class Location(models.Model):
 
             geolocator = Nominatim(user_agent="lasfera_manuscript")
 
-            if self.country:
-                # Define the bounding box for Europe and Africa
-                europe_africa_bbox = {
-                    "viewbox": [
-                        (
-                            -31.266001,
-                            -34.83333,
-                        ),  # Southwest corner (longitude, latitude)
-                        (63.33333, 71.20868),  # Northeast corner (longitude, latitude)
-                    ],
-                    "bounded": True,
-                }
+            if not self.latitude or not self.longitude:
+                if self.country:
+                    # Define the bounding box for Europe and Africa
+                    europe_africa_bbox = {
+                        "viewbox": [
+                            (
+                                -31.266001,
+                                -34.83333,
+                            ),  # Southwest corner (longitude, latitude)
+                            (
+                                63.33333,
+                                71.20868,
+                            ),  # Northeast corner (longitude, latitude)
+                        ],
+                        "bounded": True,
+                    }
 
-                location = geolocator.geocode(self.country, **europe_africa_bbox)
-                if location is not None:
-                    self.latitude = str(location.latitude)
-                    self.longitude = str(location.longitude)
-                    self.save()
+                    location = geolocator.geocode(self.country, **europe_africa_bbox)
+                    if location is not None:
+                        self.latitude = str(location.latitude)
+                        self.longitude = str(location.longitude)
+                        self.save()
         except Exception as e:
             logger.warning("Warning in geocoding a toponym: %s %s", str(e), str(self))
 
@@ -743,6 +744,13 @@ class LocationAlias(models.Model):
         null=True,
         verbose_name="Additional aliases",
         help_text="Additional aliases for the placename.",
+    )
+    placename_ancient = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Ancient placename",
+        help_text="The ancient name of the placename.",
     )
     location = models.ForeignKey(
         Location, on_delete=models.CASCADE, blank=True, null=True
