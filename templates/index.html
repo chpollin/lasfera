@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-{% load random_image_from_directory %}
 
 {% block title %}
     Home -  La Sfera
@@ -11,15 +10,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-1">
         {# First row: 3 images #}
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.0 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.1 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.2 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
 
@@ -31,26 +30,26 @@
                 </div>
             </a>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.3 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
 
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.4 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.5 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.6 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
 
         {# Third row: 1/3 image, 2/3 text box #}
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.7 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <a href="/stanzas/" class="block col-span-2 bg-lasfera-gray hover:bg-lasfera-darker-gray text-white p-4 h-40 transform transition-transform duration-300 hover:scale-105 hover:z-10">
@@ -61,15 +60,15 @@
             </a>
 
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.8 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.9 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.10 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
 
@@ -81,25 +80,25 @@
                 </div>
             </a>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.11 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
 
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.12 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.13 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.14 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
          {# Ffith row: 2/3 text box, 1/3 image #}
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.15 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <a href="/manuscripts/" class="block col-span-2 bg-lasfera-gray hover:bg-lasfera-darker-gray text-white p-4 h-40 transform transition-transform duration-300 hover:scale-105 hover:z-10">
@@ -109,15 +108,15 @@
                 </div>
             </a>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.16 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.17 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.18 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
         {# Sixth row: 2/3 text box, 1/3 image #}
@@ -128,19 +127,19 @@
                 </div>
             </a>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.19 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.20 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.21 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
             <div class="relative col-span-1 group">
-                <img src="{{ 'images/home/'|random_image_from_directory }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover">
+                <img src="{{ image_urls.22 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
             </div>
         </div>
