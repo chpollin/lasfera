@@ -19,3 +19,4 @@ class SitePage(Page):
     content_panels = Page.content_panels + [
         FieldPanel("body", classname="full"),
     ]
+    template = "pages/site_page.html"
