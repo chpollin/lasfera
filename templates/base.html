@@ -26,144 +26,28 @@
         <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
         <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
     </head>
-    <body class="font-serif">
-        {% if request.resolver_match.url_name == 'index' %}
-            <header class="relative h-screen bg-cover bg-center" style="background-image: url('{% static 'images/troy.jpg' %}');">
-                <div class="absolute inset-0 bg-black bg-opacity-50">
-                    <div class="container mx-auto p-4 flex justify-between items-center">
-                        <div class="flex items-center space-x-4">
-                            <a href="{% url 'index' %}" class="flex items-center space-x-4">
-                                <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-10">
-                                <h1 class="text-white text-2xl">The La Sfera Project</h1>
-                            </a>
-                        </div>
-                        <nav class="text-white">
-                            <ul class="flex space-x-4">
-                                <li class="relative">
-                                    <a href="{% url 'stanzas' %}"><button class="hover:underline inline-flex items-center">Edition </button></a>
-                                </li>
+    <body class="flex flex-col min-h-screen {% if is_index %}bg-slate-800{% endif %}">
 
-                                <span class="text-white">&middot;</span>
-                                <li class="relative">
-                                    <a href="{% url 'toponyms' %}"><button class="hover:underline inline-flex items-center">Gazetteer</button></a>
-                                </li>
+        {% include 'partials/navigation.html' %}
+        <main class="flex-grow {% if is_index %}no-padding{% endif %}">
+            {% block home %}
+            {% endblock home %}
 
-                                <span class="text-white">&middot;</span>
-                                <li class="relative">
-                                    <a href="{% url 'manuscripts' %}"><button class="hover:underline inline-flex items-center">Manuscript Tradition</button></a>
-                                </li>
-
-                                <span class="text-white">&middot;</span>
-                                <li class="relative">
-                                    <a href="/pages/about/"><button class="hover:underline inline-flex items-center">About</button></a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-
-                    <div class="container mx-auto h-80 flex pt-96 items-center">
-                        <div class="text-left max-w-md">
-                            <h2 class="text-white text-4xl">La Sfera: <em>The Globe</em></h2>
-                            <p class="text-white mt-4">The La Sfera Project encompasses a number of different scholarly efforts exploring the Florentine merchant Gregorio Dati's treatise La sfera (The Globe), written sometime around 1430. It began with the <code>#lasferachallenge</code>, the social-media brainchild of Laura Morreale and Ben Albritton, in 2020, but has since expanded in multiple scholarly directions.</p>
-                            <p class="text-white mt-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                            <p class="text-white mt-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-
-                        </div>
-
-                        <div class="flex flex-col ml-8 space-y-4">
-                            <div class="bg-gray-900 bg-opacity-50 p-4 text-white flex items-center rounded">
-                                <img src="https://placehold.co/100" alt="Manuscript Image" class="mr-4 p-3">
-                                <div>
-                                    <h3 class="text-2xl"><a href="#" class="underline hover:no-underline">The Manuscript.</a></h3>
-                                    <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor,.</p>
-                                </div>
-                            </div>
-                            <div class="bg-gray-900 bg-opacity-50 p-4 text-white flex items-center rounded">
-                                <img src="https://placehold.co/100" alt="Mapping Image" class="mr-4 p-3">
-                                <div>
-                                    <h3 class="text-2xl"><a href="#" class="underline hover:no-underline">Mapping La Sfera.</a></h3>
-                                    <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor,.</p>
-                                </div>
-                            </div>
-                            <div class="bg-gray-900 bg-opacity-50 p-4 text-white flex items-center rounded">
-                                <img src="https://placehold.co/100" alt="Tracking Image" class="mr-4 p-3">
-                                <div>
-                                    <h3 class="text-2xl"><a href="#" class="underline hover:no-underline">Tracking La Sfera.</a></h3>
-                                    <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor,.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </header>
-        {% else %}
-            <header class="relative h-20 bg-cover bg-center" style="background-image: url('{% static 'images/troy.jpg' %}');">
-                <div class="absolute inset-0 bg-black bg-opacity-50">
-                    <div class="container mx-auto p-4 flex justify-between items-center">
-                        <div class="flex items-center space-x-4">
-                            <a href="{% url 'index' %}" class="flex items-center space-x-4">
-                                <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-10">
-                                <h1 class="text-white text-2xl">The La Sfera Project</h1>
-                            </a>
-                        </div>
-                        <nav class="text-white">
-                            <ul class="flex space-x-4">
-                                <li class="relative">
-                                    <a href="{% url 'stanzas' %}"><button class="hover:underline inline-flex items-center">Edition </button></a>
-                                </li>
-                                <span class="text-white">&middot;</span>
-
-                                <li class="relative">
-                                    <a href="{% url 'toponyms' %}"><button class="hover:underline inline-flex items-center">Gazetteer</button></a>
-                                </li>
-                                <span class="text-white">&middot;</span>
-
-                                <li class="relative">
-                                    <a href="{% url 'manuscripts' %}"><button class="hover:underline inline-flex items-center">Manuscript Tradition</button></a>
-                                </li>
-
-                                <span class="text-white">&middot;</span>
-                                <li class="relative">
-                                    <button class="dropdown-toggle hover:underline inline-flex items-center">Resources
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
-                                        <li><a href="/pages/education/" class="block px-4 py-2 hover:bg-gray-200 text-sm">La Sfera in the Classroom</a></li>
-                                        <li><a href="/pages/data/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Data</a></li>
-                                        <li><a href="/pages/talks/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Talks &amp; Presentations </a></li>
-                                    </ul>
-                                </li>
-
-                                <span class="text-white">&middot;</span>
-                                <li class="relative">
-                                    <a href="/pages/about/"><button class="hover:underline inline-flex items-center">About</button></a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-            </header>
-        {% endif %}
-        <main>
             {% block content %}
             {% endblock %}
         </main>
 
-        <footer class="relative w-full bg-slate-200 pt-5">
+        <footer class="relative w-full bg-slate-200 pt-3 pb-3">
             <div class="w-full px-8 mx-auto max-w-7xl">
-                <div
-                    class="flex flex-col items-center justify-center w-full py-4 mt-12 border-t border-blue-gray-50 md:flex-row md:justify-between">
-                    <p
-                        class="block mb-4 text-sm antialiased font-normal leading-normal text-center text-blue-gray-900 md:mb-0">
-                        A project developed by the <a class="underline hover:no-underline" href="https://rrchnm.org">Roy Rosenzweig Center for History and New Media</a> at <a class="underline hover:no-underline" href="https://gmu.edu">George Mason University</a>.
+                <div class="flex flex-col items-center justify-center w-full py-2 mt-6 border-t border-blue-gray-50 md:flex-row md:justify-between">
+                    <p class="block mb-2 text-sm antialiased font-normal leading-normal text-center text-blue-gray-900 md:mb-0">
+                        A project developed by the <a class="underline hover:no-underline" href="https://rrchnm.org">Roy Rosenzweig Center for History and New Media</a> at <a class="underline hover:no-underline" href="https://gmu.edu">George Mason University</a>, 2024.
                     </p>
                 </div>
-                <div class="container mx-auto flex justify-end items-center space-x-4 pb-5">
-                    <img src="{% static 'images/rrchnm-logo.png' %}" alt="Roy Rosenzweig Center for History and New Media" class="h-12">
-                    <img src="{% static 'images/gmu-logo.png' %}" alt="George Mason University" class="h-12">
+                <div class="container mx-auto flex justify-end items-center space-x-4 pb-3">
+                    <img src="{% static 'images/4winds-logo.png' %}" alt="Roy Rosenzweig Center for History and New Media" class="h-10">
+                    <img src="{% static 'images/rrchnm-logo.png' %}" alt="Roy Rosenzweig Center for History and New Media" class="h-10">
+                    <img src="{% static 'images/gmu-logo.png' %}" alt="George Mason University" class="h-10">
                 </div>
             </div>
         </footer>
