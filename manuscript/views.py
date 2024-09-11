@@ -1,8 +1,11 @@
 import logging
+import os
+import random
 import re
 from collections import defaultdict
 from html import unescape
 
+from django.conf import settings
 from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -38,8 +41,33 @@ def process_stanzas(stanzas, is_translated=False):
 
 
 def index(request: HttpRequest):
+    # Prefetch image URLs
+    image_directory = "images/home/"
+    static_dir = os.path.join(settings.STATIC_ROOT, image_directory)
+    if not os.path.exists(static_dir):
+        static_dir = None
+        for static_dir_path in settings.STATICFILES_DIRS:
+            potential_dir = os.path.join(static_dir_path, image_directory)
+            if os.path.exists(potential_dir):
+                static_dir = potential_dir
+                break
+
+    image_urls = []
+    if static_dir:
+        images = [
+            f
+            for f in os.listdir(static_dir)
+            if os.path.isfile(os.path.join(static_dir, f))
+        ]
+        for image in images:
+            image_urls.append(os.path.join(settings.STATIC_URL, image_directory, image))
+
+    # Shuffle the image URLs to simulate randomness
+    random.shuffle(image_urls)
+
     context = {
         "is_index": True,
+        "image_urls": image_urls,
     }
     return render(request, "index.html", context)
 
