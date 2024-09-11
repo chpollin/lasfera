@@ -1,0 +1,51 @@
+{% load static %}
+{% load wagtailcore_tags %}
+
+<header class="relative h-20 bg-cover bg-center" style="background-image: url('{% static 'images/troy.jpg' %}');">
+    <div class="absolute inset-0 bg-black bg-opacity-50">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'index' %}" class="flex items-center space-x-4">
+                    <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-10">
+                    <h1 class="text-white text-2xl">The La Sfera Project</h1>
+                </a>
+            </div>
+            <nav class="text-white">
+                <ul class="flex space-x-4">
+                    <li class="relative">
+                        <a href="{% url 'stanzas' %}"><button class="hover:underline inline-flex items-center">Edition </button></a>
+                    </li>
+                    <span class="text-white">&middot;</span>
+
+                    <li class="relative">
+                        <a href="{% url 'toponyms' %}"><button class="hover:underline inline-flex items-center">Gazetteer</button></a>
+                    </li>
+                    <span class="text-white">&middot;</span>
+
+                    <li class="relative">
+                        <a href="{% url 'manuscripts' %}"><button class="hover:underline inline-flex items-center">Manuscript Tradition</button></a>
+                    </li>
+
+                    <span class="text-white">&middot;</span>
+                    <li class="relative">
+                        <button class="dropdown-toggle hover:underline inline-flex items-center">Resources
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
+                            <li><a href="/resources/education/" class="block px-4 py-2 hover:bg-gray-200 text-sm">La Sfera in the Classroom</a></li>
+                            <li><a href="/resources/data/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Data</a></li>
+                            <li><a href="/resources/talks-presentations/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Talks &amp; Presentations </a></li>
+                        </ul>
+                    </li>
+
+                    <span class="text-white">&middot;</span>
+                    <li class="relative">
+                        <a href="/about/"><button class="hover:underline inline-flex items-center">About</button></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>

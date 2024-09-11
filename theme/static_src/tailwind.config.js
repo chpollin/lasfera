@@ -50,6 +50,12 @@ module.exports = {
     extend: {
       colors: {
         "link-color": "#1a202c",
+        "lasfera-red": "#B91C1C",
+        "lasfera-yellow": "#DEB841",
+        "lasfera-gray": "#7C9299",
+        "lasfera-darker-gray": "#63747A",
+        "lasfera-black": "#191716",
+        "lasfera-white": "#FFFBFE",
       },
       textDecoration: ["responsive", "hover", "focus", "active", "group-hover"],
     },

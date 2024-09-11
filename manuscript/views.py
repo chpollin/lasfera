@@ -3,6 +3,7 @@ import re
 from collections import defaultdict
 from html import unescape
 
+from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
@@ -15,6 +16,7 @@ from manuscript.models import (
     StanzaTranslated,
 )
 from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
+from pages.models import AboutPage, SitePage
 
 logger = logging.getLogger(__name__)
 
@@ -36,11 +38,60 @@ def process_stanzas(stanzas, is_translated=False):
 
 
 def index(request: HttpRequest):
-    return render(request, "index.html")
+    context = {
+        "is_index": True,
+    }
+    return render(request, "index.html", context)
 
 
-def about(request: HttpRequest):
-    return render(request, "about.html")
+def about(request):
+    about_page = AboutPage.objects.live().first()
+
+    return render(
+        request,
+        "pages/about_page.html",
+        {
+            "about_page": about_page,
+        },
+    )
+
+
+def education(request):
+    education_page = (
+        SitePage.objects.live().filter(title="La Sfera in the Classroom").first()
+    )
+
+    return render(
+        request,
+        "pages/site_page.html",
+        {
+            "page": education_page,
+        },
+    )
+
+
+def data(request):
+    data_page = SitePage.objects.live().filter(title="Data").first()
+
+    return render(
+        request,
+        "pages/site_page.html",
+        {
+            "page": data_page,
+        },
+    )
+
+
+def talks(request):
+    talks_page = SitePage.objects.live().filter(title="Talks and Presentations").first()
+
+    return render(
+        request,
+        "pages/site_page.html",
+        {
+            "page": talks_page,
+        },
+    )
 
 
 def stanzas(request: HttpRequest):
@@ -54,17 +105,25 @@ def stanzas(request: HttpRequest):
     books = process_stanzas(stanzas)
     translated_books = process_stanzas(translated_stanzas)
 
-    books = {k: dict(v) for k, v in books.items()}
-    translated_books = {k: dict(v) for k, v in translated_books.items()}
+    paired_books = {}
+    for book_number, stanza_dict in books.items():
+        paired_books[book_number] = []
+        for stanza_number, original_stanzas in stanza_dict.items():
+            translated_stanza_group = translated_books.get(book_number, {}).get(
+                stanza_number, []
+            )
+            paired_books[book_number].append(
+                {
+                    "original": original_stanzas,
+                    "translated": translated_stanza_group,
+                }
+            )
 
     return render(
         request,
         "stanzas.html",
         {
-            "stanzas": stanzas,
-            "translated": translated_stanzas,
-            "books": books,
-            "translated_books": translated_books,
+            "paired_books": paired_books,
             "manuscripts": manuscripts,
             "default_manuscript": default_manuscript,
         },
@@ -79,6 +138,17 @@ def manuscripts(request: HttpRequest):
 def manuscript(request: HttpRequest, siglum: str):
     get_manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
     folios = get_manuscript.folio_set.prefetch_related("locations_mentioned").all()
+
+    # Fetch related LocationAlias objects for each location mentioned in the folios
+    for folio in folios:
+        for location in folio.locations_mentioned.all():
+            alias = (
+                LocationAlias.objects.filter(location=location)
+                .values("placename_modern", "placename_from_mss")
+                .first()
+            )
+            location.alias = alias
+
     return render(
         request,
         "manuscript_single.html",
@@ -91,8 +161,15 @@ def manuscript(request: HttpRequest, siglum: str):
 
 
 def toponyms(request: HttpRequest):
-    toponym_objs = Location.objects.all()
-    return render(request, "gazetteer/gazetteer_index.html", {"toponyms": toponym_objs})
+    # Get unique and sorted LocationAlias objects based on placename_modern
+    toponym_alias_objs = (
+        LocationAlias.objects.values("placename_modern", "location_id")
+        .distinct()
+        .order_by("placename_modern")
+    )
+    return render(
+        request, "gazetteer/gazetteer_index.html", {"aliases": toponym_alias_objs}
+    )
 
 
 def toponym(request: HttpRequest, toponym_param: int):
@@ -111,6 +188,7 @@ def toponym(request: HttpRequest, toponym_param: int):
         "placename_moderns": [],
         "placename_standardizeds": [],
         "placename_from_msss": [],
+        "placename_ancients": [],
     }
     for alias in filtered_toponym.locationalias_set.all():
         placename_alias = (
@@ -133,6 +211,11 @@ def toponym(request: HttpRequest, toponym_param: int):
             if alias.placename_from_mss
             else []
         )
+        placename_ancient = (
+            [name.strip() for name in alias.placename_ancient.split(",")]
+            if alias.placename_ancient
+            else []
+        )
 
         processed_aliases.append(
             {
@@ -140,6 +223,7 @@ def toponym(request: HttpRequest, toponym_param: int):
                 "placename_modern": placename_modern,
                 "placename_standardized": placename_standardized,
                 "placename_from_mss": placename_from_mss,
+                "placename_ancient": placename_ancient,
             }
         )
 
@@ -148,6 +232,7 @@ def toponym(request: HttpRequest, toponym_param: int):
         aggregated_aliases["placename_moderns"].extend(placename_modern)
         aggregated_aliases["placename_standardizeds"].extend(placename_standardized)
         aggregated_aliases["placename_from_msss"].extend(placename_from_mss)
+        aggregated_aliases["placename_ancients"].extend(placename_ancient)
 
         processed_aliases.append(
             {
@@ -155,6 +240,7 @@ def toponym(request: HttpRequest, toponym_param: int):
                 "placename_modern": placename_modern,
                 "placename_standardized": placename_standardized,
                 "placename_from_mss": placename_from_mss,
+                "placename_ancient": placename_ancient,
             }
         )
 
@@ -216,11 +302,17 @@ def search_toponyms(request):
     query = request.GET.get("q", "")
     try:
         if query:
-            toponym_results = Location.objects.filter(country__icontains=query)
+            alias_results = LocationAlias.objects.filter(
+                Q(placename_modern__icontains=query)
+                | Q(placename_ancient__icontains=query)
+                | Q(placename_from_mss__icontains=query)
+            ).distinct()
+            logger.info("Toponym search query: %s", query)
+            logger.info("Toponym search results: %s", alias_results.query)
         else:
-            toponym_results = Location.objects.all()
+            alias_results = LocationAlias.objects.all()
         return render(
-            request, "gazetteer/gazetteer_results.html", {"toponyms": toponym_results}
+            request, "gazetteer/gazetteer_results.html", {"aliases": alias_results}
         )
     except Exception as e:
         logger.error("Error in search_toponyms: %s", e)

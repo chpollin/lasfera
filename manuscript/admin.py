@@ -196,15 +196,13 @@ class CodexAdmin(admin.ModelAdmin):
 class LocationAdmin(ImportExportModelAdmin):
     list_display = (
         "placename_id",
-        "country",
-        "description_html",
-        "latitude",
-        "longitude",
+        "get_placename_modern",
         "toponym_type",
+        "place_type",
         "get_related_folios",
         "id",
     )
-    search_fields = ("country", "description")
+    search_fields = ("placename_id", "description", "modern_country")
     inlines = [LocationAliasInline, LineCodeInline]
 
     def description_html(self, obj):
@@ -216,6 +214,12 @@ class LocationAdmin(ImportExportModelAdmin):
         return ", ".join([str(folio.folio_number) for folio in obj.folio_set.all()])
 
     get_related_folios.short_description = "Related folio"
+
+    def get_placename_modern(self, obj):
+        alias = LocationAlias.objects.filter(location=obj).first()
+        return alias.placename_modern if alias else None
+
+    get_placename_modern.short_description = "Modern Placename"
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)

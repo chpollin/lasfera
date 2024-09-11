@@ -36,13 +36,16 @@ class Command(BaseCommand):
 
     def process_field(self, row, field_name, index, is_bool=False):
         try:
-            if is_bool:
-                return self.process_bool_field(row, field_name)
-            else:
-                field_value = row.get(field_name)
-                if field_value is not None and isinstance(field_value, str):
-                    field_value = field_value.strip()
-                return field_value
+            field_value = row.get(field_name)
+            if field_value is None:
+                print(f"Row {index}: {field_name} is None")
+            elif isinstance(field_value, str):
+                field_value = field_value.strip()
+                if not field_value:
+                    print(
+                        f"Row {index}: {field_name} is an empty string after stripping"
+                    )
+            return field_value
         except Exception as e:
             self.handle_error(index, e, row, field_name, row.get(field_name))
             raise e
@@ -72,7 +75,7 @@ class Command(BaseCommand):
             xls = pd.ExcelFile(filepath)
 
             if sheet_name:
-                df = pd.read_excel(xls, sheet_name, header=3)
+                df = pd.read_excel(xls, sheet_name, header=0)
                 df = df.replace({np.nan: None})
                 df.columns = (
                     df.columns.str.strip()
@@ -80,9 +83,11 @@ class Command(BaseCommand):
                     .str.replace("[^\w\s]", "")
                     .str.replace(" ", "_")
                 )
+                print(f"Sheet: {sheet_name} after processing columns")
+                print(df.head())
                 dfs = {sheet_name: df}
             else:
-                dfs = pd.read_excel(xls, sheet_name=None, header=3)
+                dfs = pd.read_excel(xls, sheet_name=None, header=0)
                 for sheet_name, df in dfs.items():
                     df = df.replace({np.nan: None})
                     df.columns = (
@@ -91,12 +96,20 @@ class Command(BaseCommand):
                         .str.replace("[^\w\s]", "")
                         .str.replace(" ", "_")
                     )
+                    print(f"Sheet: {sheet_name} after processing columns")
+                    print(df.head())
                     dfs[sheet_name] = df
 
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
                     folio = self.process_field(row, "folio", index)
                     manuscript_siglum = self.process_field(row, "ms", index)
+
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f"Creating folio '{folio}' for manuscript '{manuscript_siglum}'"
+                        )
+                    )
 
                     manuscripts = SingleManuscript.objects.filter(
                         siglum=manuscript_siglum

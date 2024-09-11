@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Stanzas - La Sfera{% endblock title %}
+{% block title %}Poetic Text - La Sfera{% endblock title %}
 
 {% block content %}
   <div class="mx-auto container">
@@ -43,55 +43,61 @@
         </div>
 
 
-        <div class="flex">
-          <div class="prose w-2/6 border-r border-slate-500">
-            {% for book_number, stanzas_by_stanza_number in books.items %}
-              <h2 id="libre-{{book_number}}">Libro {{ book_number }}</h2>
-              {% for stanza_number, stanzas in stanzas_by_stanza_number.items %}
-                <div id="stanza-{{stanza_number}}" class="mb-6">
-                  {% for stanza in stanzas %}
-                    <div>
-                      <span class="line-code">
-                        <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}" id="{{stanza.stanza_line_code_starts}}">
-                          <span class="font-serif text-red-700 text-sm mr-2">
-                            {{ stanza.stanza_line_code_starts }}
-                          </span>
-                        </a>
-              <!-- anchor to line codes -->
-              <!-- linking to the folio in the manuscript to the stanza; hyperlink the line code? display only lin enumber for the code -->
-              <!-- mirador viewer switches to the correct location? -->
-                      </span>
-                      <span>
-                        {{ stanza.unescaped_stanza_text|safe }}
-                      </span>
-                    </div>
-                  {% endfor %}
+        <div class="space-y-4">
+          {% for book_number, stanza_pairs in paired_books.items %}
+            <div>
+              <!-- Original language heading -->
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <h2 id="libre-{{book_number}}" class="text-xl font-bold mb-4">Libro {{ book_number }}</h2>
                 </div>
-              {% endfor %}
-            {% endfor %}
-          </div>
-          <div class="prose w-3/6 ml-4">
-            {% for book_number, stanzas_by_stanza_number in translated_books.items %}
-              <h2 id="libre-{{book_number}}">Book {{ book_number }}</h2>
-              {% for stanza_number, stanzas in stanzas_by_stanza_number.items %}
-                <div id="stanza-{{stanza_number}}" class="mb-6">
-                  {% for stanza in stanzas %}
-                    <div>
-                      <span>
-                        {{ stanza.unescaped_stanza_text|safe }}
-                      </span>
-                    </div>
-                  {% endfor %}
+                <div>
+                  <h2 id="book-{{book_number}}" class="text-xl font-bold mb-4">Book {{ book_number }}</h2>
                 </div>
-              {% endfor %}
-            {% endfor %}
-          </div>
-          <!-- <div class="prose w-1/6 ml-4">
-            <h2 id="iiif-viewer">IIIF</a></h2>
-          <p>Placeholder.</p>
-        </div> -->
-        </div>
+              </div>
 
+              <!-- Stanza pairs -->
+              {% for stanza_pair in stanza_pairs %}
+                <div class="grid grid-cols-2 gap-4 mb-4">
+  <!-- Original stanza (left) -->
+                  <div class="prose w-full">
+                    {% for stanza in stanza_pair.original %}
+                      <div class="relative">
+                        <div class="flex items-start">
+                          <span class="line-code mr-2">
+                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}" id="{{stanza.stanza_line_code_starts}}">
+                              <span class="font-serif text-red-700 text-sm">
+                                {{ stanza.stanza_line_code_starts }}
+                              </span>
+                            </a>
+                          </span>
+                          <span class="flex-1 pl-4">{{ stanza.unescaped_stanza_text|safe }}</span>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+  <!-- Translated stanza (right) -->
+                  <div class="prose w-full">
+                    {% for stanza in stanza_pair.translated %}
+                      <div class="relative">
+                        <div class="flex items-start">
+                          <span class="line-code mr-2">
+                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}" id="{{stanza.stanza_line_code_starts}}">
+                              <span class="font-serif text-red-700 text-sm">
+                                {{ stanza.stanza_line_code_starts }}
+                              </span>
+                            </a>
+                          </span>
+                          <span class="flex-1 pl-4">{{ stanza.unescaped_stanza_text|safe }}</span>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
       {% comment %} Return to top component {% endcomment %}
         <div id="return-to-top" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-100 rounded-full shadow-lg p-2 opacity-0 transition duration-500 ease-in-out invisible hover:-translate-y-1 hover:scale-110 hover:bg-white">
           <a href="#top">Return to top &uarr;</a>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Manuscript - La Sfera{% endblock title %}
+{% block title %}Manuscript metadata - La Sfera{% endblock title %}
 
 {% block content %}
 
@@ -27,12 +27,24 @@
                 <h4 class="text-xl pt-8">Related Toponyms</h4>
                 {% for folio in folios %}
                     <p class="pb-1">Folio {{ folio.folio_number }}:</p>
-                    {% for location in folio.locations_mentioned.all %}
-                        <ul class="list-disc">
-                            <li class="ml-8"><a href="{% url 'toponym_detail' location.id %}" class="underline hover:no-underline">{{ location.country }}</a></li>
-                    {% empty %}
-                        <li class="ml-8">No related toponyms.</li>
-                    {% endfor %}
+                    <ul class="list-disc">
+                        {% for location in folio.locations_mentioned.all %}
+                            <li class="ml-8">
+                                {% if location.alias %}
+                                    {% if location.alias.placename_modern %}
+                                        <a href="{% url 'toponym_detail' location.id %}" class="underline hover:no-underline">{{ location.alias.placename_modern }}</a>
+                                    {% elif location.alias.placename_from_mss %}
+                                        <a href="{% url 'toponym_detail' location.id %}" class="underline hover:no-underline">{{ location.alias.placename_from_mss }}</a>
+                                    {% else %}
+                                        <a href="{% url 'toponym_detail' location.id %}" class="underline hover:no-underline">{{ location.country }}</a>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'toponym_detail' location.id %}" class="underline hover:no-underline">{{ location.country }}</a>
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="ml-8">No related toponyms.</li>
+                        {% endfor %}
                     </ul>
                 {% empty %}
                     <p>No related folios.</p>
