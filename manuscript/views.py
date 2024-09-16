@@ -191,9 +191,9 @@ def manuscript(request: HttpRequest, siglum: str):
 def toponyms(request: HttpRequest):
     # Get unique and sorted LocationAlias objects based on placename_modern
     toponym_alias_objs = (
-        LocationAlias.objects.values("placename_modern", "location_id")
+        LocationAlias.objects.values("placename_standardized", "location_id")
         .distinct()
-        .order_by("placename_modern")
+        .order_by("placename_standardized")
     )
     return render(
         request, "gazetteer/gazetteer_index.html", {"aliases": toponym_alias_objs}
@@ -290,25 +290,55 @@ def toponym(request: HttpRequest, toponym_param: int):
                     }
                 )
 
+    # Check if filtered_linecodes is not empty
+    print(f"Filtered linecodes: {filtered_linecodes}")  # confirmed
+
     # The line codes should indicate which folio and manuscript they belong to.
     line_codes = []
     for line_code in filtered_linecodes:
+        print(f"Processing line_code: {line_code.code}")
         # Retrieve the Folio object through the associated_folio field
         folio = line_code.associated_folio
-        # we create a variable that strips out the characters from the folio number so we're left
-        # with just the number
-        folio_number = re.sub(r"\D", "", folio.folio_number) if folio else None
+        print(f"Associated folio: {folio}")
         if folio:
+            # We create a variable that strips out the characters from the folio number so we're left
+            # with just the number
+            folio_number = re.sub(r"\D", "", folio.folio_number)
             # Retrieve the Manuscript object through the Folio model
             manuscript = folio.manuscript
+            print(f"Associated manuscript: {manuscript}")  # Debugging statement
             line_codes.append(
                 {
                     "line_code": line_code.code,
-                    "manuscript": manuscript.siglum,
+                    "manuscript": manuscript.siglum if manuscript else "N/A",
                     "folio": folio.folio_number,
-                    "folio_number": folio_number,
                 }
             )
+        else:
+            # Handle case where folio is None
+            line_codes.append(
+                {
+                    "line_code": line_code.code,
+                    "manuscript": "No manuscript assigned.",
+                    "folio": "No folio assigned.",
+                }
+            )
+    print(f"Final line_codes list: {line_codes}")  # Debugging statement
+
+    return render(
+        request,
+        "gazetteer/gazetteer_single.html",
+        {
+            "toponym": filtered_toponym,
+            "manuscripts": filtered_manuscripts,
+            "aliases": processed_aliases,
+            "aggregated_aliases": aggregated_aliases,
+            "folios": filtered_folios,
+            "iiif_manifest": filtered_manuscripts[0].iiif_url,
+            "iiif_urls": iiif_urls,
+            "line_codes": line_codes,  # Ensure line_codes is included in the context
+        },
+    )
 
     return render(
         request,
