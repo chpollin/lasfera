@@ -28,7 +28,7 @@
                             <ul>
                                 {% for alias in aliases %}
                                     <li class="p-2 hover:bg-gray-100">
-                                        <a class="underline hover:no-underline" href="{% url 'toponym_detail' alias.location_id %}">{{ alias.placename_modern }}</a>
+                                        <a class="underline hover:no-underline" href="{% url 'toponym_detail' alias.location_id %}">{{ alias.placename_standardized }}</a>
                                     </li>
                                 {% endfor %}
                             </ul>
@@ -59,7 +59,7 @@
                         if (toponym.latitude === null || toponym.longitude === null) {
                             return;
                         }
-                        const aliases = toponym.aliases.placename_modern;
+                        const aliases = toponym.aliases.placename_standardized;
                         const circleMarker = L.circleMarker([toponym.latitude, toponym.longitude], {
                             radius: 6,
                             color: 'none',

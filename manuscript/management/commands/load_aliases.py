@@ -56,6 +56,7 @@ class Command(BaseCommand):
         placename_id,
         mss_transcription,
         modern_name,
+        placename,
         ancient_name,
         country,
         place_type,
@@ -79,6 +80,7 @@ class Command(BaseCommand):
                 location_alias, created = LocationAlias.objects.get_or_create(
                     location=location,
                     placename_from_mss=mss_transcription,
+                    placename_standardized=placename,
                     placename_modern=modern_name,
                     placename_ancient=ancient_name,
                 )
@@ -153,6 +155,7 @@ class Command(BaseCommand):
                 for index, row in df.iterrows():
                     placename_id = self.process_field(row, "place_id", index)
                     mss_transcription = self.process_field(row, "ex_label", index)
+                    standardized_name = self.process_field(row, "histeng_name", index)
                     modern_name = self.process_field(row, "mod_name", index)
                     ancient_name = self.process_field(row, "anc_name", index)
                     country = self.process_field(row, "country", index)
@@ -166,6 +169,7 @@ class Command(BaseCommand):
                             placename_id,
                             mss_transcription,
                             modern_name,
+                            standardized_name,
                             ancient_name,
                             country,
                             place_type,
