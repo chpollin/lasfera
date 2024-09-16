@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Data on toponym {{ aggregated_aliases.placename_moderns.0 }} - La Sfera{% endblock title %}
+{% block title %}Data on toponym {{ aggregated_aliases.placename_standardizeds.0 }} - La Sfera{% endblock title %}
 
 {% block content %}
     <div class="mx-auto container pt-3">
         <h3 class="text-4xl pb-8 font-bold" id="text">
-            <span class="border-b border-red-700 font-normal">{{ aggregated_aliases.placename_moderns.0 }}</span>
+            <span class="border-b border-red-700 font-normal">{{ aggregated_aliases.placename_standardizeds.0 }}</span>
         </h3>
         <p>&larr; <a class="underline hover:no-underline" href="{% url 'toponyms' %}">Return to gazetteer</a>.</p>
 
@@ -18,7 +18,7 @@
                 {# display the location aliases if any #}
                     {% if aliases %}
                         <div class="aliases mb-4">
-                            <h4>Some of the variant spellings for <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_moderns.0 }}</span></strong> that appear in <em>Sfera</em> manuscripts are:</h4>
+                            <h4>Some of the variant spellings for <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_standardizeds.0 }}</span></strong> that appear in <em>Sfera</em> manuscripts are:</h4>
                             {% if aggregated_aliases.placename_aliases %}
                                 <ul class="flex flex-wrap gap-2">
                                     {% for place_alias in aggregated_aliases.placename_aliases %}
@@ -42,9 +42,9 @@
                                         {% endfor %}
                                     </li>
                                 {% endif %}
-                                {% if aggregated_aliases.placename_moderns %}
+                                {% if aggregated_aliases.placename_standardizeds %}
                                     <li><strong>Modern name</strong>:
-                                        {% for modern in aggregated_aliases.placename_moderns %}
+                                        {% for modern in aggregated_aliases.placename_standardizeds %}
                                             <span class="inline-flex items-center font-medium text-black border-b border-red-700">
                                                 {{ modern }}
                                             </span>
@@ -80,41 +80,48 @@
 
                 {# Line codes for the toponym #}
                 {# we list all of the line_code values #}
+                {# Line codes for the toponym #}
                     <div class="flex-auto mb-2 bg-gray-50 p-2 m-2">
-                        <h4 class="text-lg">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_moderns.0 }}</span></strong> is mentioned in the text of <em>La Sfera</em> here:</h4>
+                        <h4 class="text-lg">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_standardizeds.0 }}</span></strong> is mentioned in the text of <em>La Sfera</em> here:</h4>
 
-                        {% for line_code in line_codes %}
-                            <table class="table-auto">
-                                <thead>
-                                    <tr>
-                                        <th class="px-4 py-2">Line Code</th>
-                                        <th class="px-4 py-2">Manuscript</th>
-                                        <th class="px-4 py-2">Folio</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                        <table class="table-auto">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2">Line Code</th>
+                                    <th class="px-4 py-2">Manuscript</th>
+                                    <th class="px-4 py-2">Folio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line_code in line_codes %}
                                     <tr>
                                         <td class="border px-4 py-2">
                                             <a class="underline hover:no-underline" href="{% url 'stanzas' %}#{{ line_code.line_code }}">{{ line_code.line_code }}</a>
                                         </td>
-
-                                        <td class="border px-4 py-2"><a class="underline hover:no-underline" href="/manuscripts/{{ line_code.manuscript }}">{{ line_code.manuscript }}</a></td>
-
+                                        <td class="border px-4 py-2">
+                                            {% if line_code.manuscript != "No manuscript assigned." and line_code.manuscript %}
+                                                <a class="underline hover:no-underline" href="/manuscripts/{{ line_code.manuscript }}">{{ line_code.manuscript }}</a>
+                                            {% else %}
+                                                {{ line_code.manuscript }}
+                                            {% endif %}
+                                        </td>
                                         <td class="border px-4 py-2">
                                             {{ line_code.folio }}
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        {% empty %}
-                            <div>
-                                <span class="prose">No line codes available for this toponym.</span>
-                            </div>
-                        {% endfor %}
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="border px-4 py-2">
+                                            <span class="prose">No line codes available for this toponym.</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
 
 
-                    <p class="pt-2 pb-2">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_moderns.0 }}</span></strong> appears on at least one map in the following manuscripts:</p>
+                    <p class="pt-2 pb-2">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_standardizeds.0 }}</span></strong> appears on at least one map in the following manuscripts:</p>
                     <table class="table-auto">
                         <thead>
                             <tr>
