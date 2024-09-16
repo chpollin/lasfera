@@ -197,6 +197,7 @@ class LocationAdmin(ImportExportModelAdmin):
     list_display = (
         "placename_id",
         "get_placename_modern",
+        "get_mss_placename",
         "toponym_type",
         "place_type",
         "get_related_folios",
@@ -220,6 +221,12 @@ class LocationAdmin(ImportExportModelAdmin):
         return alias.placename_modern if alias else None
 
     get_placename_modern.short_description = "Modern Placename"
+
+    def get_mss_placename(self, obj):
+        alias = LocationAlias.objects.filter(location=obj).first()
+        return alias.placename_from_mss if alias else None
+
+    get_mss_placename.short_description = "Manuscript Placename"
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
