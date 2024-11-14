@@ -3,6 +3,21 @@
 
 {% block title %}Poetic Text - La Sfera{% endblock title %}
 
+{% block extra_css %}
+  <style>
+    .mirador-viewer {
+      width: 100% !important;
+      height: 100% !important;
+    }
+        /* Hide unnecessary UI elements */
+    .mirador-window-sidebar,
+    .mirador-companion-windows,
+    .mirador-primary-window .window-top-bar {
+      display: none !important;
+    }
+  </style>
+{% endblock extra_css %}
+
 {% block content %}
   <div class="mx-auto container">
     <section id="manuscript" class="w-full p-4 my-10">
@@ -12,24 +27,10 @@
         </h3>
 
         <div class="flex flex-col md:flex-row pb-8 mb-8 border-b border-slate-500">
-        {% comment %} Column 1: Manuscript Dropdown {% endcomment %}
-          <!-- <div class="w-full md:w-1/3 mb-4 md:mb-0 md:pr-4">
-            <label for="manuscript" class="block text-gray-700 text-sm font-bold mb-2">Select a Manuscript:</label>
-            <div class="relative">
-              <select id="manuscript" class="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                {% for manuscript in manuscripts %}
-                  <option value="{{ manuscript.siglum }}" {% if manuscript.siglum == "TEST" %}selected{% endif %}>{{ manuscript.siglum }}</option>
-                {% endfor %}
-              </select>
-
-            </div>
-          </div> -->
-        {% comment %} Column 2: Book Links {% endcomment %}
           <div class="w-full md:w-1/3 mb-4 md:mb-0 md:px-2">
             <label for="manuscript" class="block text-gray-700 text-sm font-bold mb-2">Jump to a book:</label>
             <p class="mb-5"><a href="#libre-1">Libro 1</a> | <a href="#libre-2">Libro 2</a> | <a href="#libre-3">Libro 3</a> | <a href="#libre-4">Libro 4</a></p>
           </div>
-        {% comment %} Column 3: Checkboxes {% endcomment %}
           <div class="w-full md:w-1/3">
             <div class="mb-4">
               <input type="checkbox" id="toggleLineCodes" class="mr-2" checked>
@@ -42,30 +43,36 @@
           </div>
         </div>
 
-
         <div class="space-y-4">
           {% for book_number, stanza_pairs in paired_books.items %}
             <div>
-              <!-- Original language heading -->
-              <div class="grid grid-cols-2 gap-4 mb-4">
+              <!-- Three-column headers -->
+              <div class="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <h2 id="libre-{{book_number}}" class="text-xl font-bold mb-4">Libro {{ book_number }}</h2>
                 </div>
                 <div>
                   <h2 id="book-{{book_number}}" class="text-xl font-bold mb-4">Book {{ book_number }}</h2>
                 </div>
+                <div>
+                  <h2 class="text-xl font-bold mb-4">Manuscript</h2>
+                </div>
               </div>
 
-              <!-- Stanza pairs -->
+              <!-- Stanza pairs with manuscript -->
               {% for stanza_pair in stanza_pairs %}
-                <div class="grid grid-cols-2 gap-4 mb-4">
-  <!-- Original stanza (left) -->
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <!-- Original stanza (left) -->
                   <div class="prose w-full">
                     {% for stanza in stanza_pair.original %}
                       <div class="relative">
                         <div class="flex items-start">
                           <span class="line-code mr-2">
-                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}" id="{{stanza.stanza_line_code_starts}}" title="Anchor link to line code {{ stanza.stanza_line_code_starts}}">
+                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}"
+                               id="{{stanza.stanza_line_code_starts}}"
+                               title="Anchor link to line code {{ stanza.stanza_line_code_starts}}"
+                               data-folio="{{ stanza.related_folio.canvas_number }}"
+                               onclick="showManuscript(event, this)">
                               <span class="font-serif text-red-700 text-sm">
                                 {{ stanza.stanza_line_code_starts }}
                               </span>
@@ -76,13 +83,14 @@
                       </div>
                     {% endfor %}
                   </div>
-  <!-- Translated stanza (right) -->
+                  <!-- Translated stanza (middle) -->
                   <div class="prose w-full">
                     {% for stanza in stanza_pair.translated %}
                       <div class="relative">
                         <div class="flex items-start">
                           <span class="line-code mr-2">
-                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}" id="{{stanza.stanza_line_code_starts}}">
+                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}"
+                               id="{{stanza.stanza_line_code_starts}}">
                               <span class="font-serif text-red-700 text-sm">
                                 {{ stanza.stanza_line_code_starts }}
                               </span>
@@ -93,6 +101,24 @@
                       </div>
                     {% endfor %}
                   </div>
+                  <!-- Manuscript viewer (right) -->
+                  <div class="manuscript-view h-[500px]" id="viewer-{{ stanza_pair.original.0.stanza_line_code_starts }}">
+                    {% if stanza_pair.original.0.related_folio %}
+                      {% with canvas_id=stanza_pair.original.0.related_folio.get_canvas_id %}
+                        <div id="mirador-viewer">
+                          <div id="mirador-{{ stanza_pair.original.0.stanza_line_code_starts|slugify }}"
+                               class="w-full h-full border border-gray-200 rounded-lg"
+                               data-canvas-id="{{ canvas_id }}">
+                          </div>
+                        </div>
+                      {% endwith %}
+                    {% else %}
+                      <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                        <p class="text-gray-500">No folio associated with these stanzas</p>
+                      </div>
+                    {% endif %}
+                  </div>
+
                 </div>
               {% endfor %}
             </div>
@@ -103,14 +129,15 @@
             </div>
           {% endfor %}
         </div>
-      {% comment %} Return to top component {% endcomment %}
+
+        <!-- Return to top button -->
         <div id="return-to-top" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-100 rounded-full shadow-lg p-2 opacity-0 transition duration-500 ease-in-out invisible hover:-translate-y-1 hover:scale-110 hover:bg-white">
           <a href="#top">Return to top &uarr;</a>
         </div>
       </section>
     </div>
 
-{% comment %} Sidebar component {% endcomment %}
+    <!-- Sidebar for notations -->
     <div id="sidebar"
          class="fixed right-0 top-0 h-full w-96 bg-white p-4 transform translate-x-full overflow-auto transition-transform duration-200 ease-in-out shadow-left">
       <button id="close-button"
@@ -123,4 +150,76 @@
 {% block scripts %}
   <script src="{% static 'js/stanza.js' %}"></script>
   <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
+  <script>
+    console.log('Script starting...');
+
+    const miradorInstances = {};
+
+    function initMirador(containerId, manifestUrl, canvasId) {
+      console.log('Initializing Mirador:', {
+        containerId,
+        manifestUrl,
+        canvasId
+      });
+
+      try {
+        miradorInstances[containerId] = Mirador.viewer({
+          id: containerId,
+          windows: [{
+            manifestId: manifestUrl,
+            canvasId: canvasId,
+            view: 'single',
+          }],
+          window: {
+            allowFullscreen: false,
+            sideBarOpenByDefault: false,
+            defaultView: 'single',
+            panels: {
+              info: false,
+              attribution: false
+            }
+          },
+          workspace: {
+            type: 'mosaic',
+            showZoomControls: true
+          },
+          workspaceControlPanel: {
+            enabled: false,
+          },
+          theme: {
+            transitions: {
+              duration: 0
+            }
+          }
+        });
+        console.log('Mirador initialized for:', containerId);
+      } catch (error) {
+        console.error('Error initializing Mirador:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM Content Loaded');
+
+      const manifestUrl = "{{ manuscript.iiif_url }}";
+      console.log('Using manifest:', manifestUrl);
+
+        // Find all viewer containers
+      const containers = document.querySelectorAll('[id^="mirador-"]');
+      console.log('Found viewer containers:', containers.length);
+
+      containers.forEach((container, index) => {
+        const canvasId = container.dataset.canvasId;
+        if (canvasId) {
+          console.log(`Initializing viewer ${index}:`, {
+            containerId: container.id,
+            canvasId
+          });
+          initMirador(container.id, manifestUrl, canvasId);
+        }
+      });
+    });
+
+  </script>
 {% endblock scripts %}
+
