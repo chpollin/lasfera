@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.generic import DetailView
 from rest_framework import viewsets
 
 from manuscript.models import (
@@ -130,6 +131,18 @@ def stanzas(request: HttpRequest):
     manuscripts = SingleManuscript.objects.all()
     default_manuscript = SingleManuscript.objects.get(siglum="TEST")
 
+    logger.debug(f"Default manuscript: {default_manuscript}")
+    logger.debug(
+        f"Default manuscript IIIF URL: {getattr(default_manuscript, 'iiif_url', 'No URL found')}"
+    )
+
+    print("\nDEBUG INFORMATION:")
+    for stanza in stanzas[:5]:
+        if stanza.related_folio:
+            print(f"Stanza {stanza.stanza_line_code_starts}:")
+            print(f"  Folio number: {stanza.related_folio.folio_number}")
+            print(f"  Canvas ID: {stanza.related_folio.get_canvas_id()}")
+
     books = process_stanzas(stanzas)
     translated_books = process_stanzas(translated_stanzas)
 
@@ -137,15 +150,26 @@ def stanzas(request: HttpRequest):
     for book_number, stanza_dict in books.items():
         paired_books[book_number] = []
         for stanza_number, original_stanzas in stanza_dict.items():
+            # Get corresponding translated stanzas
             translated_stanza_group = translated_books.get(book_number, {}).get(
                 stanza_number, []
             )
+
             paired_books[book_number].append(
                 {
                     "original": original_stanzas,
                     "translated": translated_stanza_group,
                 }
             )
+
+    # Get the IIIF manifest URL from the default manuscript
+    manuscript_data = {
+        "iiif_url": default_manuscript.iiif_url
+        if hasattr(default_manuscript, "iiif_url")
+        else None
+    }
+
+    logger.debug(f"Manuscript data: {manuscript_data}")
 
     return render(
         request,
@@ -154,8 +178,46 @@ def stanzas(request: HttpRequest):
             "paired_books": paired_books,
             "manuscripts": manuscripts,
             "default_manuscript": default_manuscript,
+            "manuscript": manuscript_data,
         },
     )
+
+
+class ManuscriptViewer(DetailView):
+    model = Stanza
+    template_name = "manuscript/viewer.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        stanza = self.get_object()
+
+        if stanza.related_folio:
+            manuscript = stanza.get_manuscript()
+
+            related_stanzas = (
+                Stanza.objects.filter(related_folio=stanza.related_folio)
+                .exclude(id=stanza.id)
+                .order_by("stanza_line_code_starts")
+            )
+
+            context.update(
+                {
+                    "manifest_url": manuscript.iiif_url if manuscript else None,
+                    "canvas_id": (
+                        stanza.related_folio.get_canvas_id()
+                        if stanza.related_folio
+                        else None
+                    ),
+                    "related_stanzas": related_stanzas,
+                    "folio_number": stanza.related_folio.number,
+                    "line_range": {
+                        "start": stanza.parse_line_code(stanza.stanza_line_code_starts),
+                        "end": stanza.parse_line_code(stanza.stanza_line_code_ends),
+                    },
+                }
+            )
+
+            return context
 
 
 def manuscripts(request: HttpRequest):

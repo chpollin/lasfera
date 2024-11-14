@@ -7,6 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 from prose.fields import RichTextField
 
+from manuscript.utils import get_canvas_id_for_folio
+
 logger = logging.getLogger(__name__)
 
 
@@ -293,6 +295,13 @@ class StanzaVariant(models.Model):
     def provide_snippet_of_stanza(self):
         return self.stanza.stanza_variation[:100]
 
+    def parse_line_code(self, code):
+        """Parse a line code into book, stanza, line components"""
+        if not code:
+            return None
+        parts = code.split(".")
+        return {"book": int(parts[0]), "stanza": int(parts[1]), "line": int(parts[2])}
+
     def save(self, *args, **kwargs):
         # we trim the letter code off the stanza_variation_line_code_starts
         # so we can look for the FK to the Stanza
@@ -393,6 +402,10 @@ class Stanza(models.Model):
         return int(
             self.your_field.split(".")[2].split("-")[0]
         )  # Handle the case of a range
+
+    def get_manuscript(self):
+        """Get the associated manuscript through the folio"""
+        return self.related_folio.manuscript if self.related_folio else None
 
     def derive_folio_location(self):
         # We derive the folio based on the line code.
@@ -523,6 +536,28 @@ class Folio(models.Model):
         if self.folio_number is not None:
             return f"Folio {self.folio_number}, from manuscript {self.manuscript}"
         return f"Folio has no folio number, but is associated with manuscript {self.manuscript}"
+
+    def get_canvas_id(self):
+        """Get the IIIF canvas ID for this folio"""
+        if not self.folio_number:
+            return None
+
+        return get_canvas_id_for_folio(self.folio_number)
+
+    # def get_canvas_id(self):
+    #     """Generate the IIIF canvas ID for this folio"""
+    #     if not self.folio_number:
+    #         return None
+    #
+    #     return f"https://digi.vatlib.it/iiif/MSS_Urb.lat.752/canvas/p{self.folio_number}"
+    #
+    # def get_canvas_id(self):
+    #     """Generate the IIIF canvas ID for this folio"""
+    #     print(f"Debug - get_canvas_id called for folio {self.folio_number}")
+    #     manifest_base = self.manuscript.iiif_url.replace("manifest.json", "")
+    #     canvas_id = f"{manifest_base}canvas/p{self.folio_number}"
+    #     print(f"Debug - generated canvas ID: {canvas_id}")
+    #     return canvas_id
 
     class Meta:
         ordering = ["folio_number"]
