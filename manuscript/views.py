@@ -123,6 +123,25 @@ def talks(request):
     )
 
 
+def mirador_view(request, manuscript_id, page_number):
+    try:
+        manuscript = SingleManuscript.objects.get(id=manuscript_id)
+    except SingleManuscript.DoesNotExist:
+        manuscript = SingleManuscript.objects.get(siglum="TEST")
+
+    if not manuscript.iiif_url:
+        manuscript = SingleManuscript.objects.get(siglum="TEST")
+
+    base_url = manuscript.iiif_url.replace("manifest.json", "")
+    canvas_id = f"{base_url}canvas/p{page_number}"
+
+    return render(
+        request,
+        "manuscript/mirador.html",
+        {"manifest_url": manuscript.iiif_url, "canvas_id": canvas_id},
+    )
+
+
 def stanzas(request: HttpRequest):
     stanzas = Stanza.objects.all().order_by("stanza_line_code_starts")
     translated_stanzas = StanzaTranslated.objects.all().order_by(
