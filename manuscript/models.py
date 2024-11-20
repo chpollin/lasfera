@@ -3,6 +3,8 @@ import re
 
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 from prose.fields import RichTextField
@@ -375,6 +377,12 @@ class Stanza(models.Model):
     language = models.CharField(
         max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
     )
+    annotations = GenericRelation(
+        "textannotation.TextAnnotation",
+        content_type_field="content_type",
+        object_id_field="object_id",
+        related_query_name="stanza",
+    )
 
     def __str__(self) -> str:
         if self.stanza_line_code_starts is not None:
@@ -481,6 +489,12 @@ class StanzaTranslated(models.Model):
     stanza_text = RichTextField(blank=True, null=True)
     language = models.CharField(
         max_length=2, choices=Stanza.STANZA_LANGUAGE, blank=True, null=True
+    )
+    annotations = GenericRelation(
+        "textannotation.TextAnnotation",
+        content_type_field="content_type",
+        object_id_field="object_id",
+        related_query_name="stanza_translated",
     )
 
     def __str__(self) -> str:

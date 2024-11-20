@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import random
@@ -6,9 +7,12 @@ from collections import defaultdict
 from html import unescape
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import DetailView
 from rest_framework import viewsets
 
@@ -21,8 +25,136 @@ from manuscript.models import (
 )
 from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
 from pages.models import AboutPage, SitePage
+from textannotation.models import TextAnnotation
 
 logger = logging.getLogger(__name__)
+
+
+@require_POST
+@ensure_csrf_cookie
+def create_annotation(request):
+    logger.debug(f"Received annotation request: POST data = {request.POST}")
+
+    try:
+        # Validate the request
+        if not request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            raise ValueError("AJAX required")
+
+        # Get required fields
+        stanza_id = request.POST.get("stanza_id")
+        selected_text = request.POST.get("selected_text")
+        annotation_text = request.POST.get("annotation")
+        annotation_type = request.POST.get("annotation_type")
+
+        # Validate all required fields are present
+        if not all([stanza_id, selected_text, annotation_text, annotation_type]):
+            missing_fields = [
+                field
+                for field, value in {
+                    "stanza_id": stanza_id,
+                    "selected_text": selected_text,
+                    "annotation": annotation_text,
+                    "annotation_type": annotation_type,
+                }.items()
+                if not value
+            ]
+
+            logger.error(f"Missing required fields: {missing_fields}")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": f"Missing required fields: {', '.join(missing_fields)}",
+                },
+                status=400,
+            )
+
+        # Get the stanza
+        try:
+            stanza = Stanza.objects.get(id=stanza_id)
+        except Stanza.DoesNotExist:
+            logger.error(f"Stanza not found: {stanza_id}")
+            return JsonResponse(
+                {"success": False, "error": f"Stanza not found: {stanza_id}"},
+                status=404,
+            )
+
+        # Create the annotation
+        annotation = TextAnnotation.objects.create(
+            content_type=ContentType.objects.get_for_model(Stanza),
+            object_id=stanza.id,
+            selected_text=selected_text,
+            annotation=annotation_text,
+            annotation_type=annotation_type,
+            from_pos=json.loads(request.POST.get("from_pos", "0")),
+            to_pos=json.loads(request.POST.get("to_pos", "0")),
+        )
+
+        logger.info(f"Created annotation {annotation.id} for stanza {stanza_id}")
+
+        return JsonResponse(
+            {
+                "success": True,
+                "annotation_id": annotation.id,
+                "message": "Annotation saved successfully",
+            }
+        )
+
+    except Exception as e:
+        logger.exception("Error creating annotation")
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+
+@require_GET
+def get_annotations(request, stanza_id):
+    try:
+        stanza = Stanza.objects.get(id=stanza_id)
+        annotations = TextAnnotation.objects.filter(
+            content_type=ContentType.objects.get_for_model(Stanza), object_id=stanza.id
+        )
+
+        return JsonResponse(
+            [
+                {
+                    "id": ann.id,
+                    "selected_text": ann.selected_text,
+                    "annotation": ann.annotation,
+                    "annotation_type": ann.annotation_type,
+                    "from_pos": ann.from_pos,
+                    "to_pos": ann.to_pos,
+                }
+                for ann in annotations
+            ],
+            safe=False,
+        )
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def get_annotation(request, annotation_id):
+    logger.debug(f"Received request for annotation {annotation_id}")
+
+    try:
+        annotation = get_object_or_404(TextAnnotation, id=annotation_id)
+
+        # Log the found annotation
+        logger.debug(f"Found annotation: {annotation.id}")
+
+        data = {
+            "id": annotation.id,
+            "selected_text": annotation.selected_text,
+            "annotation": annotation.annotation,
+            "annotation_type": annotation.get_annotation_type_display(),
+        }
+
+        logger.debug(f"Returning data: {data}")
+        return JsonResponse(data)
+
+    except TextAnnotation.DoesNotExist:
+        logger.error(f"Annotation {annotation_id} not found")
+        return JsonResponse({"error": "Annotation not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error retrieving annotation: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 def process_stanzas(stanzas, is_translated=False):
@@ -143,9 +275,16 @@ def mirador_view(request, manuscript_id, page_number):
 
 
 def stanzas(request: HttpRequest):
-    stanzas = Stanza.objects.all().order_by("stanza_line_code_starts")
-    translated_stanzas = StanzaTranslated.objects.all().order_by(
-        "stanza_line_code_starts"
+    stanzas = (
+        Stanza.objects.prefetch_related("annotations")
+        .all()
+        .order_by("stanza_line_code_starts")
+    )
+
+    translated_stanzas = (
+        StanzaTranslated.objects.prefetch_related("annotations")
+        .all()
+        .order_by("stanza_line_code_starts")
     )
     manuscripts = SingleManuscript.objects.all()
     default_manuscript = SingleManuscript.objects.get(siglum="TEST")
@@ -183,9 +322,11 @@ def stanzas(request: HttpRequest):
 
     # Get the IIIF manifest URL from the default manuscript
     manuscript_data = {
-        "iiif_url": default_manuscript.iiif_url
-        if hasattr(default_manuscript, "iiif_url")
-        else None
+        "iiif_url": (
+            default_manuscript.iiif_url
+            if hasattr(default_manuscript, "iiif_url")
+            else None
+        )
     }
 
     logger.debug(f"Manuscript data: {manuscript_data}")

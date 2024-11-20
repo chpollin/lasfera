@@ -12,6 +12,9 @@ from manuscript.views import about, data, education, talks
 
 urlpatterns = [
     path("", include("manuscript.urls")),
+    path(
+        "text-annotations/", include("textannotation.urls", namespace="textannotation")
+    ),
     path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
     path("toponyms/", include(("manuscript.urls", "toponyms"), namespace="toponyms")),

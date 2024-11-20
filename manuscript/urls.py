@@ -24,4 +24,5 @@ urlpatterns = [
         name="mirador_view",
     ),
     path("api/", include(router.urls)),
+    path("text-annotations/create/", views.create_annotation, name="create_annotation"),
 ]

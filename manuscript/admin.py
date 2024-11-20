@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.urls import reverse
 from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
@@ -26,6 +27,7 @@ from manuscript.resources import (
     ReferenceResource,
     SingleManuscriptResource,
 )
+from textannotation.models import TextAnnotation
 
 
 # Inline models --------------------------------------------
@@ -124,6 +126,13 @@ class LineCodeInline(admin.TabularInline):
     extra = 1
 
 
+class TextAnnotationInline(GenericTabularInline):
+    model = TextAnnotation
+    extra = 0
+    fields = ("selected_text", "annotation", "annotation_type")
+    readonly_fields = ("selected_text",)
+
+
 # Custom admin models --------------------------------------------
 class SingleManuscriptAdmin(ImportExportModelAdmin):
     inlines = [
@@ -135,6 +144,7 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
         ViewerNotesInline,
         EditorialStatusInline,
         FolioInline,
+        TextAnnotationInline,
     ]
     list_display = (
         "siglum",
@@ -146,6 +156,10 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
     )
     search_fields = ("siglum",)
     resource_class = SingleManuscriptResource
+
+    class Media:
+        js = ("js/text_annotator.js",)
+        css = {"all": ("css/text_annotator.css",)}
 
 
 class FolioAdmin(admin.ModelAdmin):
@@ -245,7 +259,7 @@ def set_language_to_english(modeladmin, request, queryset):
 
 
 class StanzaAdmin(admin.ModelAdmin):
-    inlines = [StanzaVariantInline]
+    inlines = [TextAnnotationInline, StanzaVariantInline]
     list_display = (
         "stanza_line_code_starts",
         "formatted_stanza_text",
@@ -257,6 +271,10 @@ class StanzaAdmin(admin.ModelAdmin):
         "stanza_line_code_starts",
     )
     actions = [set_language_to_italian, set_language_to_english]
+
+    class Media:
+        css = {"all": ("css/text_annotations.css",)}
+        js = ("js/text_annotations.js",)
 
     def formatted_stanza_text(self, obj):
         return format_html(obj.stanza_text)
@@ -295,6 +313,7 @@ admin.site.register(Stanza, StanzaAdmin)
 admin.site.register(StanzaVariant, StanzaVariantAdmin)
 admin.site.register(StanzaTranslated, StanzaTranslatedAdmin)
 admin.site.register(LineCode)
+admin.site.register(TextAnnotation)
 
 admin.site.site_header = "La Sfera Admin"
 admin.site.site_title = "La Sfera Admin Portal"

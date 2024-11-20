@@ -1,0 +1,21 @@
+note {
+  background-color: #fff3cd;
+  border-bottom: 2px solid #ffc107;
+  cursor: help;
+}
+
+.trix-button--icon-note {
+  display: inline-block;
+  position: relative;
+}
+
+/* Style the tooltip */
+.annotation-tooltip {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* Add some spacing for the new button group */
+.trix-button-group[data-trix-button-group="annotation-tools"] {
+  margin-left: 0.2em;
+}
