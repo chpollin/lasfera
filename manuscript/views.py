@@ -34,29 +34,28 @@ logger = logging.getLogger(__name__)
 @ensure_csrf_cookie
 def create_annotation(request):
     try:
-        # Validate the request
         if not request.headers.get("X-Requested-With") == "XMLHttpRequest":
             raise ValueError("AJAX required")
 
         # Get required fields
-        stanza_id = request.POST.get("stanza_id")
+        object_id = request.POST.get("stanza_id")
         selected_text = request.POST.get("selected_text")
         annotation_text = request.POST.get("annotation")
         annotation_type = request.POST.get("annotation_type")
+        model_type = request.POST.get("model_type", "stanza")
 
-        # Validate all required fields are present
-        if not all([stanza_id, selected_text, annotation_text, annotation_type]):
+        # Validate required fields
+        if not all([object_id, selected_text, annotation_text, annotation_type]):
             missing_fields = [
                 field
                 for field, value in {
-                    "stanza_id": stanza_id,
+                    "stanza_id": object_id,
                     "selected_text": selected_text,
                     "annotation": annotation_text,
                     "annotation_type": annotation_type,
                 }.items()
                 if not value
             ]
-
             logger.error(f"Missing required fields: {missing_fields}")
             return JsonResponse(
                 {
@@ -66,25 +65,23 @@ def create_annotation(request):
                 status=400,
             )
 
-        # Get the stanza
-        try:
-            stanza = Stanza.objects.get(id=stanza_id)
-        except Stanza.DoesNotExist:
-            logger.error(f"Stanza not found: {stanza_id}")
-            return JsonResponse(
-                {"success": False, "error": f"Stanza not found: {stanza_id}"},
-                status=404,
-            )
+        # Get the appropriate model and object
+        if model_type == "stanzatranslated":
+            content_type = ContentType.objects.get_for_model(StanzaTranslated)
+            annotated_object = get_object_or_404(StanzaTranslated, id=object_id)
+        else:
+            content_type = ContentType.objects.get_for_model(Stanza)
+            annotated_object = get_object_or_404(Stanza, id=object_id)
 
         # Create the annotation
         annotation = TextAnnotation.objects.create(
-            content_type=ContentType.objects.get_for_model(Stanza),
-            object_id=stanza.id,
+            content_type=content_type,
+            object_id=object_id,
             selected_text=selected_text,
             annotation=annotation_text,
             annotation_type=annotation_type,
-            from_pos=json.loads(request.POST.get("from_pos", "0")),
-            to_pos=json.loads(request.POST.get("to_pos", "0")),
+            from_pos=request.POST.get("from_pos"),
+            to_pos=request.POST.get("to_pos"),
         )
 
         return JsonResponse(

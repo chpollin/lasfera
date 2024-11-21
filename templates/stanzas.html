@@ -124,7 +124,9 @@
                               </span>
                             </a>
                           </span>
-                          <span class="flex-1 pl-4">{{ stanza.unescaped_stanza_text|safe }}</span>
+                          <span class="flex-1 pl-4">
+                            {{ stanza.unescaped_stanza_text|annotate_text:stanza.annotations.all|safe }}
+                          </span>
                         </div>
                       </div>
                     {% endfor %}
