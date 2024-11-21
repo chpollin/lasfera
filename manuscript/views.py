@@ -279,13 +279,6 @@ def stanzas(request: HttpRequest):
     manuscripts = SingleManuscript.objects.all()
     default_manuscript = SingleManuscript.objects.get(siglum="TEST")
 
-    print("\nDEBUG INFORMATION:")
-    for stanza in stanzas[:5]:
-        if stanza.related_folio:
-            print(f"Stanza {stanza.stanza_line_code_starts}:")
-            print(f"  Folio number: {stanza.related_folio.folio_number}")
-            print(f"  Canvas ID: {stanza.related_folio.get_canvas_id()}")
-
     books = process_stanzas(stanzas)
     translated_books = process_stanzas(translated_stanzas)
 
@@ -501,17 +494,14 @@ def toponym(request: HttpRequest, toponym_param: int):
     # The line codes should indicate which folio and manuscript they belong to.
     line_codes = []
     for line_code in filtered_linecodes:
-        print(f"Processing line_code: {line_code.code}")
         # Retrieve the Folio object through the associated_folio field
         folio = line_code.associated_folio
-        print(f"Associated folio: {folio}")
         if folio:
             # We create a variable that strips out the characters from the folio number so we're left
             # with just the number
             folio_number = re.sub(r"\D", "", folio.folio_number)
             # Retrieve the Manuscript object through the Folio model
             manuscript = folio.manuscript
-            print(f"Associated manuscript: {manuscript}")  # Debugging statement
             line_codes.append(
                 {
                     "line_code": line_code.code,
@@ -528,7 +518,6 @@ def toponym(request: HttpRequest, toponym_param: int):
                     "folio": "No folio assigned.",
                 }
             )
-    print(f"Final line_codes list: {line_codes}")  # Debugging statement
 
     return render(
         request,

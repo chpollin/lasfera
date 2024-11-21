@@ -558,21 +558,6 @@ class Folio(models.Model):
 
         return get_canvas_id_for_folio(self.folio_number)
 
-    # def get_canvas_id(self):
-    #     """Generate the IIIF canvas ID for this folio"""
-    #     if not self.folio_number:
-    #         return None
-    #
-    #     return f"https://digi.vatlib.it/iiif/MSS_Urb.lat.752/canvas/p{self.folio_number}"
-    #
-    # def get_canvas_id(self):
-    #     """Generate the IIIF canvas ID for this folio"""
-    #     print(f"Debug - get_canvas_id called for folio {self.folio_number}")
-    #     manifest_base = self.manuscript.iiif_url.replace("manifest.json", "")
-    #     canvas_id = f"{manifest_base}canvas/p{self.folio_number}"
-    #     print(f"Debug - generated canvas ID: {canvas_id}")
-    #     return canvas_id
-
     class Meta:
         ordering = ["folio_number"]
 
