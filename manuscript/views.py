@@ -33,8 +33,6 @@ logger = logging.getLogger(__name__)
 @require_POST
 @ensure_csrf_cookie
 def create_annotation(request):
-    logger.debug(f"Received annotation request: POST data = {request.POST}")
-
     try:
         # Validate the request
         if not request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -89,8 +87,6 @@ def create_annotation(request):
             to_pos=json.loads(request.POST.get("to_pos", "0")),
         )
 
-        logger.info(f"Created annotation {annotation.id} for stanza {stanza_id}")
-
         return JsonResponse(
             {
                 "success": True,
@@ -131,13 +127,8 @@ def get_annotations(request, stanza_id):
 
 
 def get_annotation(request, annotation_id):
-    logger.debug(f"Received request for annotation {annotation_id}")
-
     try:
         annotation = get_object_or_404(TextAnnotation, id=annotation_id)
-
-        # Log the found annotation
-        logger.debug(f"Found annotation: {annotation.id}")
 
         data = {
             "id": annotation.id,
@@ -146,7 +137,6 @@ def get_annotation(request, annotation_id):
             "annotation_type": annotation.get_annotation_type_display(),
         }
 
-        logger.debug(f"Returning data: {data}")
         return JsonResponse(data)
 
     except TextAnnotation.DoesNotExist:
@@ -289,11 +279,6 @@ def stanzas(request: HttpRequest):
     manuscripts = SingleManuscript.objects.all()
     default_manuscript = SingleManuscript.objects.get(siglum="TEST")
 
-    logger.debug(f"Default manuscript: {default_manuscript}")
-    logger.debug(
-        f"Default manuscript IIIF URL: {getattr(default_manuscript, 'iiif_url', 'No URL found')}"
-    )
-
     print("\nDEBUG INFORMATION:")
     for stanza in stanzas[:5]:
         if stanza.related_folio:
@@ -328,8 +313,6 @@ def stanzas(request: HttpRequest):
             else None
         )
     }
-
-    logger.debug(f"Manuscript data: {manuscript_data}")
 
     return render(
         request,
@@ -587,8 +570,6 @@ def search_toponyms(request):
                 | Q(placename_ancient__icontains=query)
                 | Q(placename_from_mss__icontains=query)
             ).distinct()
-            logger.info("Toponym search query: %s", query)
-            logger.info("Toponym search results: %s", alias_results.query)
         else:
             alias_results = LocationAlias.objects.all()
         return render(

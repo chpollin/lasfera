@@ -12,8 +12,6 @@
                     Manuscript Metadata
                 </h3>
 
-
-
                 <p><strong>Siglum:</strong> {{ manuscript.siglum }}</p>
                 <p><strong>Library:</strong> {{ manuscript.library }}</p>
                 <p><strong>Shelfmark:</strong> {{ manuscript.shelfmark }}</p>
@@ -81,11 +79,6 @@
         function displayManuscriptDetails(manuscript) {
             const iiifUrl = manuscript.iiif_url;
             const photograph = manuscript.photographs;
-
-            console.log("Manuscript", manuscript);
-
-            console.log("IIIF", iiifUrl);
-            console.log("Photograph", photograph);
 
             if (iiifUrl) {
         // Use Mirador for IIIF manifests

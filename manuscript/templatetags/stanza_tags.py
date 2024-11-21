@@ -34,13 +34,9 @@ def annotate_text(html_content, annotations):
     # Get just the text content for comparison
     text_content = soup.get_text()
 
-    logger.debug(f"Processing text content: {text_content}")
-    logger.debug(f"Inner HTML: {inner_html}")
-
     for annotation in sorted_annotations:
         # Find the actual text we're looking for
         target_text = annotation.selected_text
-        logger.debug(f"Looking for text: {target_text}")
 
         # Find where this text appears in the inner HTML
         text_start = inner_html.find(target_text, last_pos)
@@ -67,7 +63,5 @@ def annotate_text(html_content, annotations):
     # Add any remaining content
     if last_pos < len(inner_html):
         result.append(inner_html[last_pos:])
-
-    logger.debug(f"Final processed content: {''.join(result)}")
 
     return mark_safe("".join(result))

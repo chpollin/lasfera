@@ -1,36 +1,9 @@
-// Get the sidebar, close button, and notation text elements
-// const sidebar = document.getElementById("sidebar");
-// const closeButton = document.getElementById("close-button");
-// const notationText = document.getElementById("notation-text");
-//
-// // Listen for click events on the document
-// document.addEventListener("click", function (event) {
-//   // If the clicked element has a data-notation attribute
-//   if (event.target.hasAttribute("data-notation")) {
-//     // Get the data-notation text
-//     const text = event.target.getAttribute("data-notation");
-//
-//     // Update the notation text
-//     notationText.textContent = text;
-//
-//     // Show the sidebar
-//     sidebar.style.transform = "translateX(0)";
-//   }
-// });
-//
-// // Add a click event listener to the close button
-// closeButton.addEventListener("click", function () {
-//   // Hide the sidebar
-//   sidebar.style.transform = "translateX(100%)";
-// });
-
 // Handle toggling line codes
 document.addEventListener("DOMContentLoaded", (event) => {
   const toggleLineCodes = document.getElementById("toggleLineCodes");
 
   if (toggleLineCodes) {
     toggleLineCodes.addEventListener("click", function () {
-      console.log("line codes toggled");
       const lineCodes = document.querySelectorAll(".line-code");
       for (const i = 0; i < lineCodes.length; i++) {
         if (this.checked) {

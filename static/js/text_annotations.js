@@ -126,14 +126,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const trixEditor = document.querySelector("trix-editor");
   if (!trixEditor) {
-    console.log("No trix editor found");
+    console.error("No trix editor found");
     return;
   }
 
   // Add annotation button to toolbar
   const toolbar = document.querySelector("trix-toolbar .trix-button-row");
   if (!toolbar) {
-    console.log("No toolbar found");
+    console.error("No toolbar found");
     return;
   }
 
@@ -194,7 +194,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle annotation button click
   annotateButton.addEventListener("click", function (event) {
-    console.log("Annotation button clicked");
     event.preventDefault();
 
     const editor = trixEditor.editor;
@@ -206,18 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const selectedText = editor.getDocument().getStringAtRange(selectedRange);
-    console.log("Selected text:", selectedText);
-
     const stanzaId = getStanzaId();
-    console.log("Stanza ID:", stanzaId);
-
-    console.log("Selection details:", {
-      text: selectedText,
-      range: selectedRange,
-      fullText: editor.getDocument().toString(),
-      start: selectedRange[0],
-      end: selectedRange[1],
-    });
 
     if (!stanzaId) {
       alert("Could not determine which stanza to annotate");
@@ -250,7 +238,6 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
 
     document.body.appendChild(modal);
-    console.log("Modal created and appended");
 
     // Focus the textarea
     setTimeout(() => {
@@ -262,12 +249,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Handle modal buttons
     modal.querySelector(".btn-cancel").addEventListener("click", () => {
-      console.log("Cancel clicked");
       modal.remove();
     });
 
     modal.querySelector(".btn-save").addEventListener("click", () => {
-      console.log("Save clicked");
       const annotationText = modal.querySelector("#annotation-text").value;
       const annotationType = modal.querySelector("#annotation-type").value;
 
@@ -296,16 +281,6 @@ document.addEventListener("DOMContentLoaded", function () {
       formData.append("to_pos", selectedRange[1]);
       formData.append("csrfmiddlewaretoken", csrfToken);
 
-      // Log what we're sending
-      console.log("Sending annotation data:", {
-        stanza_id: stanzaId,
-        selected_text: selectedText,
-        annotation: annotationText,
-        annotation_type: annotationType,
-        from_pos: selectedRange[0],
-        to_pos: selectedRange[1],
-      });
-
       // Add loading state to save button
       const saveButton = modal.querySelector(".btn-save");
       const originalButtonText = saveButton.textContent;
@@ -321,13 +296,11 @@ document.addEventListener("DOMContentLoaded", function () {
         credentials: "same-origin", // Important for CSRF
       })
         .then((response) => {
-          console.log("Response status:", response.status);
           return response
             .json()
             .then((data) => ({ status: response.status, data }));
         })
         .then(({ status, data }) => {
-          console.log("Server response:", status, data);
           if (status === 200 && data.success) {
             // Create the annotated span with proper attributes and styling
             editor.setSelectedRange(selectedRange);
@@ -512,29 +485,4 @@ document.addEventListener("DOMContentLoaded", function () {
                 `;
       });
   };
-
-  // Close sidebar when clicking close button
-  const closeButton = document.getElementById("close-button");
-  if (closeButton) {
-    closeButton.addEventListener("click", function () {
-      document.getElementById("sidebar").classList.remove("active");
-    });
-  }
-
-  // Close sidebar when clicking outside
-  document.addEventListener("click", function (event) {
-    const sidebar = document.getElementById("sidebar");
-    if (!sidebar) return;
-
-    const isClickInside = sidebar.contains(event.target);
-    const isAnnotationClick = event.target.closest(".annotated-text");
-
-    if (
-      !isClickInside &&
-      !isAnnotationClick &&
-      sidebar.classList.contains("active")
-    ) {
-      sidebar.classList.remove("active");
-    }
-  });
 });
