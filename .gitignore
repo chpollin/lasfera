@@ -4,6 +4,7 @@ lasfera.dbml
 dumpdata.json
 data.json
 node_modules/
+staticfiles/
 
 # Django #
 *.log

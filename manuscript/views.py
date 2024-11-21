@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import random
@@ -6,9 +7,13 @@ from collections import defaultdict
 from html import unescape
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_POST
+from django.views.generic import DetailView
 from rest_framework import viewsets
 
 from manuscript.models import (
@@ -20,8 +25,126 @@ from manuscript.models import (
 )
 from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
 from pages.models import AboutPage, SitePage
+from textannotation.models import TextAnnotation
 
 logger = logging.getLogger(__name__)
+
+
+@require_POST
+@ensure_csrf_cookie
+def create_annotation(request):
+    try:
+        # Validate the request
+        if not request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            raise ValueError("AJAX required")
+
+        # Get required fields
+        stanza_id = request.POST.get("stanza_id")
+        selected_text = request.POST.get("selected_text")
+        annotation_text = request.POST.get("annotation")
+        annotation_type = request.POST.get("annotation_type")
+
+        # Validate all required fields are present
+        if not all([stanza_id, selected_text, annotation_text, annotation_type]):
+            missing_fields = [
+                field
+                for field, value in {
+                    "stanza_id": stanza_id,
+                    "selected_text": selected_text,
+                    "annotation": annotation_text,
+                    "annotation_type": annotation_type,
+                }.items()
+                if not value
+            ]
+
+            logger.error(f"Missing required fields: {missing_fields}")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": f"Missing required fields: {', '.join(missing_fields)}",
+                },
+                status=400,
+            )
+
+        # Get the stanza
+        try:
+            stanza = Stanza.objects.get(id=stanza_id)
+        except Stanza.DoesNotExist:
+            logger.error(f"Stanza not found: {stanza_id}")
+            return JsonResponse(
+                {"success": False, "error": f"Stanza not found: {stanza_id}"},
+                status=404,
+            )
+
+        # Create the annotation
+        annotation = TextAnnotation.objects.create(
+            content_type=ContentType.objects.get_for_model(Stanza),
+            object_id=stanza.id,
+            selected_text=selected_text,
+            annotation=annotation_text,
+            annotation_type=annotation_type,
+            from_pos=json.loads(request.POST.get("from_pos", "0")),
+            to_pos=json.loads(request.POST.get("to_pos", "0")),
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "annotation_id": annotation.id,
+                "message": "Annotation saved successfully",
+            }
+        )
+
+    except Exception as e:
+        logger.exception("Error creating annotation")
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+
+@require_GET
+def get_annotations(request, stanza_id):
+    try:
+        stanza = Stanza.objects.get(id=stanza_id)
+        annotations = TextAnnotation.objects.filter(
+            content_type=ContentType.objects.get_for_model(Stanza), object_id=stanza.id
+        )
+
+        return JsonResponse(
+            [
+                {
+                    "id": ann.id,
+                    "selected_text": ann.selected_text,
+                    "annotation": ann.annotation,
+                    "annotation_type": ann.annotation_type,
+                    "from_pos": ann.from_pos,
+                    "to_pos": ann.to_pos,
+                }
+                for ann in annotations
+            ],
+            safe=False,
+        )
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+def get_annotation(request, annotation_id):
+    try:
+        annotation = get_object_or_404(TextAnnotation, id=annotation_id)
+
+        data = {
+            "id": annotation.id,
+            "selected_text": annotation.selected_text,
+            "annotation": annotation.annotation,
+            "annotation_type": annotation.get_annotation_type_display(),
+        }
+
+        return JsonResponse(data)
+
+    except TextAnnotation.DoesNotExist:
+        logger.error(f"Annotation {annotation_id} not found")
+        return JsonResponse({"error": "Annotation not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error retrieving annotation: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 def process_stanzas(stanzas, is_translated=False):
@@ -122,10 +245,36 @@ def talks(request):
     )
 
 
+def mirador_view(request, manuscript_id, page_number):
+    try:
+        manuscript = SingleManuscript.objects.get(id=manuscript_id)
+    except SingleManuscript.DoesNotExist:
+        manuscript = SingleManuscript.objects.get(siglum="TEST")
+
+    if not manuscript.iiif_url:
+        manuscript = SingleManuscript.objects.get(siglum="TEST")
+
+    base_url = manuscript.iiif_url.replace("manifest.json", "")
+    canvas_id = f"{base_url}canvas/p{page_number}"
+
+    return render(
+        request,
+        "manuscript/mirador.html",
+        {"manifest_url": manuscript.iiif_url, "canvas_id": canvas_id},
+    )
+
+
 def stanzas(request: HttpRequest):
-    stanzas = Stanza.objects.all().order_by("stanza_line_code_starts")
-    translated_stanzas = StanzaTranslated.objects.all().order_by(
-        "stanza_line_code_starts"
+    stanzas = (
+        Stanza.objects.prefetch_related("annotations")
+        .all()
+        .order_by("stanza_line_code_starts")
+    )
+
+    translated_stanzas = (
+        StanzaTranslated.objects.prefetch_related("annotations")
+        .all()
+        .order_by("stanza_line_code_starts")
     )
     manuscripts = SingleManuscript.objects.all()
     default_manuscript = SingleManuscript.objects.get(siglum="TEST")
@@ -137,15 +286,26 @@ def stanzas(request: HttpRequest):
     for book_number, stanza_dict in books.items():
         paired_books[book_number] = []
         for stanza_number, original_stanzas in stanza_dict.items():
+            # Get corresponding translated stanzas
             translated_stanza_group = translated_books.get(book_number, {}).get(
                 stanza_number, []
             )
+
             paired_books[book_number].append(
                 {
                     "original": original_stanzas,
                     "translated": translated_stanza_group,
                 }
             )
+
+    # Get the IIIF manifest URL from the default manuscript
+    manuscript_data = {
+        "iiif_url": (
+            default_manuscript.iiif_url
+            if hasattr(default_manuscript, "iiif_url")
+            else None
+        )
+    }
 
     return render(
         request,
@@ -154,8 +314,46 @@ def stanzas(request: HttpRequest):
             "paired_books": paired_books,
             "manuscripts": manuscripts,
             "default_manuscript": default_manuscript,
+            "manuscript": manuscript_data,
         },
     )
+
+
+class ManuscriptViewer(DetailView):
+    model = Stanza
+    template_name = "manuscript/viewer.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        stanza = self.get_object()
+
+        if stanza.related_folio:
+            manuscript = stanza.get_manuscript()
+
+            related_stanzas = (
+                Stanza.objects.filter(related_folio=stanza.related_folio)
+                .exclude(id=stanza.id)
+                .order_by("stanza_line_code_starts")
+            )
+
+            context.update(
+                {
+                    "manifest_url": manuscript.iiif_url if manuscript else None,
+                    "canvas_id": (
+                        stanza.related_folio.get_canvas_id()
+                        if stanza.related_folio
+                        else None
+                    ),
+                    "related_stanzas": related_stanzas,
+                    "folio_number": stanza.related_folio.number,
+                    "line_range": {
+                        "start": stanza.parse_line_code(stanza.stanza_line_code_starts),
+                        "end": stanza.parse_line_code(stanza.stanza_line_code_ends),
+                    },
+                }
+            )
+
+            return context
 
 
 def manuscripts(request: HttpRequest):
@@ -296,17 +494,14 @@ def toponym(request: HttpRequest, toponym_param: int):
     # The line codes should indicate which folio and manuscript they belong to.
     line_codes = []
     for line_code in filtered_linecodes:
-        print(f"Processing line_code: {line_code.code}")
         # Retrieve the Folio object through the associated_folio field
         folio = line_code.associated_folio
-        print(f"Associated folio: {folio}")
         if folio:
             # We create a variable that strips out the characters from the folio number so we're left
             # with just the number
             folio_number = re.sub(r"\D", "", folio.folio_number)
             # Retrieve the Manuscript object through the Folio model
             manuscript = folio.manuscript
-            print(f"Associated manuscript: {manuscript}")  # Debugging statement
             line_codes.append(
                 {
                     "line_code": line_code.code,
@@ -323,7 +518,6 @@ def toponym(request: HttpRequest, toponym_param: int):
                     "folio": "No folio assigned.",
                 }
             )
-    print(f"Final line_codes list: {line_codes}")  # Debugging statement
 
     return render(
         request,
@@ -365,8 +559,6 @@ def search_toponyms(request):
                 | Q(placename_ancient__icontains=query)
                 | Q(placename_from_mss__icontains=query)
             ).distinct()
-            logger.info("Toponym search query: %s", query)
-            logger.info("Toponym search results: %s", alias_results.query)
         else:
             alias_results = LocationAlias.objects.all()
         return render(

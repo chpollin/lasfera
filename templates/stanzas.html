@@ -1,7 +1,49 @@
 {% extends "base.html" %}
 {% load static %}
+{% load stanza_tags %}
 
 {% block title %}Poetic Text - La Sfera{% endblock title %}
+
+{% block extra_css %}
+  <style>
+    .annotated-text {
+      background-color: #fff3cd;
+      border-bottom: 2px solid #ffc107;
+      cursor: help;
+      position: relative;
+    }
+
+    /* Sidebar styles */
+    .sidebar-annotation {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .sidebar-annotation-type {
+      font-size: 0.875rem;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-annotation-content {
+      font-size: 1rem;
+      color: #1e293b;
+    }
+
+    .mirador-viewer {
+      width: 100% !important;
+      height: 100% !important;
+    }
+        /* Hide unnecessary UI elements */
+    .mirador-window-sidebar,
+    .mirador-companion-windows,
+    .mirador-primary-window .window-top-bar {
+      display: none !important;
+    }
+  </style>
+{% endblock extra_css %}
 
 {% block content %}
   <div class="mx-auto container">
@@ -12,24 +54,10 @@
         </h3>
 
         <div class="flex flex-col md:flex-row pb-8 mb-8 border-b border-slate-500">
-        {% comment %} Column 1: Manuscript Dropdown {% endcomment %}
-          <!-- <div class="w-full md:w-1/3 mb-4 md:mb-0 md:pr-4">
-            <label for="manuscript" class="block text-gray-700 text-sm font-bold mb-2">Select a Manuscript:</label>
-            <div class="relative">
-              <select id="manuscript" class="block appearance-none w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                {% for manuscript in manuscripts %}
-                  <option value="{{ manuscript.siglum }}" {% if manuscript.siglum == "TEST" %}selected{% endif %}>{{ manuscript.siglum }}</option>
-                {% endfor %}
-              </select>
-
-            </div>
-          </div> -->
-        {% comment %} Column 2: Book Links {% endcomment %}
           <div class="w-full md:w-1/3 mb-4 md:mb-0 md:px-2">
             <label for="manuscript" class="block text-gray-700 text-sm font-bold mb-2">Jump to a book:</label>
             <p class="mb-5"><a href="#libre-1">Libro 1</a> | <a href="#libre-2">Libro 2</a> | <a href="#libre-3">Libro 3</a> | <a href="#libre-4">Libro 4</a></p>
           </div>
-        {% comment %} Column 3: Checkboxes {% endcomment %}
           <div class="w-full md:w-1/3">
             <div class="mb-4">
               <input type="checkbox" id="toggleLineCodes" class="mr-2" checked>
@@ -42,30 +70,55 @@
           </div>
         </div>
 
-
         <div class="space-y-4">
           {% for book_number, stanza_pairs in paired_books.items %}
             <div>
-              <!-- Original language heading -->
-              <div class="grid grid-cols-2 gap-4 mb-4">
+              <!-- Three-column headers -->
+              <div class="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <h2 id="libre-{{book_number}}" class="text-xl font-bold mb-4">Libro {{ book_number }}</h2>
                 </div>
                 <div>
                   <h2 id="book-{{book_number}}" class="text-xl font-bold mb-4">Book {{ book_number }}</h2>
                 </div>
+                <div>
+                </div>
               </div>
 
-              <!-- Stanza pairs -->
+              <!-- Stanza pairs with manuscript -->
               {% for stanza_pair in stanza_pairs %}
-                <div class="grid grid-cols-2 gap-4 mb-4">
-  <!-- Original stanza (left) -->
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <!-- Original stanza (left) -->
                   <div class="prose w-full">
                     {% for stanza in stanza_pair.original %}
                       <div class="relative">
                         <div class="flex items-start">
                           <span class="line-code mr-2">
-                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}" id="{{stanza.stanza_line_code_starts}}" title="Anchor link to line code {{ stanza.stanza_line_code_starts}}">
+                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}"
+                               id="{{stanza.stanza_line_code_starts}}"
+                               title="Anchor link to line code {{ stanza.stanza_line_code_starts}}"
+                               data-folio="{{ stanza.related_folio.canvas_number }}"
+                               onclick="showManuscript(event, this)">
+                              <span class="font-serif text-red-700 text-sm">
+                                {{ stanza.stanza_line_code_starts }}
+                              </span>
+                            </a>
+                          </span>
+                          <span class="flex-1 pl-4">
+                            {{ stanza.unescaped_stanza_text|annotate_text:stanza.annotations.all|safe }}
+                          </span>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <!-- Translated stanza (middle) -->
+                  <div class="prose w-full">
+                    {% for stanza in stanza_pair.translated %}
+                      <div class="relative">
+                        <div class="flex items-start">
+                          <span class="line-code mr-2">
+                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}"
+                               id="{{stanza.stanza_line_code_starts}}">
                               <span class="font-serif text-red-700 text-sm">
                                 {{ stanza.stanza_line_code_starts }}
                               </span>
@@ -76,22 +129,22 @@
                       </div>
                     {% endfor %}
                   </div>
-  <!-- Translated stanza (right) -->
-                  <div class="prose w-full">
-                    {% for stanza in stanza_pair.translated %}
-                      <div class="relative">
-                        <div class="flex items-start">
-                          <span class="line-code mr-2">
-                            <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}" id="{{stanza.stanza_line_code_starts}}">
-                              <span class="font-serif text-red-700 text-sm">
-                                {{ stanza.stanza_line_code_starts }}
-                              </span>
-                            </a>
-                          </span>
-                          <span class="flex-1 pl-4">{{ stanza.unescaped_stanza_text|safe }}</span>
-                        </div>
+
+                  <!-- Manuscript viewer (right) -->
+                  <div style="height: 400px;" class="manuscript-view h-[400px]" id="viewer-{{ stanza_pair.original.0.stanza_line_code_starts }}">
+                    {% if stanza_pair.original.0.related_folio %}
+                      {% with canvas_id=stanza_pair.original.0.related_folio.get_canvas_id %}
+                        <iframe
+                          src="{% url 'mirador_view' manuscript_id=stanza_pair.original.0.related_folio.manuscript.id page_number=canvas_id|slice:'-4:' %}"
+                          class="w-full h-full border-0 rounded-lg"
+                          title="Manuscript viewer">
+                        </iframe>
+                      {% endwith %}
+                    {% else %}
+                      <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                        <p class="text-gray-500">No manuscript page available</p>
                       </div>
-                    {% endfor %}
+                    {% endif %}
                   </div>
                 </div>
               {% endfor %}
@@ -103,24 +156,273 @@
             </div>
           {% endfor %}
         </div>
-      {% comment %} Return to top component {% endcomment %}
+
+        <!-- Return to top button -->
         <div id="return-to-top" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-100 rounded-full shadow-lg p-2 opacity-0 transition duration-500 ease-in-out invisible hover:-translate-y-1 hover:scale-110 hover:bg-white">
           <a href="#top">Return to top &uarr;</a>
         </div>
       </section>
     </div>
 
-{% comment %} Sidebar component {% endcomment %}
+    <!-- Sidebar for notations -->
     <div id="sidebar"
-         class="fixed right-0 top-0 h-full w-96 bg-white p-4 transform translate-x-full overflow-auto transition-transform duration-200 ease-in-out shadow-left">
+         class="fixed right-0 top-0 h-full w-96 bg-white p-4 transform translate-x-full transition-transform duration-200 ease-in-out shadow-lg">
       <button id="close-button"
               class="mb-4 bg-red-500 text-white p-2 rounded-full w-7 h-7 flex items-center justify-center text-base">&times;</button>
-      <p id="notation-text"></p>
+      <div id="notation-text" class="prose"></div>
     </div>
-  </div>
 {% endblock content %}
 
 {% block scripts %}
   <script src="{% static 'js/stanza.js' %}"></script>
-  <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+  // Add styles for annotations and popup
+      const style = document.createElement("style");
+      style.textContent = `
+        .annotated-text {
+            background-color: #fff3cd;
+            border-bottom: 2px solid #ffc107;
+            cursor: help;
+            position: relative;
+        }
+
+        .annotation-popup {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            padding: 12px;
+            z-index: 1000;
+            max-width: 300px;
+            font-size: 0.9em;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .annotation-popup.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .annotation-popup::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0;
+            border-style: solid;
+            border-color: white transparent transparent;
+            z-index: 1;
+        }
+
+        .annotation-popup::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 9px 9px 0;
+            border-style: solid;
+            border-color: #ddd transparent transparent;
+            z-index: 0;
+        }
+
+        .annotation-type {
+            font-size: 0.8em;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .annotation-content {
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .annotation-loading {
+            color: #666;
+            font-style: italic;
+        }
+        /* Link styles in annotation popup */
+        .annotation-content a {
+            color: #2563eb;
+            text-decoration: none;
+            border-bottom: 1px solid #2563eb;
+            padding-bottom: 1px;
+            transition: all 0.2s ease;
+        }
+
+        .annotation-content a:hover {
+            color: #1d4ed8;
+            border-bottom-color: #1d4ed8;
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .annotation-content a:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        .annotation-content a:active {
+            color: #1e40af;
+            border-bottom-color: #1e40af;
+        }
+
+        /* External link indicator */
+        .annotation-content a[href^="http"]::after {
+            content: "↗";
+            display: inline-block;
+            margin-left: 2px;
+            font-size: 0.8em;
+            transform: translateY(-1px);
+        }
+
+        .annotation-loading {
+            color: #666;
+            font-style: italic;
+        }
+    `;
+      document.head.appendChild(style);
+
+  // Keep track of active popup
+      let activePopup = null;
+
+  // Function to position popup
+      function positionPopup(popup, element) {
+        const rect = element.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft =
+          window.pageXOffset || document.documentElement.scrollLeft;
+
+    // Position above the element
+        popup.style.left = `${rect.left + rect.width / 2 - popup.offsetWidth / 2}px`;
+        popup.style.top = `${rect.top + scrollTop - popup.offsetHeight - 10}px`;
+
+    // Check if popup would go off screen
+        const popupRect = popup.getBoundingClientRect();
+
+    // Check right edge
+        if (popupRect.right > window.innerWidth) {
+          popup.style.left = `${window.innerWidth - popup.offsetWidth - 10}px`;
+        }
+
+    // Check left edge
+        if (popupRect.left < 0) {
+          popup.style.left = "10px";
+        }
+
+    // If would go above viewport, show below instead
+        if (popupRect.top < 0) {
+          popup.style.top = `${rect.bottom + scrollTop + 10}px`;
+          popup.classList.add("below");
+        } else {
+          popup.classList.remove("below");
+        }
+      }
+
+      window.showAnnotation = function (event, element) {
+        event.preventDefault();
+        event.stopPropagation();
+
+    // Remove any existing popup
+        if (activePopup) {
+          activePopup.remove();
+          activePopup = null;
+        }
+
+        const annotationId = element.getAttribute("data-annotation-id");
+
+    // Create popup
+        const popup = document.createElement("div");
+        popup.className = "annotation-popup";
+        popup.innerHTML = '<div class="annotation-loading">Loading...</div>';
+        document.body.appendChild(popup);
+
+    // Position popup
+        positionPopup(popup, element);
+
+    // Show popup
+        setTimeout(() => popup.classList.add("active"), 10);
+
+    // Store as active popup
+        activePopup = popup;
+
+        fetch(`/text-annotations/annotation/${annotationId}/`)
+          .then((response) => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+          })
+          .then((data) => {
+            popup.innerHTML = `
+                    <div class="annotation-type">${data.annotation_type}</div>
+                    <div class="annotation-content">${data.annotation}</div>
+                `;
+        // Reposition after content loaded
+            positionPopup(popup, element);
+          })
+          .catch((error) => {
+            console.error("Error loading annotation:", error);
+            popup.innerHTML = `
+                    <div class="annotation-content text-red-500">
+                        Failed to load annotation
+                    </div>
+                `;
+          });
+      };
+
+  // Close popup when clicking outside
+      document.addEventListener("click", function (event) {
+        if (
+          activePopup &&
+          !event.target.closest(".annotated-text") &&
+          !event.target.closest(".annotation-popup")
+        ) {
+          activePopup.remove();
+          activePopup = null;
+        }
+      });
+
+  // Close popup on escape key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && activePopup) {
+          activePopup.remove();
+          activePopup = null;
+        }
+      });
+
+  // Update popup position on scroll
+      window.addEventListener("scroll", function () {
+        if (activePopup) {
+          const annotatedElement = document.querySelector(
+            '.annotated-text[data-annotation-id="' +
+            activePopup.dataset.annotationId +
+            '"]',
+          );
+          if (annotatedElement) {
+            positionPopup(activePopup, annotatedElement);
+          }
+        }
+      });
+
+  // Update popup position on window resize
+      window.addEventListener("resize", function () {
+        if (activePopup) {
+          const annotatedElement = document.querySelector(
+            '.annotated-text[data-annotation-id="' +
+            activePopup.dataset.annotationId +
+            '"]',
+          );
+          if (annotatedElement) {
+            positionPopup(activePopup, annotatedElement);
+          }
+        }
+      });
+    });
+  </script>
 {% endblock scripts %}
+

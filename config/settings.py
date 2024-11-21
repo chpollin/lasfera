@@ -41,6 +41,7 @@ SILENCED_SYSTEM_CHECKS = ["security.W019"]
 INSTALLED_APPS = [
     "accounts",
     "manuscript",
+    "textannotation",
     "map",
     "pages",
     "wagtail.contrib.redirects",
@@ -116,7 +117,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

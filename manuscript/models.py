@@ -3,9 +3,13 @@ import re
 
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 from prose.fields import RichTextField
+
+from manuscript.utils import get_canvas_id_for_folio
 
 logger = logging.getLogger(__name__)
 
@@ -293,6 +297,13 @@ class StanzaVariant(models.Model):
     def provide_snippet_of_stanza(self):
         return self.stanza.stanza_variation[:100]
 
+    def parse_line_code(self, code):
+        """Parse a line code into book, stanza, line components"""
+        if not code:
+            return None
+        parts = code.split(".")
+        return {"book": int(parts[0]), "stanza": int(parts[1]), "line": int(parts[2])}
+
     def save(self, *args, **kwargs):
         # we trim the letter code off the stanza_variation_line_code_starts
         # so we can look for the FK to the Stanza
@@ -366,6 +377,12 @@ class Stanza(models.Model):
     language = models.CharField(
         max_length=2, choices=STANZA_LANGUAGE, blank=True, null=True
     )
+    annotations = GenericRelation(
+        "textannotation.TextAnnotation",
+        content_type_field="content_type",
+        object_id_field="object_id",
+        related_query_name="stanza",
+    )
 
     def __str__(self) -> str:
         if self.stanza_line_code_starts is not None:
@@ -393,6 +410,10 @@ class Stanza(models.Model):
         return int(
             self.your_field.split(".")[2].split("-")[0]
         )  # Handle the case of a range
+
+    def get_manuscript(self):
+        """Get the associated manuscript through the folio"""
+        return self.related_folio.manuscript if self.related_folio else None
 
     def derive_folio_location(self):
         # We derive the folio based on the line code.
@@ -469,6 +490,12 @@ class StanzaTranslated(models.Model):
     language = models.CharField(
         max_length=2, choices=Stanza.STANZA_LANGUAGE, blank=True, null=True
     )
+    annotations = GenericRelation(
+        "textannotation.TextAnnotation",
+        content_type_field="content_type",
+        object_id_field="object_id",
+        related_query_name="stanza_translated",
+    )
 
     def __str__(self) -> str:
         return str(self.stanza_text[:100])
@@ -523,6 +550,13 @@ class Folio(models.Model):
         if self.folio_number is not None:
             return f"Folio {self.folio_number}, from manuscript {self.manuscript}"
         return f"Folio has no folio number, but is associated with manuscript {self.manuscript}"
+
+    def get_canvas_id(self):
+        """Get the IIIF canvas ID for this folio"""
+        if not self.folio_number:
+            return None
+
+        return get_canvas_id_for_folio(self.folio_number)
 
     class Meta:
         ordering = ["folio_number"]

@@ -18,5 +18,11 @@ urlpatterns = [
     path("toponyms/<int:toponym_param>/", views.toponym, name="toponym_detail"),
     path("toponym-search/", views.search_toponyms, name="search_toponyms"),
     path("stanzas/", views.stanzas, name="stanzas"),
+    path(
+        "mirador/<str:manuscript_id>/<str:page_number>/",
+        views.mirador_view,
+        name="mirador_view",
+    ),
     path("api/", include(router.urls)),
+    path("text-annotations/create/", views.create_annotation, name="create_annotation"),
 ]

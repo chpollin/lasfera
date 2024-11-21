@@ -13,11 +13,25 @@ body {
   display: inline;
 }
 
-[data-notation] {
-  background-color: #ffffcc;
+note[data-notation] {
+  background-color: #e2e2e2;
   cursor: help;
-  border: 1px solid black;
   padding: 0 0.2em;
+  border-radius: 0.3em;
+}
+
+/* Custom tooltip styles that we can't achieve with just Tailwind */
+.tooltip-arrow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid white;
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.1));
 }
 
 .shadow-left {
