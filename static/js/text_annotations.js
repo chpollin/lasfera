@@ -160,12 +160,14 @@ document.addEventListener("DOMContentLoaded", function () {
   annotationGroup.appendChild(annotateButton);
   toolbar.appendChild(annotationGroup);
 
-  // Function to get stanza ID (keeping existing implementation)
+  // Function to get stanza ID
   function getStanzaId() {
-    const urlMatch = window.location.pathname.match(/\/stanza\/(\d+)\//);
-    if (urlMatch) return urlMatch[1];
+    const urlMatch = window.location.pathname.match(
+      /\/(stanza|stanzatranslated)\/(\d+)/,
+    );
+    if (urlMatch) return urlMatch[2];
 
-    const form = document.querySelector("#stanza_form");
+    const form = document.querySelector("#stanza_form, #stanzatranslated_form");
     if (form) {
       const objectId =
         form.getAttribute("data-object-id") ||
@@ -273,6 +275,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Prepare the data
       const formData = new FormData();
+      formData.append(
+        "model_type",
+        window.location.pathname.includes("stanzatranslated")
+          ? "stanzatranslated"
+          : "stanza",
+      );
       formData.append("stanza_id", stanzaId);
       formData.append("selected_text", selectedText);
       formData.append("annotation", annotationText);

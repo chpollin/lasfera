@@ -26,7 +26,6 @@ class TextAnnotation(models.Model):
 
     ANNOTATION_TYPES = (
         ("note", "Editorial Note"),
-        ("translation", "Translation"),
         ("variant", "Textual Variant"),
         ("reference", "Cross Reference"),
     )

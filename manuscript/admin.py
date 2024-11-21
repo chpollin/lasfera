@@ -301,9 +301,12 @@ class StanzaTranslatedAdmin(admin.ModelAdmin):
     list_display = ("stanza", "stanza_text", "language")
     search_fields = ("stanza", "stanza_text")
     list_filter = ("language",)
+    inlines = [TextAnnotationInline]
 
+    class Media:
+        css = {"all": ("css/text_annotations.css",)}
+        js = ("js/text_annotations.js",)
 
-# Register to the admin interface.
 
 admin.site.register(Library, LibraryAdmin)
 admin.site.register(EditorialStatus, EditorialStatusAdmin)
