@@ -1,17 +1,12 @@
 // Handle toggling line codes
 document.addEventListener("DOMContentLoaded", (event) => {
   const toggleLineCodes = document.getElementById("toggleLineCodes");
-
   if (toggleLineCodes) {
     toggleLineCodes.addEventListener("click", function () {
       const lineCodes = document.querySelectorAll(".line-code");
-      for (const i = 0; i < lineCodes.length; i++) {
-        if (this.checked) {
-          lineCodes[i].style.display = "inline";
-        } else {
-          lineCodes[i].style.display = "none";
-        }
-      }
+      lineCodes.forEach((lineCode) => {
+        lineCode.style.display = this.checked ? "inline" : "none";
+      });
     });
   }
 });
@@ -28,7 +23,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       const lineCodeLinks = document.querySelectorAll(".line-code a");
 
       for (let i = 0; i < lineCodeLinks.length; i++) {
-        const lineCodeSpan = lineCodeLinks[i].querySelector("span"); // Assuming the line code is in the first span within the link
+        const lineCodeSpan = lineCodeLinks[i].querySelector("span");
         if (this.checked) {
           // Save the original line code
           originalLineCodes[i] = lineCodeSpan.textContent;
