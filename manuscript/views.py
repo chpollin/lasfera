@@ -246,10 +246,10 @@ def mirador_view(request, manuscript_id, page_number):
     try:
         manuscript = SingleManuscript.objects.get(id=manuscript_id)
     except SingleManuscript.DoesNotExist:
-        manuscript = SingleManuscript.objects.get(siglum="TEST")
+        manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
     if not manuscript.iiif_url:
-        manuscript = SingleManuscript.objects.get(siglum="TEST")
+        manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
     base_url = manuscript.iiif_url.replace("manifest.json", "")
     canvas_id = f"{base_url}canvas/p{page_number}"
@@ -259,6 +259,20 @@ def mirador_view(request, manuscript_id, page_number):
         "manuscript/mirador.html",
         {"manifest_url": manuscript.iiif_url, "canvas_id": canvas_id},
     )
+
+
+def get_canvas_url_for_folio(manuscript_manifest, folio):
+    """
+    Find the correct canvas URL from the manifest for a given folio
+    """
+    folio_label = folio.folio_number
+
+    # Find the matching canvas in the manifest
+    for canvas in manuscript_manifest["sequences"][0]["canvases"]:
+        if canvas["label"].lower() == folio_label.lower():
+            return canvas["@id"]
+
+    return None
 
 
 def stanzas(request: HttpRequest):
@@ -274,7 +288,7 @@ def stanzas(request: HttpRequest):
         .order_by("stanza_line_code_starts")
     )
     manuscripts = SingleManuscript.objects.all()
-    default_manuscript = SingleManuscript.objects.get(siglum="TEST")
+    default_manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
     books = process_stanzas(stanzas)
     translated_books = process_stanzas(translated_stanzas)
@@ -515,21 +529,6 @@ def toponym(request: HttpRequest, toponym_param: int):
                     "folio": "No folio assigned.",
                 }
             )
-
-    return render(
-        request,
-        "gazetteer/gazetteer_single.html",
-        {
-            "toponym": filtered_toponym,
-            "manuscripts": filtered_manuscripts,
-            "aliases": processed_aliases,
-            "aggregated_aliases": aggregated_aliases,
-            "folios": filtered_folios,
-            "iiif_manifest": filtered_manuscripts[0].iiif_url,
-            "iiif_urls": iiif_urls,
-            "line_codes": line_codes,  # Ensure line_codes is included in the context
-        },
-    )
 
     return render(
         request,
