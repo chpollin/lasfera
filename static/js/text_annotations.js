@@ -1,45 +1,44 @@
-// static/js/text_annotations.js
 document.addEventListener("DOMContentLoaded", function () {
   // Add styles for annotated text
-  const highlightStyle = document.createElement("style");
-  highlightStyle.textContent = `
-        .trix-content .annotated-text {
-            background-color: #fff3cd;
-            border-bottom: 2px solid #ffc107;
-            padding: 2px 0;
-            border-radius: 2px;
-            cursor: help;
-            position: relative;
-        }
-
-        .trix-content .annotated-text:hover::after {
-            content: attr(data-annotation);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-            white-space: nowrap;
-            z-index: 1000;
-            margin-bottom: 4px;
-        }
-
-        .trix-content .annotated-text:hover::before {
-            content: '';
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 6px solid transparent;
-            border-top-color: #333;
-            margin-bottom: -2px;
-        }
-    `;
-  document.head.appendChild(highlightStyle);
+  // const highlightStyle = document.createElement("style");
+  // highlightStyle.textContent = `
+  //       .trix-content .annotated-text {
+  //           background-color: #fff3cd;
+  //           border-bottom: 2px solid #ffc107;
+  //           padding: 2px 0;
+  //           border-radius: 2px;
+  //           cursor: help;
+  //           position: relative;
+  //       }
+  //
+  //       .trix-content .annotated-text:hover::after {
+  //           content: attr(data-annotation);
+  //           position: absolute;
+  //           bottom: 100%;
+  //           left: 50%;
+  //           transform: translateX(-50%);
+  //           background: #333;
+  //           color: white;
+  //           padding: 4px 8px;
+  //           border-radius: 4px;
+  //           font-size: 14px;
+  //           white-space: nowrap;
+  //           z-index: 1000;
+  //           margin-bottom: 4px;
+  //       }
+  //
+  //       .trix-content .annotated-text:hover::before {
+  //           content: '';
+  //           position: absolute;
+  //           bottom: 100%;
+  //           left: 50%;
+  //           transform: translateX(-50%);
+  //           border: 6px solid transparent;
+  //           border-top-color: #333;
+  //           margin-bottom: -2px;
+  //       }
+  //   `;
+  // document.head.appendChild(highlightStyle);
 
   // First add the styles to document head
   const modalStyle = document.createElement("style");
@@ -426,54 +425,28 @@ document.addEventListener("DOMContentLoaded", function () {
   loadExistingAnnotations();
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Add styles for annotations
-  const style = document.createElement("style");
-  style.textContent = `
-        .annotated-text {
-            background-color: #fff3cd;
-            border-bottom: 2px solid #ffc107;
-            cursor: help;
-        }
+// Function to show annotation
+window.showAnnotation = function (event, element) {
+  event.preventDefault();
+  const sidebar = document.getElementById("sidebar");
+  const annotationId = element.getAttribute("data-annotation-id");
 
-        #sidebar {
-            transition: transform 0.3s ease-in-out;
-        }
+  // Show loading state
+  sidebar.classList.add("active");
+  document.getElementById("notation-text").innerHTML =
+    '<div class="annotation-loading">Loading annotation...</div>';
 
-        #sidebar.active {
-            transform: translateX(0) !important;
-        }
-        
-        .annotation-loading {
-            padding: 1rem;
-            color: #666;
-            font-style: italic;
-        }
-    `;
-  document.head.appendChild(style);
-
-  // Function to show annotation
-  window.showAnnotation = function (event, element) {
-    event.preventDefault();
-    const sidebar = document.getElementById("sidebar");
-    const annotationId = element.getAttribute("data-annotation-id");
-
-    // Show loading state
-    sidebar.classList.add("active");
-    document.getElementById("notation-text").innerHTML =
-      '<div class="annotation-loading">Loading annotation...</div>';
-
-    // Fetch annotation data
-    fetch(`/text-annotations/annotation/${annotationId}/`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        // Update sidebar content
-        document.getElementById("notation-text").innerHTML = `
+  // Fetch annotation data
+  fetch(`/text-annotations/annotation/${annotationId}/`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Update sidebar content
+      document.getElementById("notation-text").innerHTML = `
                     <div class="annotation-content">
                         <div class="annotation-type text-sm text-gray-600 mb-2">
                             ${data.annotation_type}
@@ -483,14 +456,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                     </div>
                 `;
-      })
-      .catch((error) => {
-        console.error("Error loading annotation:", error);
-        document.getElementById("notation-text").innerHTML = `
+    })
+    .catch((error) => {
+      console.error("Error loading annotation:", error);
+      document.getElementById("notation-text").innerHTML = `
                     <div class="error-message text-red-500">
                         Failed to load annotation. Please try again.
                     </div>
                 `;
-      });
-  };
-});
+    });
+};
