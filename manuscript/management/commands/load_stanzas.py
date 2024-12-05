@@ -82,7 +82,7 @@ class Command(BaseCommand):
 
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
-                    manuscript = SingleManuscript.objects.get(siglum="TEST")
+                    manuscript = SingleManuscript.objects.get(siglum="Urb1")
                     line_code = self.process_field(row, "code", index)
                     if line_code is None:
                         logger.error("Missing line code at index %s", index)
