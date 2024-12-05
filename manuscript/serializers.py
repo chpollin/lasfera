@@ -13,13 +13,17 @@ class ToponymSerializer(serializers.ModelSerializer):
     def get_aliases(self, obj):
         aliases = (
             LocationAlias.objects.filter(location=obj)
-            .values_list("placename_modern", flat=True)
+            .values(
+                "id",
+                "placename_from_mss",
+                "placename_standardized",
+                "placename_modern",
+                "placename_alias",
+                "placename_ancient",
+            )
             .distinct()
         )
-        return {
-            "id": obj.id,
-            "placename_modern": list(aliases),
-        }
+        return list(aliases)
 
 
 class SingleManuscriptSerializer(serializers.ModelSerializer):
