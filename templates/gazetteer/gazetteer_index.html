@@ -18,58 +18,95 @@
                 <li>Select a point on the map to view the toponym associated with that location. You can then click on the toponym for more detailed information.</li>
             </ol>
             <p class="text-base pb-2 pt-2">With each toponym we have listed a few of the naming variants that appear across the Sfera manuscripts. Our list of variants is not comprehensive, and provides only a representative sample of the kinds of spelling variants found on Sfera maps. In particular, doubled letters (<strong>angolo </strong> >> <strong>angollo</strong>), <strong>c/ch </strong>and <strong>g/gh</strong> variants (>> <strong>angholo</strong>), and vowel variation (>> <strong>angelo</strong>) are so common that it is impossible to note all variations. Toponyms with few or no variants either (a) are so common as to acquire a standard spelling (e.g. <strong>asia</strong>) OR (b) do not often appear in the <em>Sfera</em> maps (e.g. <strong>livorno</strong>). Our list of variants expands abbreviations except in the case of labels such as <strong>f[iume]</strong> or <strong>m[are]</strong>, where variation is shown.</p>
-            <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 my-10">
+            <section id="gazetteer" class="flex flex-col md:flex-row w-full p-4 my-10">
                 <div class="flex flex-col md:flex-row w-full p-2 gap-x-4">
-            {# Left column #}
+        {# Left column #}
                     <div class="w-1/3 md:w-1/4 h-screen overflow-auto border p-3 m-3">
                         <input name="q" type="text" placeholder="Search toponyms..." class="p-2 border border-gray-300 rounded mt-4 mb-2 w-full" id="searchToponyms" hx-get="{% url 'search_toponyms' %}" hx-trigger="keyup changed delay:500ms" hx-target="#toponymsList">
                         <hr class="border-gray-300">
                         <div id="toponymsList">
                             <ul>
                                 {% for alias in aliases %}
-                                    <li class="p-2 hover:bg-gray-100">
+                                    <li class="p-2 hover:bg-gray-100" data-location-id="{{ alias.location_id }}">
                                         <a class="underline hover:no-underline" href="{% url 'toponym_detail' alias.location_id %}">{{ alias.placename_standardized }}</a>
                                     </li>
                                 {% endfor %}
                             </ul>
                         </div>
                     </div>
-
-            {# Right column #}
+        {# Right column #}
                     <div class="w-2/3 md:w-3/4 h-screen" id="map"></div>
                 </div>
             </section>
-        </div>
 
-        <script>
-            const map = L.map('map').setView([41.163, 28.766], 3);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-                maxZoom: 18,
-            }).addTo(map);
+            <script>
+                const map = L.map('map').setView([41.163, 28.766], 3);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+                    maxZoom: 18,
+                }).addTo(map);
+
+    // Store markers in a Map object for easy lookup
+                const markersByLocationId = new Map();
 
     // Initialize the marker cluster group
-            const markers = L.markerClusterGroup();
+                const markers = L.markerClusterGroup();
 
-            fetch("/api/toponyms")
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(toponym => {
-    // If null, skip
-                        if (toponym.latitude === null || toponym.longitude === null) {
-                            return;
-                        }
-                        const aliases = toponym.aliases.placename_standardized;
-                        const circleMarker = L.circleMarker([toponym.latitude, toponym.longitude], {
-                            radius: 6,
-                            color: 'none',
-                            fillColor: '#B91C1C',
-                            fillOpacity: 0.6
-                        }).bindPopup(`<a href="/toponyms/${toponym.id}">${aliases}</a>`);
-                        circleMarker.addTo(map);
-                    });
-                })
-                .catch(error => console.error('Error fetching toponym data:', error));
-        </script>
-    </section>
+                fetch("/api/toponyms")
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(toponym => {
+                // Skip if coordinates are null
+                            if (toponym.latitude === null || toponym.longitude === null) {
+                                return;
+                            }
+
+                            const ms_alias = toponym.aliases[0].placename_from_mss;
+                            const modern_alias = toponym.aliases[0].placename_modern;
+                            const circleMarker = L.circleMarker([toponym.latitude, toponym.longitude], {
+                                radius: 6,
+                                color: 'none',
+                                fillColor: '#B91C1C',
+                                fillOpacity: 0.6,
+                                className: `marker-${toponym.id}` // Add class for easy selection
+                            }).bindPopup(`Placename from manuscript:<br/> <a style="text-decoration: underline" href="/toponyms/${toponym.id}">${ms_alias || 'No name available'}${modern_alias ? ` (${modern_alias})` : ''}</a>`);
+
+                // Store marker reference
+                            markersByLocationId.set(toponym.id, circleMarker);
+
+                            circleMarker.addTo(map);
+                        });
+
+            // Add hover effects
+                        const listItems = document.querySelectorAll('#toponymsList li');
+                        listItems.forEach(item => {
+                            item.addEventListener('mouseenter', (e) => {
+                                const locationId = item.dataset.locationId;
+                                const marker = markersByLocationId.get(parseInt(locationId));
+                                if (marker) {
+                                    marker.setStyle({
+                                        radius: 8,
+                                        fillColor: '#4daf4a',
+                                        fillOpacity: 1
+                                    });
+                                    marker.bringToFront();
+                                }
+                            });
+
+                            item.addEventListener('mouseleave', (e) => {
+                                const locationId = item.dataset.locationId;
+                                const marker = markersByLocationId.get(parseInt(locationId));
+                                if (marker) {
+                                    marker.setStyle({
+                                        radius: 6,
+                                        fillColor: '#B91C1C', // Revert to original color
+                                        fillOpacity: 0.6
+                                    });
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => console.error('Error fetching toponym data:', error));
+            </script>
+        </section>
 {% endblock %}
