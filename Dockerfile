@@ -22,7 +22,7 @@ COPY . /app/
 RUN pip3 install poetry
 
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-interaction --no-ansi --no-root
 
 # Copy over Volta binaries
 RUN mkdir -p /root/.volta/bin
