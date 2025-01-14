@@ -17,6 +17,7 @@ from django.views.generic import DetailView
 from rest_framework import viewsets
 
 from manuscript.models import (
+    Folio,
     Location,
     LocationAlias,
     SingleManuscript,
@@ -276,6 +277,7 @@ def get_canvas_url_for_folio(manuscript_manifest, folio):
 
 
 def stanzas(request: HttpRequest):
+    folios = Folio.objects.all()
     stanzas = (
         Stanza.objects.prefetch_related("annotations")
         .all()
@@ -293,29 +295,38 @@ def stanzas(request: HttpRequest):
     books = process_stanzas(stanzas)
     translated_books = process_stanzas(translated_stanzas)
 
+    # Group stanzas by folio within each book
     paired_books = {}
     for book_number, stanza_dict in books.items():
         paired_books[book_number] = []
+        current_folio = None
+
         for stanza_number, original_stanzas in stanza_dict.items():
             # Get corresponding translated stanzas
             translated_stanza_group = translated_books.get(book_number, {}).get(
                 stanza_number, []
             )
 
-            paired_books[book_number].append(
-                {
-                    "original": original_stanzas,
-                    "translated": translated_stanza_group,
-                }
-            )
+            # Add folio information
+            stanza_group = {
+                "original": original_stanzas,
+                "translated": translated_stanza_group,
+            }
 
-    # Get the IIIF manifest URL from the default manuscript
+            # Check if this is a new folio
+            if original_stanzas and original_stanzas[0].related_folio != current_folio:
+                current_folio = original_stanzas[0].related_folio
+                stanza_group["new_folio"] = True
+                stanza_group["show_viewer"] = True  # Only show viewer for new folios
+            else:
+                stanza_group["new_folio"] = False
+
+            paired_books[book_number].append(stanza_group)
+
     manuscript_data = {
-        "iiif_url": (
-            default_manuscript.iiif_url
-            if hasattr(default_manuscript, "iiif_url")
-            else None
-        )
+        "iiif_url": default_manuscript.iiif_url
+        if hasattr(default_manuscript, "iiif_url")
+        else None
     }
 
     return render(
@@ -326,6 +337,7 @@ def stanzas(request: HttpRequest):
             "manuscripts": manuscripts,
             "default_manuscript": default_manuscript,
             "manuscript": manuscript_data,
+            "folios": folios,
         },
     )
 
