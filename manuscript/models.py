@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import List, Tuple
 
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
+from django.db.models import Q
 from prose.fields import RichTextField
 
 from manuscript.utils import get_canvas_id_for_folio
@@ -27,6 +29,101 @@ def validate_line_number_variant_code(value):
     pattern = r"^\d{2}\.\d{2}\.\d{2}[a-z]$"
     if not re.match(pattern, value):
         raise ValidationError('Invalid number format. Expected format: "01.01.04a"')
+
+
+def parse_line_code(line_code: str) -> Tuple[int, int, int]:
+    """Parse a line code into book, stanza, and line numbers.
+
+    Args:
+        line_code: String in format "BB.SS.LL" where BB is book, SS is stanza, LL is line
+
+    Returns:
+        Tuple of (book_num, stanza_num, line_num)
+    """
+    if not line_code:
+        return None
+
+    parts = line_code.split(".")
+    if len(parts) != 3:
+        raise ValueError(f"Invalid line code format: {line_code}")
+
+    return (int(parts[0]), int(parts[1]), int(parts[2]))
+
+
+def line_code_to_numeric(line_code: str) -> int:
+    """Convert a line code to a numeric value for comparison.
+
+    Args:
+        line_code: String in format "BB.SS.LL"
+
+    Returns:
+        Integer representation for comparison (BBSSLL)
+    """
+    if not line_code:
+        return None
+
+    book, stanza, line = parse_line_code(line_code)
+    return book * 10000 + stanza * 100 + line
+
+
+def get_stanzas_in_folio(folio) -> List["Stanza"]:
+    """Get all stanzas that appear on a given folio.
+
+    Args:
+        folio: Folio object
+
+    Returns:
+        List of Stanza objects that appear on this folio
+    """
+    if not folio.line_code_range_start or not folio.line_code_range_end:
+        return []
+
+    start_book, start_stanza, _ = parse_line_code(folio.line_code_range_start)
+    end_book, end_stanza, _ = parse_line_code(folio.line_code_range_end)
+
+    # Build query to find stanzas within the range
+    stanzas = Stanza.objects.filter(related_manuscript=folio.manuscript).filter(
+        Q(stanza_line_code_starts__isnull=False)
+        | Q(stanza_line_code_ends__isnull=False)
+    )
+
+    # Convert line codes to numeric for comparison
+    start_numeric = line_code_to_numeric(folio.line_code_range_start)
+    end_numeric = line_code_to_numeric(folio.line_code_range_end)
+
+    # Filter stanzas that overlap with the folio's range
+    matching_stanzas = []
+    for stanza in stanzas:
+        stanza_start = line_code_to_numeric(stanza.stanza_line_code_starts)
+        stanza_end = line_code_to_numeric(
+            stanza.stanza_line_code_ends or stanza.stanza_line_code_starts
+        )
+
+        # A stanza is included if:
+        # 1. It starts within the folio range
+        # 2. It ends within the folio range
+        # 3. It spans across the folio range
+        if (
+            (
+                stanza_start
+                and stanza_start >= start_numeric
+                and stanza_start <= end_numeric
+            )
+            or (
+                stanza_end and stanza_end >= start_numeric and stanza_end <= end_numeric
+            )
+            or (
+                stanza_start
+                and stanza_end
+                and stanza_start <= start_numeric
+                and stanza_end >= end_numeric
+            )
+        ):
+            matching_stanzas.append(stanza)
+
+    return sorted(
+        matching_stanzas, key=lambda x: line_code_to_numeric(x.stanza_line_code_starts)
+    )
 
 
 class LineCode(models.Model):
@@ -96,13 +193,13 @@ class EditorialStatus(models.Model):
     dataset = models.CharField(max_length=255, blank=True, null=True)
     map_group = models.CharField(max_length=255, blank=True, null=True)
     decorative_group = models.CharField(max_length=255, blank=True, null=True)
-    iiif_url = models.URLField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
-        verbose_name="IIIF URL",
-    )
+    # iiif_url = models.URLField(
+    #     max_length=255,
+    #     blank=True,
+    #     null=True,
+    #     help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
+    #     verbose_name="IIIF URL",
+    # )
 
     class Meta:
         verbose_name = "Editorial Status"
@@ -505,7 +602,13 @@ class StanzaTranslated(models.Model):
         verbose_name_plural = "Stanza translations"
 
 
-class Folio(models.Model):
+class FolioStanzaMixin:
+    def get_stanzas(self) -> List["Stanza"]:
+        """Get all stanzas that appear on this folio in order."""
+        return get_stanzas_in_folio(self)
+
+
+class Folio(FolioStanzaMixin, models.Model):
     """This provides a way to collect several stanzas onto a single page, and associate them with a single manuscript."""
 
     FOLIO_MAP_CHOICES = (
@@ -517,6 +620,21 @@ class Folio(models.Model):
 
     id = models.AutoField(primary_key=True)
     folio_number = models.CharField(blank=True, null=True, max_length=510)
+    # TODO: Convert these ranges to a dropdown of available line codes
+    line_code_range_start = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text="Input the text by book, stanza, and line number. For example: 01.01.01 refers to book 1, stanza 1, line 1.",
+        validators=[validate_line_number_code],
+    )
+    line_code_range_end = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text="Input the text by book, stanza, and line number. For example: 01.01.01 refers to book 1, stanza 1, line 1.",
+        validators=[validate_line_number_code],
+    )
     folio_notes = RichTextField(blank=True, null=True)
     manuscript = models.ForeignKey(
         "SingleManuscript", on_delete=models.CASCADE, blank=True, null=True
@@ -557,6 +675,10 @@ class Folio(models.Model):
             return None
 
         return get_canvas_id_for_folio(self.folio_number)
+
+    def get_stanzas(self) -> List[Stanza]:
+        """Get all stanzas that appear on this folio in order."""
+        return get_stanzas_in_folio(self)
 
     class Meta:
         ordering = ["folio_number"]
