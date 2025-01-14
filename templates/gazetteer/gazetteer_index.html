@@ -82,27 +82,36 @@
                         listItems.forEach(item => {
                             item.addEventListener('mouseenter', (e) => {
                                 const locationId = item.dataset.locationId;
-                                const marker = markersByLocationId.get(parseInt(locationId));
-                                if (marker) {
-                                    marker.setStyle({
-                                        radius: 8,
-                                        fillColor: '#4daf4a',
-                                        fillOpacity: 1
-                                    });
-                                    marker.bringToFront();
-                                }
+        // Affect all markers
+                                markersByLocationId.forEach((marker, id) => {
+                                    if (id === parseInt(locationId)) {
+                // Highlighted marker
+                                        marker.setStyle({
+                                            radius: 8,
+                                            fillColor: '#4daf4a',
+                                            fillOpacity: 1
+                                        });
+                                        marker.bringToFront();
+                                    } else {
+                // Non-highlighted markers
+                                        marker.setStyle({
+                                            radius: 4, // Make other points smaller
+                                            fillColor: '#B91C1C',
+                                            fillOpacity: 0.4 // Optional: can also reduce opacity
+                                        });
+                                    }
+                                });
                             });
 
                             item.addEventListener('mouseleave', (e) => {
-                                const locationId = item.dataset.locationId;
-                                const marker = markersByLocationId.get(parseInt(locationId));
-                                if (marker) {
+        // Reset all markers to original style
+                                markersByLocationId.forEach((marker) => {
                                     marker.setStyle({
                                         radius: 6,
-                                        fillColor: '#B91C1C', // Revert to original color
+                                        fillColor: '#B91C1C',
                                         fillOpacity: 0.6
                                     });
-                                }
+                                });
                             });
                         });
                     })

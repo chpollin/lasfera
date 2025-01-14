@@ -59,3 +59,25 @@ window.addEventListener("scroll", function () {
     returnToTop.classList.add("opacity-0", "invisible");
   }
 });
+
+// Manuscript viewer
+document.addEventListener("DOMContentLoaded", function () {
+  const manuscriptSelect = document.getElementById("manuscript-select");
+  const miradorFrame = document.getElementById("mirador-frame");
+
+  if (manuscriptSelect && miradorFrame) {
+    manuscriptSelect.addEventListener("change", function () {
+      const manuscriptId = this.value; // This will now be the numeric ID
+
+      // Update the iframe source to load the new manuscript
+      if (manuscriptId) {
+        const currentUrl = new URL(miradorFrame.src);
+        const newUrl = currentUrl.pathname.replace(
+          /\/\d+\/0001/,
+          `/${manuscriptId}/0001`,
+        );
+        miradorFrame.src = newUrl;
+      }
+    });
+  }
+});

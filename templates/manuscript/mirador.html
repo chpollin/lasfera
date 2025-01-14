@@ -31,16 +31,25 @@
                         info: false,
                         attribution: false,
                         canvas: false,
-                        annotations: false,
+                        annotations: true,
                         search: false
                     }
                 },
                 workspace: {
-                    showZoomControls: false,
+                    showZoomControls: true,
                 },
                 workspaceControlPanel: {
                     enabled: false,
                 },
+                requestDelegate: {
+                    fetchHeaders: {
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    crossOriginPolicy: 'Anonymous'
+                },
+                osdConfig: {
+                    crossOriginPolicy: 'Anonymous'
+                }
             });
         </script>
     </body>
