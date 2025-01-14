@@ -5,9 +5,12 @@ import random
 import re
 from collections import defaultdict
 from html import unescape
+from urllib.parse import urlparse
 
+import requests
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -29,6 +32,23 @@ from pages.models import AboutPage, SitePage
 from textannotation.models import TextAnnotation
 
 logger = logging.getLogger(__name__)
+
+
+def get_manifest_data(manifest_url):
+    """Fetch and cache IIIF manifest data."""
+    cache_key = f"iiif_manifest_{manifest_url}"
+    cached_data = cache.get(cache_key)
+
+    if cached_data:
+        return cached_data
+
+    # Fetch and cache for 24 hours if not in cache
+    response = requests.get(manifest_url)
+    response.raise_for_status()
+    manifest_data = response.json()
+    cache.set(cache_key, manifest_data, 60 * 60 * 24)
+
+    return manifest_data
 
 
 @require_POST
@@ -252,13 +272,19 @@ def mirador_view(request, manuscript_id, page_number):
     if not manuscript.iiif_url:
         manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
-    base_url = manuscript.iiif_url.replace("manifest.json", "")
-    canvas_id = f"{base_url}canvas/p{page_number}"
+    # Optional: Pre-fetch and cache the manifest
+    try:
+        get_manifest_data(manuscript.iiif_url)
+    except requests.RequestException:
+        # Fallback to default manuscript if manifest can't be fetched
+        manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
     return render(
         request,
         "manuscript/mirador.html",
-        {"manifest_url": manuscript.iiif_url, "canvas_id": canvas_id},
+        {
+            "manifest_url": manuscript.iiif_url,
+        },
     )
 
 
@@ -324,9 +350,11 @@ def stanzas(request: HttpRequest):
             paired_books[book_number].append(stanza_group)
 
     manuscript_data = {
-        "iiif_url": default_manuscript.iiif_url
-        if hasattr(default_manuscript, "iiif_url")
-        else None
+        "iiif_url": (
+            default_manuscript.iiif_url
+            if hasattr(default_manuscript, "iiif_url")
+            else None
+        )
     }
 
     return render(
