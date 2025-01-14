@@ -262,6 +262,7 @@ class StanzaAdmin(admin.ModelAdmin):
     inlines = [TextAnnotationInline, StanzaVariantInline]
     list_display = (
         "stanza_line_code_starts",
+        "display_folio",
         "formatted_stanza_text",
         "display_stanza_variants",
         "language",
@@ -275,6 +276,13 @@ class StanzaAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/text_annotations.css",)}
         js = ("js/text_annotations.js",)
+
+    def display_folio(self, obj):
+        if obj.related_folio:
+            return f"Folio {obj.related_folio.folio_number}"
+        return "-"
+
+    display_folio.short_description = "Folio"
 
     def formatted_stanza_text(self, obj):
         return format_html(obj.stanza_text)
