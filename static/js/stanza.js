@@ -1,44 +1,43 @@
 // Handle toggling line codes
 document.addEventListener("DOMContentLoaded", (event) => {
-  const toggleLineCodes = document.getElementById("toggleLineCodes");
-  if (toggleLineCodes) {
-    toggleLineCodes.addEventListener("click", function () {
-      const lineCodes = document.querySelectorAll(".line-code");
-      lineCodes.forEach((lineCode) => {
-        lineCode.style.display = this.checked ? "inline" : "none";
-      });
-    });
-  }
-});
-
-// Handle shortening the line codes
-// We shorten the code from 01.01.01 to 1 (that is, the final .01)
-document.addEventListener("DOMContentLoaded", (event) => {
-  const shortenLineCodes = document.getElementById("toggleLineCodeShortened");
-
-  if (shortenLineCodes) {
+  const lineCodeDisplay = document.getElementById("lineCodeDisplay");
+  console.log("Select element:", lineCodeDisplay); // Debug line
+  if (lineCodeDisplay) {
     let originalLineCodes = [];
+    let lineCodesVisible = true;
 
-    shortenLineCodes.addEventListener("click", function () {
+    lineCodeDisplay.addEventListener("change", function () {
+      const lineCodes = document.querySelectorAll(".line-code");
       const lineCodeLinks = document.querySelectorAll(".line-code a");
 
-      for (let i = 0; i < lineCodeLinks.length; i++) {
-        const lineCodeSpan = lineCodeLinks[i].querySelector("span");
-        if (this.checked) {
-          // Save the original line code
-          originalLineCodes[i] = lineCodeSpan.textContent;
-
-          // Shorten the line code
-          let code = lineCodeSpan.textContent;
-          let parts = code.split(".");
-          let lastPart = parts[parts.length - 1];
-          lineCodeSpan.textContent = parseInt(lastPart);
-        } else {
-          // Restore the original line code
+      switch (this.value) {
+        case "full":
+          // Show full line codes
+          lineCodes.forEach((code) => (code.style.display = "inline"));
           if (originalLineCodes.length) {
-            lineCodeSpan.textContent = originalLineCodes[i];
+            lineCodeLinks.forEach((link, i) => {
+              link.querySelector("span").textContent = originalLineCodes[i];
+            });
           }
-        }
+          break;
+
+        case "shortened":
+          // Show shortened line codes
+          lineCodes.forEach((code) => (code.style.display = "inline"));
+          lineCodeLinks.forEach((link, i) => {
+            const span = link.querySelector("span");
+            if (!originalLineCodes[i]) {
+              originalLineCodes[i] = span.textContent;
+            }
+            const parts = span.textContent.split(".");
+            span.textContent = parseInt(parts[parts.length - 1]);
+          });
+          break;
+
+        case "hidden":
+          // Hide line codes
+          lineCodes.forEach((code) => (code.style.display = "none"));
+          break;
       }
     });
   }
