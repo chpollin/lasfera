@@ -28,7 +28,7 @@
                                     {% endfor %}
                                 </ul>
                             {% endif %}
-                            <ul class="list-disc ml-4 mt-6">
+                            <ul class="list-disc ml-4 mt-6 mb-6">
 
                                 {# display the lat/lon data #}
                                 <li><strong>Latitude</strong>: {{ toponym.latitude }}</li>
@@ -71,7 +71,7 @@
                                 {% endif %}
                             </ul>
                             {% if toponym.authority_file %}
-                                <strong>Authority file</strong>: <a class="underline hover:no-underline" href="{{ toponym.authority_file }}">{{ toponym.authority_file }}</a>
+                                <p><strong>Authority file</strong>: <a class="underline hover:no-underline" href="{{ toponym.authority_file }}">{{ toponym.authority_file }}</a></p>
                             {% endif %}
                         </div>
                     {% else %}
