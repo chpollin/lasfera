@@ -2,10 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Junicode";
+  src: url("/static/fonts/JunicodeVF-Roman.woff2") format("woff");
+}
+
+@font-face {
+  font-family: "Junicode";
+  src: url("/static/fonts/JunicodeVF-Italic.woff2") format("woff");
+  font-style: italic;
+}
+
 body {
   font-family: "Playfair Display," Georgia, "Times New Roman", Times, serif;
   font-optical-sizing: auto;
   font-weight: 400;
+  font-size: 1.2rem;
   font-style: normal;
 }
 

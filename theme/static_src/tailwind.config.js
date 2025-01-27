@@ -46,8 +46,12 @@ module.exports = {
   theme: {
     fontFamily: {
       serif: ['"Playfair Display"', ...defaultTheme.fontFamily.serif],
+      sans: ['"Junicode"', ...defaultTheme.fontFamily.sans],
     },
     extend: {
+      spacing: {
+        paragraph: "1.5rem",
+      },
       colors: {
         "link-color": "#1a202c",
         "lasfera-red": "#B91C1C",
@@ -58,6 +62,13 @@ module.exports = {
         "lasfera-white": "#FFFBFE",
       },
       textDecoration: ["responsive", "hover", "focus", "active", "group-hover"],
+      typography: {
+        DEFAULT: {
+          css: {
+            fontSize: "1.2rem",
+          },
+        },
+      },
     },
   },
   variants: {
