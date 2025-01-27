@@ -1,7 +1,6 @@
 // Handle toggling line codes
 document.addEventListener("DOMContentLoaded", (event) => {
   const lineCodeDisplay = document.getElementById("lineCodeDisplay");
-  console.log("Select element:", lineCodeDisplay); // Debug line
   if (lineCodeDisplay) {
     let originalLineCodes = [];
     let lineCodesVisible = true;
