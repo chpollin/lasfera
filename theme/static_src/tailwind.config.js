@@ -55,6 +55,7 @@ module.exports = {
       colors: {
         "link-color": "#1a202c",
         "lasfera-red": "#B91C1C",
+        "lasfera-green": "#3e5244",
         "lasfera-yellow": "#DEB841",
         "lasfera-gray": "#7C9299",
         "lasfera-darker-gray": "#63747A",
