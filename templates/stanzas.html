@@ -103,17 +103,18 @@
         <!-- Second column -->
             <div class="w-full">
               <label for="manuscript-select" class="block text-gray-700 text-sm font-bold mb-2">Select Manuscript:</label>
-              <select id="manuscript-select" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                {% for manuscript in manuscripts %}
-                  {% if manuscript.iiif_url %}
-                    <option value="{{ manuscript.id }}"
-                            {% if manuscript.siglum == default_manuscript.siglum %}selected{% endif %}>
-                      {{ manuscript.shelfmark }}{% if manuscript.name %} - {{ manuscript.name }}{% endif %} | {{ manuscript.library }}
-                    </option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            </div>
+              <select 
+    id="manuscript-select" 
+    onchange="window.location.href=`/manuscripts/${this.value}/stanzas/`"
+    class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+    {% for manuscript in manuscripts %}
+        <option value="{{ manuscript.siglum }}"
+                {% if manuscript.siglum == default_manuscript.siglum %}selected{% endif %}>
+        {{ manuscript.siglum }} &middot; {{manuscript.shelfmark}} | {{ manuscript.library }}
+        </option>
+    {% endfor %}
+</select>
+                          </div>
     <!-- Third column -->
             <div class="w-full">
               <label for="manuscript-linecodes" class="block text-gray-700 text-sm font-bold mb-2">Line code display:</label>
@@ -146,21 +147,19 @@
 
               <!-- Stanza pairs -->
                 {% for stanza_pair in stanza_pairs %}
+{% with original_stanza=stanza_pair.original|first %}
+{% if stanza_pair.new_folio and original_stanza.folios.exists %}
+<div class="col-span-2 relative flex items-center my-6">
+  <div class="font-medium text-gray-500 pr-4">
+    Folio {{ original_stanza.folios.first.folio_number }}
+  </div>
+  <div class="flex-grow border-t border-gray-300"></div>
+</div>
+{% endif %}
+              {% endwith %}
                   <div class="grid grid-cols-2 gap-8 mb-8">
-                    {% with original_stanza=stanza_pair.original|first %}
-                      {% if original_stanza.related_folio %}
-                        {% if stanza_pair.new_folio %}
-                          <div class="col-span-2 relative flex items-center mt-4 mb-4">
-                            <div class="text-gray-300 font-bold bg-white pr-4">
-                              Folio {{ original_stanza.related_folio.folio_number }}
-                            </div>
-                            <div class="flex-grow border-t-2 border-gray-300"></div>
-                          </div>
-                        {% endif %}
-                      {% endif %}
-                    {% endwith %}
-
-                  <!-- Original stanza -->
+                    
+                                      <!-- Original stanza -->
                     <div class="w-full">
                       {% for stanza in stanza_pair.original %}
                         <div class="relative">
@@ -232,7 +231,7 @@
                   </iframe>
                 {% else %}
                   <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                    <p class="text-gray-500">No manuscript page available</p>
+                    <p class="text-gray-500">No IIIF manifest available</p>
                   </div>
                 {% endif %}
               </div>
@@ -500,6 +499,59 @@
         }
       });
     });
+
+    // Function to update the manuscript content
+    // Function to apply annotations to text
+function annotateText(text, annotations) {
+    if (!annotations || annotations.length === 0) return text;
+    
+    // Sort annotations by starting position
+    const sortedAnnotations = [...annotations].sort((a, b) => a.from_pos - b.from_pos);
+    
+    let result = text;
+    let offset = 0;
+    
+    sortedAnnotations.forEach(ann => {
+        const startPos = parseInt(ann.from_pos) + offset;
+        const endPos = parseInt(ann.to_pos) + offset;
+        
+        const before = result.slice(0, startPos);
+        const annotatedPart = result.slice(startPos, endPos);
+        const after = result.slice(endPos);
+        
+        const annotatedHtml = `<span class="annotated-text" 
+            data-annotation-id="${ann.id}" 
+            onclick="showAnnotation(event, this)">${annotatedPart}</span>`;
+            
+        result = before + annotatedHtml + after;
+        offset += annotatedHtml.length - annotatedPart.length;
+    });
+    
+    return result;
+}
+
+// Function to handle line code display
+function updateLineCodeDisplay(mode) {
+    const lineCodes = document.querySelectorAll('.line-code');
+    lineCodes.forEach(code => {
+        switch(mode) {
+            case 'shortened':
+                // Show only last part of line code (e.g., "01" from "01.01.01")
+                const shortCode = code.textContent.trim().split('.').pop();
+                code.style.display = '';
+                code.querySelector('span').textContent = shortCode;
+                break;
+            case 'hidden':
+                code.style.display = 'none';
+                break;
+            default: // 'full'
+                code.style.display = '';
+                // Restore original line code if needed
+                const originalCode = code.querySelector('a').id;
+                code.querySelector('span').textContent = originalCode;
+        }
+    });
+}
   </script>
 {% endblock scripts %}
 
