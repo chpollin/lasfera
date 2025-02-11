@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Data on toponym {{ aggregated_aliases.placename_standardizeds.0 }} - La Sfera{% endblock title %}
+{% block title %}Data on toponym {{ aggregated_aliases.name }} - La Sfera{% endblock title %}
 
 {% block content %}
     <div class="mx-auto container pt-3">
         <p class="pb-2">&larr; <a class="underline hover:no-underline" href="{% url 'toponyms' %}">Return to gazetteer</a>.</p>
         <h3 class="text-4xl pb-3 font-bold" id="text">
-            <span class="border-b border-red-700 font-normal">{{ aggregated_aliases.placename_standardizeds.0 }}</span>
+            <span class="border-b border-red-700 font-normal">{{ aggregated_aliases.name }}</span>
         </h3>
 
         <section id="manuscript" class="flex flex-col md:flex-row w-full p-4 mb-10">
@@ -16,73 +16,47 @@
                 <div class="lg:w-1/2 p-4">
 
                 {# display the location aliases if any #}
-                    {% if aliases %}
-                        <div class="aliases mb-4">
-                            <h4>Some of the variant spellings for <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_standardizeds.0 }}</span></strong> that appear in <em>Sfera</em> manuscripts are:</h4>
-                            {% if aggregated_aliases.placename_aliases %}
-                                <ul class="flex flex-wrap gap-2">
-                                    {% for place_alias in aggregated_aliases.placename_aliases %}
-                                        <li class="font-medium text-black px-2">
-                                            <span class="border-b border-red-700">{{ place_alias }}</span>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% endif %}
-                            <ul class="list-disc ml-4 mt-6 mb-6">
+               {% if aggregated_aliases.aliases %}
+<div class="aliases mb-4">
+    <h4 class="mb-4">Some of the variant spellings for <strong><span class="border-b border-red-700">{{ aggregated_aliases.name }}</span></strong> that appear in <em>Sfera</em> manuscripts are:</h4>
 
-                                {# display the lat/lon data #}
-                                <li><strong>Latitude</strong>: {{ toponym.latitude }}</li>
-                                <li><strong>Longitude</strong>: {{ toponym.longitude }}</li>
-                                {% if aggregated_aliases.placename_from_msss %}
-                                    <li><strong>Place name from manuscript</strong>:
-                                        {% for from_mss in aggregated_aliases.placename_from_msss %}
-                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700">
-                                                {{ from_mss }}
-                                            </span>
-                                        {% endfor %}
-                                    </li>
-                                {% endif %}
-                                {% if aggregated_aliases.placename_standardizeds %}
-                                    <li><strong>Modern name</strong>:
-                                        {% for modern in aggregated_aliases.placename_moderns %}
-                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700">
-                                                {{ modern }}
-                                            </span>
-                                        {% endfor %}
-                                    </li>
-                                {% endif %}
-                                {% if aggregated_aliases.placename_standardizeds %}
-                                    <li><strong>Standardized name</strong>:
-                                        {% for standardized in aggregated_aliases.placename_standardizeds %}
-                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700">
-                                                {{ standardized }}
-                                            </span>
-                                        {% endfor %}
-                                    </li>
-                                {% endif %}
-                                {% if aggregated_aliases.placename_ancients %}
-                                    <li><strong>Ancient name</strong>:
-                                        {% for ancient_name in aggregated_aliases.placename_ancients %}
-                                            <span class="inline-flex items-center font-medium text-black border-b border-red-700 ml-2">
-                                                {{ ancient_name }}
-                                            </span>
-                                        {% endfor %}
-                                    </li>
-                                {% endif %}
-                            </ul>
-                            {% if toponym.authority_file %}
-                                <p><strong>Authority file</strong>: <a class="underline hover:no-underline" href="{{ toponym.authority_file }}">{{ toponym.authority_file }}</a></p>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <p class="pb-2">There are no aliases associated with this toponym.</p>
-                    {% endif %}
-
+    <div class="max-w-4xl mx-auto">
+    <div class="overflow-x-auto shadow rounded-lg">
+        <table class="w-full table-fixed divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="w-1/3 px-4 py-3 text-center text-xs font-medium uppercase">Variant</th>
+                    <th scope="col" class="w-2/3 px-4 py-3 text-left text-xs font-medium uppercase">Appears in the following manuscripts:</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for alias in aggregated_aliases.aliases %}
+                {% if alias.placename_alias is not None %}
+                <tr>
+                    <td class="px-4 py-3 text-base text-center break-words">
+                        <span class="border-b border-red-700">{{ alias.placename_alias }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-base break-words">
+   {% for ms in alias.manuscripts %}
+       <a href="{% url 'manuscript' ms.siglum %}" class="underline hover:no-underline">{{ ms.siglum }}</a>{% if not forloop.last %}, {% endif %}
+   {% endfor %}
+</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+   </div>
+{% else %}
+<p class="pb-2">There are no aliases associated with this toponym.</p>
+{% endif %} 
                 {# Line codes for the toponym #}
                 {# we list all of the line_code values #}
                 {# Line codes for the toponym #}
                     <div class="flex-auto mb-2 bg-gray-50 p-2 m-2">
-                        <h4 class="text-lg">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_standardizeds.0 }}</span></strong> is mentioned in the text of <em>La Sfera</em> here:</h4>
+                        <h4 class="text-lg">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.name }}</span></strong> is mentioned in the text of <em>La Sfera</em> here:</h4>
 
                         <table class="table-auto">
                             <thead>
@@ -120,32 +94,7 @@
                         </table>
                     </div>
 
-
-                    <p class="pt-2 pb-2">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.placename_standardizeds.0 }}</span></strong> appears on at least one map in the following manuscripts:</p>
-                    <table class="table-auto">
-                        <thead>
-                            <tr>
-                                <th class="px-4 py-2">Siglum</th>
-                                <th class="px-4 py-2">Shelfmark</th>
-                                <th class="px-4 py-2">Library</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for manuscript in manuscripts %}
-                                <tr>
-                                    <td class="border px-4 py-2"><a class="underline hover:no-underline" href="/manuscripts/{{ manuscript.siglum }}">{{ manuscript.siglum }}</a></td>
-
-                                    <td class="border px-4 py-2">{{ manuscript.shelfmark }}</td>
-                                    <td class="border px-4 py-2">{{ manuscript.library }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td class="border px-4 py-2" colspan="4">No manuscripts available for this toponym.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div> {# end: left column #}
+                                    </div> {# end: left column #}
 
         {# Right column #}
                 <div class="lg:w-1/2 p-4 space-y-4">
@@ -154,32 +103,60 @@
                         <div id="map" style="height: 255px; width: 500px;">Map of the location {{ toponym }}</div>
                     </div>
 
-            {# IIIF content #}
-                    <div class="flex-auto">
-                        <h4 class="text-lg">IIIF Viewer:</h4>
-                        <ul class="list-disc ml-4">
-                            {% for iiif_url in iiif_urls %}
-                                <ul>
-                                    {% for iiif_url in iiif_urls %}
-                                        <li><a class="underline hover:no-underline" href="#" data-iiif-url="{{ iiif_url.iiif_url }}" data-manuscript="{{ iiif_url.manuscript }}" data-folio-number="{{ iiif_url.folio_number}}" onclick="openMiradorModal(this)">IIIF viewer for manuscript {{ iiif_url.manuscript }}</a></li>
-                                    {% endfor %}
-                                </ul>
+<div class="flex-auto">
+  {% if aggregated_aliases.aliases %}
+<ul class="list-disc ml-4 mb-6">
+        {% if toponym.authority_file %}
+            <p><strong>Authority File</strong>: <a class="underline hover:no-underline" href="{{ toponym.authority_file }}">{{ toponym.authority_file }}</a></p>
+        {% endif %}
+    <p><strong>Coordinates</strong>: <span id="coordinates-container" data-latitude="{{ toponym.latitude }}" data-longitude="{{ toponym.longitude }}"></span></p> 
+    <div class="mt-6">
+        {% if aggregated_aliases.placename_from_msss %}
+            <li><strong>Place name from manuscript</strong>: 
+                {% for from_mss in aggregated_aliases.placename_from_msss %}
+                    <span class="border-b border-red-700">{{ from_mss }}</span>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </li>
+        {% endif %}
+        {% if aggregated_aliases.placename_moderns %}
+            <li><strong>Modern name</strong>: 
+                {% for modern in aggregated_aliases.placename_moderns %}
+                    <span class="border-b border-red-700">{{ modern }}</span>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </li>
+        {% endif %}
+        {% if aggregated_aliases.placename_standardizeds %}
+            <li><strong>Standardized name</strong>: 
+                {% for standardized in aggregated_aliases.placename_standardizeds %}
+                    <span class="border-b border-red-700">{{ standardized }}</span>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </li>
+        {% endif %}
+        {% if aggregated_aliases.placename_ancients %}
+            <li><strong>Ancient name</strong>: 
+                {% for ancient_name in aggregated_aliases.placename_ancients %}
+                    <span class="border-b border-red-700">{{ ancient_name }}</span>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </li>
+        {% endif %}
+    </ul>
+    {% else %}
+    <p class="pb-2">There are no aliases associated with this toponym.</p>
+    {% endif %}
+    </div>
 
-                        {# Modal Structure  #}
-                                <div id="miradorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-                                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 shadow-lg rounded-md bg-white z-50">
-                                        <div id="miradorViewer" style="height: 600px;"></div>
-                                        <div class="absolute bottom-4 right-4 z-50">
-                                            <button class="text-white hover:bg-red-700 bg-red-500 p-2 rounded" onclick="closeMiradorModal()">Close viewer</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% empty %}
-                                <li>No IIIF URLs available for this toponym.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>{# end: right column #}
+    </div>
+
+{# Modal Structure #}
+<div id="miradorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 shadow-lg rounded-md bg-white z-50">
+        <div id="miradorViewer" style="height: 600px;"></div>
+        <div class="absolute bottom-4 right-4 z-50">
+            <button class="text-white hover:bg-red-700 bg-red-500 p-2 rounded" onclick="closeMiradorModal()">Close viewer</button>
+        </div>
+    </div>
+</div>
+                     </div>{# end: right column #}
             </div>
         </section>
     </div>
@@ -238,5 +215,40 @@
             // Turn on the map 
             document.getElementById('map').style.display = 'block';
         }
+
+    // Copy coordinates
+    document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('coordinates-container');
+    const latitude = container.dataset.latitude;
+    const longitude = container.dataset.longitude;
+    const coordinates = `${latitude}, ${longitude}`;
+
+    container.innerHTML = `
+        <span>${coordinates}</span>
+        <button 
+            onclick="copyCoordinates('${coordinates}')"
+            class="ml-2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+            title="Copy coordinates"
+        >
+            <i class="fa-regular fa-copy"></i>
+        </button>
+        <span id="copy-feedback" class="ml-2 text-green-600 text-sm hidden">Copied!</span>
+    `;
+});
+
+function copyCoordinates(coordinates) {
+    navigator.clipboard.writeText(coordinates).then(() => {
+        // Show feedback
+        const feedback = document.getElementById('copy-feedback');
+        feedback.classList.remove('hidden');
+        
+        // Hide feedback after 2 seconds
+        setTimeout(() => {
+            feedback.classList.add('hidden');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy coordinates:', err);
+    });
+}
     </script>
 {% endblock scripts %}

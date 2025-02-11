@@ -181,7 +181,7 @@ USE_TZ = True
 # User authentication
 LOGIN_REDIRECT_URL = "/admin/"
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 15240
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

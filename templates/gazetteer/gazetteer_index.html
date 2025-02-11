@@ -36,8 +36,8 @@
                         <div id="toponymsList">
                             <ul>
                                 {% for alias in aliases %}
-                                    <li class="p-2 hover:bg-gray-100" data-location-id="{{ alias.location_id }}">
-                                        <a class="underline hover:no-underline" href="{% url 'toponym_detail' alias.location_id %}">{{ alias.placename_standardized }}</a>
+                                    <li class="p-2 hover:bg-gray-100" data-location-id="{{ alias.id }}">
+                                        <a class="underline hover:no-underline" href="{% url 'toponym_detail' alias.id %}">{{ alias.name }}</a>
                                     </li>
                                 {% endfor %}
                             </ul>
