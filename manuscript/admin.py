@@ -155,10 +155,15 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
         "library",
         "manuscript_lost",
         "manuscript_destroyed",
+        "has_iiif_url",
         "item_id",
     )
     search_fields = ("siglum",)
     resource_class = SingleManuscriptResource
+
+    @admin.display(boolean=True, description="IIIF Available")
+    def has_iiif_url(self, obj):
+        return bool(obj.iiif_url)
 
     class Media:
         js = ("js/text_annotator.js",)
