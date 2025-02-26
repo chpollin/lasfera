@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "textannotation",
     "map",
     "pages",
+    "gallery",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
     "wagtail.sites",

@@ -54,6 +54,8 @@ def get_manifest_data(manifest_url):
 def manuscript_stanzas(request, siglum):
     """View for displaying stanzas of a specific manuscript"""
     manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
+    folios = manuscript.folio_set.all()
+    has_known_folios = folios.exists()
 
     # Get folios for this manuscript
     folios = manuscript.folio_set.all()
@@ -104,6 +106,7 @@ def manuscript_stanzas(request, siglum):
             "paired_books": paired_books,
             "manuscripts": manuscripts,
             "default_manuscript": manuscript,
+            "has_known_folios": has_known_folios,
             "manuscript": {
                 "iiif_url": manuscript.iiif_url if manuscript.iiif_url else None
             },
@@ -317,6 +320,10 @@ def process_stanzas(stanzas, is_translated=False):
 
 
 def index(request: HttpRequest):
+    from pages.models import HomeIntroduction
+
+    intro = HomeIntroduction.objects.first()
+
     # Prefetch image URLs
     image_directory = "images/home/"
     static_dir = os.path.join(settings.STATIC_ROOT, image_directory)
@@ -342,8 +349,40 @@ def index(request: HttpRequest):
     random.shuffle(image_urls)
 
     context = {
-        "is_index": True,
-        "image_urls": image_urls,
+        "manuscript_images": image_urls,
+        "intro": intro,  # via Wagtail
+        "nav_items": [
+            {
+                "name": "Edition",
+                "url": "reverse('stanzas')",
+                "thumbnail": "/static/images/home/Wellcome230 p44.png",
+            },
+            {
+                "name": "Gazetteer",
+                "url": "reverse('toponyms')",
+                "thumbnail": "/static/images/home/BNCF CSopp2618 M1B.png",
+            },
+            {
+                "name": "Tradition",
+                "url": "reverse('manuscripts')",
+                "thumbnail": "/static/images/home/BNCF Mag956 cosmos.png",
+            },
+            {
+                "name": "Resources",
+                "url": "",
+                "thumbnail": "/static/images/home/Basel CL194 p59.png",
+            },
+            {
+                "name": "Gallery",
+                "url": "",
+                "thumbnail": "/static/images/home/NYPL f1v ship.png",
+            },
+            {
+                "name": "About",
+                "url": "/about/",
+                "thumbnail": "/static/images/home/Oxford74 Jerusalem.png",
+            },
+        ],
     }
     return render(request, "index.html", context)
 

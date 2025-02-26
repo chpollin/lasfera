@@ -25,6 +25,7 @@ urlpatterns = [
     path("resources/education/", education, name="education"),
     path("resources/data/", data, name="data"),
     path("resources/talks-presentations/", talks, name="talks"),
+    path("gallery/", include("gallery.urls", namespace="gallery")),
     path("cms/", include(wagtailadmin_urls)),
     path("pages/", include(wagtail_urls)),
     path("__reload__/", include("django_browser_reload.urls")),
