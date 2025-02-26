@@ -620,8 +620,62 @@ class ManuscriptViewer(DetailView):
 
 
 def manuscripts(request: HttpRequest):
-    manuscript_objs = SingleManuscript.objects.all()
-    return render(request, "manuscripts.html", {"manuscripts": manuscript_objs})
+    folios = Folio.objects.all()
+    stanzas = (
+        Stanza.objects.prefetch_related("annotations")
+        .all()
+        .order_by("stanza_line_code_starts")
+    )
+
+    # Remove the translated stanzas part since you only want original text
+    manuscripts = SingleManuscript.objects.all()
+    default_manuscript = SingleManuscript.objects.get(siglum="Urb1")
+
+    books = process_stanzas(stanzas)
+
+    # Group stanzas by book
+    paired_books = {}
+    for book_number, stanza_dict in books.items():
+        paired_books[book_number] = []
+
+        for stanza_number, original_stanzas in stanza_dict.items():
+            # Create a stanza pair dictionary with just original stanzas
+            stanza_pair = {
+                "original": original_stanzas,
+                "new_folio": False,  # You might want to add folio logic here
+            }
+
+            if original_stanzas:
+                # Get the first stanza's folios ordered by folio_number
+                stanza_folios = original_stanzas[0].folios.order_by("folio_number")
+
+                if stanza_folios.exists():
+                    stanza_pair["new_folio"] = True
+                    stanza_pair["folios"] = list(
+                        stanza_folios.values_list("folio_number", flat=True)
+                    )
+
+            paired_books[book_number].append(stanza_pair)
+
+    manuscript_data = {
+        "iiif_url": (
+            default_manuscript.iiif_url
+            if hasattr(default_manuscript, "iiif_url")
+            else None
+        )
+    }
+
+    return render(
+        request,
+        "manuscripts.html",
+        {
+            "stanza_pairs": paired_books,  # Changed from paired_books
+            "manuscripts": manuscripts,
+            "default_manuscript": default_manuscript,
+            "manuscript": manuscript_data,
+            "folios": folios,
+        },
+    )
 
 
 def manuscript(request: HttpRequest, siglum: str):
