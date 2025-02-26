@@ -21,6 +21,8 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
         <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script src="https://unpkg.com/htmx.org@1.8.6" integrity="sha384-Bj8qm/6B+71E6FQSySofJOUjA/gq330vEqjFx9LakWybUySyI1IQHwPtbTU7bNwx" crossorigin="anonymous"></script>
         {% tailwind_css %}
         <link rel="stylesheet" href="{% static 'css/custom.css' %}">
         <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
@@ -28,6 +30,8 @@
         {% block extra_css %} {% endblock extra_css %}
     </head>
     <body class="flex flex-col min-h-screen {% if is_index %}bg-slate-800{% endif %}">
+      <div class="min-h-screen bg-white">
+
 
         {% include 'partials/navigation.html' %}
         <main class="flex-grow {% if is_index %}no-padding{% endif %}">
@@ -37,6 +41,8 @@
             {% block content %}
             {% endblock %}
         </main>
+
+        </div>
 
         <footer class="relative w-full bg-slate-200 pt-3 pb-3">
             <div class="w-full px-8 mx-auto max-w-7xl">

@@ -164,7 +164,7 @@
             This manuscript is not missing
         {% endif %}
     </p>
-    <p class="{% if manuscript.manuscript_destroyed %}text-lasfera red{% else %}text-lasfera-red{% endif %}">
+    <p class="{% if manuscript.manuscript_destroyed %}text-lasfera red{% else %}text-lasfera-green{% endif %}">
         <i class="fas {% if manuscript.manuscript_destroyed %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i>
         {% if manuscript.manuscript_destroyed %}
             This manuscript is destroyed
