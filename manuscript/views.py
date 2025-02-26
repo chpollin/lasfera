@@ -746,11 +746,7 @@ def toponym(request: HttpRequest, placename_id: str):
         folio__locations_mentioned=filtered_toponym.id
     ).distinct()
     filtered_folios = filtered_toponym.folio_set.all()
-    filtered_linecodes = filtered_toponym.linecode_set.all()
-
-    filtered_manuscripts = SingleManuscript.objects.filter(
-        folio__locations_mentioned=filtered_toponym.id
-    ).distinct()
+    filtered_linecodes = filtered_toponym.line_codes.all()
 
     manuscripts_with_iiif = filtered_manuscripts.exclude(
         Q(iiif_url__isnull=True) | Q(iiif_url="")
@@ -814,27 +810,7 @@ def toponym(request: HttpRequest, placename_id: str):
     }
 
     # Process line codes
-    line_codes = []
-    for line_code in filtered_linecodes:
-        folio = line_code.associated_folio
-        if folio:
-            line_codes.append(
-                {
-                    "line_code": line_code.code,
-                    "manuscript": (
-                        folio.manuscript.siglum if folio.manuscript else "N/A"
-                    ),
-                    "folio": folio.folio_number,
-                }
-            )
-        else:
-            line_codes.append(
-                {
-                    "line_code": line_code.code,
-                    "manuscript": "No manuscript assigned.",
-                    "folio": "No folio assigned.",
-                }
-            )
+    line_codes = [{"line_code": lc.code} for lc in filtered_linecodes]
 
     context = {
         "toponym": filtered_toponym,

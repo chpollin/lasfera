@@ -141,11 +141,13 @@ class LineCode(models.Model):
         help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
         verbose_name="Associated IIIF URL",
     )
-    associated_toponym = models.ForeignKey(
+    # Change from ForeignKey to ManyToManyField
+    associated_toponyms = models.ManyToManyField(
         "Location",
-        on_delete=models.CASCADE,
         blank=True,
-        null=True,
+        related_name="line_codes",
+        help_text="The toponyms (locations) mentioned in this line.",
+        verbose_name="Associated Toponyms",
     )
     associated_folio = models.ForeignKey(
         "Folio",

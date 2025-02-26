@@ -124,11 +124,6 @@ class AuthorityFileInline(admin.TabularInline):
     extra = 1
 
 
-class LineCodeInline(admin.TabularInline):
-    model = LineCode
-    extra = 1
-
-
 class TextAnnotationInline(GenericTabularInline):
     model = TextAnnotation
     extra = 0
@@ -312,7 +307,7 @@ class LocationAdmin(ImportExportModelAdmin):
     )
     search_fields = ("placename_id", "description", "modern_country")
     list_filter = ("place_type", "modern_country", "toponym_type")
-    inlines = [LocationAliasInline, LineCodeInline]
+    inlines = [LocationAliasInline]
 
     def description_html(self, obj):
         return format_html(obj.description) if obj.description else ""
@@ -427,14 +422,26 @@ class StanzaTranslatedAdmin(admin.ModelAdmin):
         js = ("js/text_annotations.js",)
 
 
+class LineCodeAdmin(admin.ModelAdmin):
+    list_display = ("code", "get_toponyms")
+    search_fields = ("code",)
+    list_filter = ("associated_folio__manuscript",)
+    filter_horizontal = ("associated_toponyms",)
+
+    def get_toponyms(self, obj):
+        return ", ".join([toponym.name for toponym in obj.associated_toponyms.all()])
+
+    get_toponyms.short_description = "Associated Toponyms"
+
+
+admin.site.register(LineCode, LineCodeAdmin)
+
 admin.site.register(Library, LibraryAdmin)
-# admin.site.register(EditorialStatus, EditorialStatusAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
 admin.site.register(Stanza, StanzaAdmin)
 admin.site.register(StanzaVariant, StanzaVariantAdmin)
 admin.site.register(StanzaTranslated, StanzaTranslatedAdmin)
-admin.site.register(LineCode)
 admin.site.register(TextAnnotation)
 
 admin.site.site_header = "La Sfera Admin"

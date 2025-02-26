@@ -34,6 +34,11 @@ class Command(BaseCommand):
             help="name of sheet to load",
             default="PID-Line Codes",
         )
+        parser.add_argument(
+            "--clear-existing",
+            action="store_true",
+            help="Clear existing toponyms for line codes before adding new ones",
+        )
 
     def handle_error(self, index, e, row, column_name, column_value):
         logger.error(
@@ -59,6 +64,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         filepath = options["filepath"]
         sheetname = options.get("sheetname")
+        clear_existing = options.get("clear_existing", False)
 
         try:
             df = pd.read_excel(filepath, sheet_name=sheetname)
@@ -96,10 +102,16 @@ class Command(BaseCommand):
                     )
                     continue
 
-                # Create or update the LineCode instance
-                LineCode.objects.update_or_create(
-                    code=line_code, defaults={"associated_toponym": toponym}
-                )
+                # Get or create the LineCode instance
+                line_code_obj, created = LineCode.objects.get_or_create(code=line_code)
+
+                # If clear_existing flag is set and this is an existing line code,
+                # clear all existing toponyms first
+                if clear_existing and not created:
+                    line_code_obj.associated_toponyms.clear()
+
+                # Add the toponym to the line code's associated toponyms
+                line_code_obj.associated_toponyms.add(toponym)
 
                 logger.info("Successfully processed row %s", index + 1)
 

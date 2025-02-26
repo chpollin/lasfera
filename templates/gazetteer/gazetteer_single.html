@@ -53,48 +53,33 @@
 <p class="pb-2">There are no aliases associated with this toponym.</p>
 {% endif %} 
                 {# Line codes for the toponym #}
-                {# we list all of the line_code values #}
-                {# Line codes for the toponym #}
-                    <div class="flex-auto mb-2 bg-gray-50 p-2 m-2">
-                        <h4 class="text-lg">The toponym <strong><span class="border-b border-red-700">{{ aggregated_aliases.name }}</span></strong> is mentioned in the text of <em>La Sfera</em> here:</h4>
+                <div class="mb-6 bg-gradient-to-r from-gray-50 to-gray-100 p-5 rounded-lg shadow-sm border border-gray-200">
+    <h4 class="text-lg font-medium mb-4">The toponym <strong><span class="border-b-2 border-red-700 pb-0.5">{{ aggregated_aliases.name }}</span></strong> is mentioned in <em>La Sfera</em> at these locations:</h4>
 
-                        <table class="table-auto">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-2">Line Code</th>
-                                    <th class="px-4 py-2">Manuscript</th>
-                                    <th class="px-4 py-2">Folio</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for line_code in line_codes %}
-                                    <tr>
-                                        <td class="border px-4 py-2">
-                                            <a class="underline hover:no-underline" href="{% url 'stanzas' %}#{{ line_code.line_code }}">{{ line_code.line_code }}</a>
-                                        </td>
-                                        <td class="border px-4 py-2">
-                                            {% if line_code.manuscript != "No manuscript assigned." and line_code.manuscript %}
-                                                <a class="underline hover:no-underline" href="/manuscripts/{{ line_code.manuscript }}">{{ line_code.manuscript }}</a>
-                                            {% else %}
-                                                {{ line_code.manuscript }}
-                                            {% endif %}
-                                        </td>
-                                        <td class="border px-4 py-2">
-                                            {{ line_code.folio }}
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="border px-4 py-2">
-                                            <span class="prose">No line codes available for this toponym.</span>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                                    </div> {# end: left column #}
+    {% if line_codes %}
+        <div class="flex flex-wrap gap-3 mt-4">
+            {% for line_code in line_codes %}
+                <a href="{% url 'stanzas' %}#{{ line_code.line_code }}" 
+                   class="group inline-flex items-center px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 hover:shadow-md transition-all">
+                    <span class="font-mono text-gray-800 group-hover:text-blue-700">{{ line_code.line_code }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1.5 text-gray-400 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white p-4 rounded border border-gray-200 text-center">
+            <span class="text-gray-500 italic">No line codes available for this toponym.</span>
+        </div>
+    {% endif %}
+    
+    <div class="mt-4 text-sm text-gray-600">
+        <p>Click on any line code to view it in context within the text.</p>
+    </div>
+</div>
+     
+                                              </div> {# end: left column #}
 
         {# Right column #}
                 <div class="lg:w-1/2 p-4 space-y-4">
@@ -146,16 +131,6 @@
     </div>
 
     </div>
-
-{# Modal Structure #}
-<div id="miradorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 shadow-lg rounded-md bg-white z-50">
-        <div id="miradorViewer" style="height: 600px;"></div>
-        <div class="absolute bottom-4 right-4 z-50">
-            <button class="text-white hover:bg-red-700 bg-red-500 p-2 rounded" onclick="closeMiradorModal()">Close viewer</button>
-        </div>
-    </div>
-</div>
                      </div>{# end: right column #}
             </div>
         </section>
@@ -163,7 +138,6 @@
 {% endblock content %}
 
 {% block scripts %}
-    <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
     <script>
         fetch('/api/toponyms/{{ toponym.id }}')
             .then(response => response.json())
@@ -186,36 +160,7 @@
             })
             .catch(error => console.error('Error fetching toponym data:', error));
 
-            // Handle the mirador viewer
-        function openMiradorModal(element) {
-            const iiifUrl = element.getAttribute('data-iiif-url');
-            const manuscript = element.getAttribute('data-manuscript');
-            const folio_number = element.getAttribute('data-folio-number');
-
-            // Initialize Mirador
-            Mirador.viewer({
-                id: 'miradorViewer',
-                windows: [{
-                    manifestId: iiifUrl,
-                    canvasIndex: folio_number
-                }]
-            });
-
-            // Display the modal
-            document.getElementById('miradorModal').classList.remove('hidden');
-            // Turn off the map 
-            document.getElementById('map').style.display = 'none';
-        }
-
-        function closeMiradorModal() {
-            // Hide the modal
-            document.getElementById('miradorModal').classList.add('hidden');
-            // Clear the Mirador viewer content
-            document.getElementById('miradorViewer').innerHTML = '';
-            // Turn on the map 
-            document.getElementById('map').style.display = 'block';
-        }
-
+        
     // Copy coordinates
     document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('coordinates-container');
