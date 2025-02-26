@@ -5,6 +5,7 @@ dumpdata.json
 data.json
 node_modules/
 staticfiles/
+_data/
 
 # Django #
 *.log
