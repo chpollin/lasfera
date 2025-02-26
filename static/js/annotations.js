@@ -1,3 +1,4 @@
+// The following script provides the front-end view for the annotated text.
 document.addEventListener("DOMContentLoaded", function () {
   // Add styles for annotations and popup
       const style = document.createElement("style");
