@@ -446,7 +446,6 @@ def mirador_view(request, manuscript_id, page_number):
     if not manuscript.iiif_url:
         manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
-    # Optional: Pre-fetch and cache the manifest
     try:
         get_manifest_data(manuscript.iiif_url)
     except requests.RequestException:
@@ -730,23 +729,27 @@ def manuscript(request: HttpRequest, siglum: str):
 def toponyms(request: HttpRequest):
     # Get unique and sorted LocationAlias objects based on placename_modern
     toponym_alias_objs = (
-        Location.objects.values("name", "id").distinct().order_by("name")
+        Location.objects.exclude(placename_id=None)
+        .exclude(placename_id="")
+        .values("name", "placename_id", "id")
+        .distinct()
+        .order_by("name")
     )
     return render(
         request, "gazetteer/gazetteer_index.html", {"aliases": toponym_alias_objs}
     )
 
 
-def toponym(request: HttpRequest, toponym_param: int):
-    filtered_toponym = get_object_or_404(Location, pk=toponym_param)
+def toponym(request: HttpRequest, placename_id: str):
+    filtered_toponym = get_object_or_404(Location, placename_id=placename_id)
     filtered_manuscripts = SingleManuscript.objects.filter(
-        folio__locations_mentioned=toponym_param
+        folio__locations_mentioned=filtered_toponym.id
     ).distinct()
     filtered_folios = filtered_toponym.folio_set.all()
     filtered_linecodes = filtered_toponym.linecode_set.all()
 
     filtered_manuscripts = SingleManuscript.objects.filter(
-        folio__locations_mentioned=toponym_param
+        folio__locations_mentioned=filtered_toponym.id
     ).distinct()
 
     manuscripts_with_iiif = filtered_manuscripts.exclude(

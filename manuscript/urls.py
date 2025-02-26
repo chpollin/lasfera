@@ -23,7 +23,7 @@ urlpatterns = [
     ),
     # Toponym routes
     path("toponyms/", views.toponyms, name="toponyms"),
-    path("toponyms/<int:toponym_param>/", views.toponym, name="toponym_detail"),
+    path("toponyms/<str:placename_id>/", views.toponym, name="toponym_detail"),
     path("toponym-search/", views.search_toponyms, name="search_toponyms"),
     # IIIF viewer
     path(
