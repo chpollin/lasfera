@@ -6,142 +6,203 @@
 {% endblock title %}
 
 {% block home %}
-    <div class="w-full p-2 md:p-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-1">
-        {# First row: 3 images #}
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.0 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
+<div class="relative h-screen overflow-hidden">
+  <div 
+        x-data="imageGrid"
+        class="absolute inset-0 grid grid-cols-3 gap-1 p-1">
+        <template x-for="(tile, index) in tiles" :key="index">
+            <div class="relative overflow-hidden h-full">
+                <!-- Current image with fade-out transition -->
+                <img 
+                    :src="tile.currentImage" 
+                    :alt="'Manuscript tile ' + index"
+                    class="absolute inset-0 w-full h-full object-cover"
+                />
+                
+                <!-- Next image with fade-in transition -->
+                <template x-if="tile.nextImage">
+                    <img 
+                        :src="tile.nextImage" 
+                        :alt="'Manuscript tile ' + index + ' next'"
+                        class="absolute inset-0 w-full h-full object-cover"
+                    />
+                </template>
             </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.1 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.2 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
+        </template>
+    </div>
+  
+     <!-- Dark overlay -->
+        <div class="absolute inset-0 bg-black/60"></div>
 
-        {# Second row: 2/3 text box, 1/3 image #}
-            <a href="/about/" class="block col-span-2 bg-lasfera-gray hover:bg-lasfera-darker-gray text-white p-4 h-40 group">
-                <div>
-                    <h2 class="text-3xl font-bold font-serif">Welcome to La Sfera <i class="fa-solid fa-right-long transition-transform duration-300 transform group-hover:translate-x-2"></i></h2>
-                    <p class="mt-2">Learn more about Dati's <em>La sfera</em>, the project, and the project team.</p>
-                </div>
-            </a>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.3 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.4 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.5 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.6 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-
-        {# Third row: 1/3 image, 2/3 text box #}
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.7 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <a href="/stanzas/" class="block col-span-2 bg-lasfera-gray hover:bg-lasfera-darker-gray text-white p-4 h-40 group">
-                <div>
-                    <h2 class="text-3xl font-bold font-serif">Edition <i class="fa-solid fa-right-long transition-transform duration-300 transform group-hover:translate-x-2"></i></h2>
-                    <p class="mt-2">Read the Italian text, English translation, and view a selection of corresponding manuscript images.</p>
-                </div>
-            </a>
-
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.8 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.9 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.10 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-
-        {# Fourth row: 2/3 text box, 1/3 image #}
-            <a href="/toponyms/" class="block col-span-2 bg-lasfera-gray hover:bg-lasfera-darker-gray text-white p-4 h-40 group">
-                <div>
-                    <h2 class="text-3xl font-bold font-serif">Gazetteer <i class="fa-solid fa-right-long transition-transform duration-300 transform group-hover:translate-x-2"></i></h2>
-                    <p class="mt-2">Explore the hundreds of place names and variations incorporated into the lines of the poem and labeled on the marginal maps found in many of <em>La sfera</em>'s early print and manuscript copies.</p>
-                </div>
-            </a>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.11 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.12 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.13 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.14 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-         {# Ffith row: 2/3 text box, 1/3 image #}
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.15 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <a href="/manuscripts/" class="block col-span-2 bg-lasfera-gray hover:bg-lasfera-darker-gray text-white p-4 h-40 group">
-                <div>
-                    <h2 class="text-3xl font-bold font-serif">Manuscript Tradition <i class="fa-solid fa-right-long transition-transform duration-300 transform group-hover:translate-x-2"></i></h2>
-                    <p class="mt-2">How are the manuscripts and early print versions related to each other? Consult our list of pre-1600 copies of <em>La sfera</em> and see how they compare. </p>
-                </div>
-            </a>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.16 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.17 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.18 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-        {# Sixth row: 2/3 text box, 1/3 image #}
-            <a href="/resources/data/" class="block col-span-2 bg-lasfera-gray hover:bg-lasfera-darker-gray text-white p-4 h-40 group">
-                <div>
-                    <h2 class="text-3xl font-bold font-serif">Resources <i class="fa-solid fa-right-long transition-transform duration-300 transform group-hover:translate-x-2"></i></h2>
-                    <p class="mt-2">Become one of the sferisti and join our work! Download our data and use it for your own research, or transcribe your own copy of <em>La sfera</em>. Then send us what you find!</p>
-                </div>
-            </a>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.19 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.20 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.21 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
-            </div>
-            <div class="relative col-span-1 group">
-                <img src="{{ image_urls.22 }}" alt="Image 1" class="w-full h-40 md:h-40 object-cover" loading="lazy">
-                <div class="absolute inset-0 bg-slate-800 bg-opacity-70 group-hover:bg-opacity-0 transition duration-300"></div>
+        <!-- Hero Content -->
+        <div class="relative z-10 h-full flex items-center">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white text-center">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                   The <em>La Sfera</em> Manuscript 
+                </h1>
+                <p class="text-xl md:text-2xl max-w-3xl mx-auto text-gray-200">
+                    Explore the manuscripts through our digital edition, featuring 
+                    high-resolution images, transcriptions, and scholarly analysis of the 
+                    text and its context.
+                </p>
             </div>
         </div>
     </div>
-{% endblock home %}
+
+    <div class="bg-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mx-auto mb-12">
+            {% if intro %}
+                <h2 class="text-3xl font-bold text-gray-900 mb-6 max-w-3xl mx-auto">{{ intro.title }}</h2>
+                <div class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    {{ intro.body|safe }}
+                </div>
+            {% else %}
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Welcome to the La Sfera Project</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    The La Sfera Project brings to life a remarkable 15th-century Italian manuscript.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+    <!-- Main Navigation Sections -->
+    <div class="bg-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for item in nav_items %}
+        <div class="bg-gray-50 p-5 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex space-x-4">
+                <!-- Thumbnail -->
+                <div class="flex-shrink-0">
+                    <img 
+                        src="{% if item.thumbnail %}{{ item.thumbnail }}{% else %}/static/images/home/Wellcome230 p44.png{% endif %}" 
+                        alt="{{ item.name }} thumbnail"
+                        class="w-20 h-20 object-cover rounded-lg"
+                    >
+                </div>
+                
+                <!-- Content -->
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ item.name }}</h3>
+                    <p class="text-gray-600 mb-3 text-base">
+                        Explore the {{ item.name|lower }} section of our digital manuscript edition.
+                    </p>
+                    <a
+                        href="{{ item.url }}"
+                        class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    >
+                        More →
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+    Alpine.store('images', {{ manuscript_images|safe }});
+    
+    Alpine.data('imageGrid', () => ({
+      tiles: Array(9).fill().map(() => ({
+        currentImage: null,
+        nextImage: null,
+        isTransitioning: false
+      })),
+      
+      init() {
+        // Initialize tiles with random images
+        const imagePool = Alpine.store('images');
+        
+        // Ensure we have enough images
+        if (imagePool.length < 9) {
+          console.warn('Not enough images in pool');
+          while (imagePool.length < 9) {
+            imagePool.push(...imagePool);
+          }
+        }
+        
+        // Generate initial set of images with no duplicates
+        const usedImages = new Set();
+        this.tiles = Array(9).fill().map(() => {
+          // Get a random image not yet used
+          let image;
+          do {
+            image = imagePool[Math.floor(Math.random() * imagePool.length)];
+          } while (usedImages.has(image) && usedImages.size < imagePool.length);
+          
+          usedImages.add(image);
+          
+          return {
+            currentImage: image,
+            nextImage: null,
+            isTransitioning: false
+          };
+        });
+
+        // Set up rotation intervals for each tile
+        this.tiles.forEach((_, index) => {
+          this.setupTileInterval(index);
+        });
+      },
+
+      getRandomImage(excludeImages = []) {
+        const imagePool = Alpine.store('images');
+        // Filter out images that are excluded
+        const availableImages = imagePool.filter(img => !excludeImages.includes(img));
+        
+        // If we have available images, use them
+        if (availableImages.length > 0) {
+          return availableImages[Math.floor(Math.random() * availableImages.length)];
+        }
+        
+        // Fallback to any random image if no available images (shouldn't happen)
+        return imagePool[Math.floor(Math.random() * imagePool.length)];
+      },
+
+      setupTileInterval(index) {
+        // Random interval between 8-12 seconds
+        const interval = 8000 + Math.random() * 4000;
+        
+        setInterval(() => {
+          this.performCrossFadeTransition(index);
+        }, interval);
+      },
+      
+      performCrossFadeTransition(index) {
+        // Get next image
+        const currentlyDisplayedImages = this.tiles
+          .map(tile => tile.currentImage)
+          .filter(img => img !== this.tiles[index].currentImage);
+        
+        const nextImage = this.getRandomImage(currentlyDisplayedImages);
+        
+        // Create a new image object to preload
+        const preloadImage = new Image();
+        preloadImage.src = nextImage;
+        
+        // Once the image is loaded, start the transition
+        preloadImage.onload = () => {
+          // Set the next image (but it's still invisible)
+          this.tiles[index].nextImage = nextImage;
+          
+          // Force browser repaint to ensure both images are in the DOM
+          void document.body.offsetHeight;
+          
+          // Start the cross-fade transition
+          this.tiles[index].isTransitioning = true;
+          
+          // After transition completes, swap images and reset
+          setTimeout(() => {
+            this.tiles[index].currentImage = nextImage;
+            this.tiles[index].nextImage = null;
+            this.tiles[index].isTransitioning = false;
+          }, 1500); // Match this to CSS transition duration
+        };
+      }
+    }));
+  });
+ </script>
+       {% endblock home %}
