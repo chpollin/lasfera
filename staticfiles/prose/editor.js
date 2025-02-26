@@ -14,9 +14,7 @@ function uploadAttachment(host, attachment) {
 function uploadFile(host, file, progressCallback, successCallback) {
   const formData = createFormData(file);
   const xhr = new XMLHttpRequest();
-  const csrfToken = document.querySelector(
-    "input[name=csrfmiddlewaretoken]",
-  ).value;
+  const csrfToken = document.querySelector("input[name=csrfmiddlewaretoken]").value;
 
   formData.append("csrfmiddlewaretoken", csrfToken);
 
@@ -49,9 +47,7 @@ function createFormData(file) {
 }
 
 function initializeEditors() {
-  const editors = document.querySelectorAll(
-    ".django-prose-editor:not(.initialized)",
-  );
+  const editors = document.querySelectorAll(".django-prose-editor:not(.initialized)");
 
   editors.forEach((editor) => {
     editor.addEventListener("trix-attachment-add", function (event) {
