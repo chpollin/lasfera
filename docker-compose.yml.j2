@@ -9,6 +9,7 @@ services:
 
   app:
     image: ghcr.io/{{ template.git.package.image_name }}:{{ template.git.package.tag }}
+    restart: unless-stopped
     ports:
       - "{{ template.env.host_app_port }}:8000"
     environment:
@@ -46,6 +47,7 @@ services:
 
   db:
     image: postgres:16
+    restart: unless-stopped
     environment:
       - POSTGRES_DB={{ template.env.db_name }}
       - POSTGRES_USER={{ template.env.db_user }}
