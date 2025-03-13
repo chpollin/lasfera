@@ -9,9 +9,13 @@
 <div class="relative h-screen overflow-hidden">
   <div 
         x-data="imageGrid"
-        class="absolute inset-0 grid grid-cols-3 gap-1 p-1">
+        class="absolute inset-0 grid grid-cols-3 gap-1 p-1 z-10">
         <template x-for="(tile, index) in tiles" :key="index">
-            <div class="relative overflow-hidden h-full">
+            <div 
+                class="relative overflow-hidden h-full group cursor-pointer"
+                @mouseenter="highlightTile(index)"
+                @mouseleave="unhighlightTile()"
+            >
                 <!-- Current image with fade-out transition -->
                 <img 
                     :src="tile.currentImage" 
@@ -27,18 +31,27 @@
                         class="absolute inset-0 w-full h-full object-cover"
                     />
                 </template>
+                
+                <!-- Individual dark overlay that disappears on hover -->
+                <div 
+                    class="absolute inset-0 bg-black/60 transition-opacity duration-300"
+                    :class="{'opacity-0': tile.isHighlighted}"
+                ></div>
             </div>
         </template>
     </div>
   
-     <!-- Dark overlay -->
-        <div class="absolute inset-0 bg-black/60"></div>
+     <!-- Global dark overlay that gets dimmer when hovering on an image -->
+        <div 
+            class="absolute inset-0 bg-black/60 transition-opacity duration-300 z-0"
+            :class="{'bg-black/80': isAnyTileHighlighted}"
+        ></div>
 
         <!-- Hero Content -->
-        <div class="relative z-10 h-full flex items-center">
+        <div class="relative z-20 h-full flex items-center">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white text-center">
                 <h1 class="text-5xl md:text-6xl font-bold mb-6">
-                   The <em>La Sfera</em> Manuscript 
+                   <em>La Sfera</em> &middot; The Globe
                 </h1>
                 <p class="text-xl md:text-2xl max-w-3xl mx-auto text-gray-200">
                     Explore the manuscripts through our digital edition, featuring 
@@ -47,9 +60,18 @@
                 </p>
             </div>
         </div>
+
+        <!-- Down Chevron -->
+        <div class="absolute bottom-14 left-1/2 transform -translate-x-1/2 z-20 text-white animate-bounce">
+            <a href="#content" class="flex flex-col items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </a>
+        </div>
     </div>
 
-    <div class="bg-white py-12 px-4 sm:px-6 lg:px-8">
+    <div id="content" class="bg-white py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <div class="mx-auto mb-12">
             {% if intro %}
@@ -109,8 +131,10 @@
       tiles: Array(9).fill().map(() => ({
         currentImage: null,
         nextImage: null,
-        isTransitioning: false
+        isTransitioning: false,
+        isHighlighted: false
       })),
+      isAnyTileHighlighted: false,
       
       init() {
         // Initialize tiles with random images
@@ -201,6 +225,25 @@
             this.tiles[index].isTransitioning = false;
           }, 1500); // Match this to CSS transition duration
         };
+      },
+      
+      // Highlight functions for hover effect
+      highlightTile(index) {
+        console.log('Highlighting tile', index);
+        // Reset any previously highlighted tiles
+        this.tiles.forEach((tile, i) => {
+          tile.isHighlighted = (i === index);
+        });
+        this.isAnyTileHighlighted = true;
+      },
+      
+      unhighlightTile() {
+        console.log('Unhighlighting all tiles');
+        // Reset all tiles
+        this.tiles.forEach(tile => {
+          tile.isHighlighted = false;
+        });
+        this.isAnyTileHighlighted = false;
       }
     }));
   });
