@@ -1,51 +1,111 @@
 {% load static %}
 {% load wagtailcore_tags %}
 
-<header class="relative h-20 bg-cover bg-center" style="background-image: url('{% static 'images/troy.jpg' %}');">
-    <div class="absolute inset-0 bg-black bg-opacity-50">
-        <div class="container mx-auto p-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <a href="{% url 'index' %}" class="flex items-center space-x-4">
-                    <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-10">
-                    <h1 class="font-sans text-white text-2xl">The La Sfera Project</h1>
+<nav class="bg-gray-800 text-white" x-data="{ isOpen: false, resourcesOpen: false }">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <img src="/static/images/logo.png" alt="Logo" class="h-10">
+                    <span class="text-xl font-bold">The La Sfera Project</span>
                 </a>
             </div>
-            <nav class="text-white">
-                <ul class="flex space-x-4">
-                    <li class="relative">
-                        <a href="{% url 'stanzas' %}"><button class="hover:underline inline-flex items-center">Edition </button></a>
-                    </li>
-                    <span class="text-white">&middot;</span>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="/manuscripts/Urb1/stanzas/" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Edition</a>
+                <a href="{% url 'toponyms' %}" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Gazetteer</a>
+                <a href="{% url 'manuscripts' %}" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Manuscript Tradition</a>
+                
+                <!-- Resources Dropdown -->
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button 
+                        @click="open = !open"
+                        class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors inline-flex items-center"
+                    >
+                        Resources
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div 
+                        x-show="open"
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50"
+                    >
+                        <div class="py-1">
+                            <a href="/resources/education/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">La Sfera in the Classroom</a>
+                            <a href="/resources/data/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Data</a>
+                            <a href="/pages/talks-presentations/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Talks & Presentations</a>
+                        </div>
+                    </div>
+                </div>
 
-                    <li class="relative">
-                        <a href="{% url 'toponyms' %}"><button class="hover:underline inline-flex items-center">Gazetteer</button></a>
-                    </li>
-                    <span class="text-white">&middot;</span>
+                <a href="/about/" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">About</a>
+            </div>
 
-                    <li class="relative">
-                        <a href="{% url 'manuscripts' %}"><button class="hover:underline inline-flex items-center">Manuscript Tradition</button></a>
-                    </li>
-
-                    <span class="text-white">&middot;</span>
-                    <li class="relative">
-                        <button class="dropdown-toggle hover:underline inline-flex items-center">Resources
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <ul class="absolute left-0 mt-2 w-48 hidden bg-white text-black border border-gray-200 z-10">
-                            <li><a href="/resources/education/" class="block px-4 py-2 hover:bg-gray-200 text-sm">La Sfera in the Classroom</a></li>
-                            <li><a href="/resources/data/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Data</a></li>
-                            <li><a href="/pages/talks-presentations/" class="block px-4 py-2 hover:bg-gray-200 text-sm">Talks &amp; Presentations </a></li>
-                        </ul>
-                    </li>
-
-                    <span class="text-white">&middot;</span>
-                    <li class="relative">
-                        <a href="/about/"><button class="hover:underline inline-flex items-center">About</button></a>
-                    </li>
-                </ul>
-            </nav>
+            <!-- Mobile menu button -->
+            <div class="md:hidden flex items-center">
+                <button 
+                    @click="isOpen = !isOpen"
+                    class="p-2 rounded-md hover:bg-gray-700 transition-colors"
+                >
+                    <span x-show="!isOpen">☰</span>
+                    <span x-show="isOpen">✕</span>
+                </button>
+            </div>
         </div>
     </div>
-</header>
+
+    <!-- Mobile Navigation -->
+    <div 
+        x-show="isOpen"
+        x-transition:enter="transition ease-out duration-100"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-75"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="md:hidden">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="/manuscripts/Urb1/stanzas/" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Edition</a>
+            <a href="{% url 'toponyms' %}" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Gazetteer</a>
+            <a href="{% url 'manuscripts' %}" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Manuscript Tradition</a>
+            
+            <!-- Mobile Resources Dropdown -->
+            <div class="relative">
+                <button 
+                    @click="resourcesOpen = !resourcesOpen"
+                    class="w-full text-left px-3 py-2 rounded-md hover:bg-gray-700 transition-colors inline-flex items-center justify-between"
+                >
+                    Resources
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div 
+                    x-show="resourcesOpen"
+                    x-transition:enter="transition ease-out duration-100"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-75"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="pl-4"
+                >
+                    <a href="/resources/education/" class="block px-3 py-2 text-sm hover:bg-gray-700 transition-colors">La Sfera in the Classroom</a>
+                    <a href="/resources/data/" class="block px-3 py-2 text-sm hover:bg-gray-700 transition-colors">Data</a>
+                    <a href="/pages/talks-presentations/" class="block px-3 py-2 text-sm hover:bg-gray-700 transition-colors">Talks & Presentations</a>
+                </div>
+            </div>
+
+            <a href="/about/" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">About</a>
+        </div>
+    </div>
+</nav>
+

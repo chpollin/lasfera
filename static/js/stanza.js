@@ -45,7 +45,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
 // Return to top button
 window.addEventListener("scroll", function () {
   const returnToTop = document.getElementById("return-to-top");
+  if (!returnToTop) return;
+  
   const top = document.getElementById("top");
+  if (!top) return;
+  
   const distanceFromTop = top.getBoundingClientRect().top;
 
   // Show the button after the #top anchor is 100px above the viewport
@@ -58,24 +62,25 @@ window.addEventListener("scroll", function () {
   }
 });
 
-// Manuscript viewer
-document.addEventListener("DOMContentLoaded", function () {
-  const manuscriptSelect = document.getElementById("manuscript-select");
-  const miradorFrame = document.getElementById("mirador-frame");
-
-  if (manuscriptSelect && miradorFrame) {
-    manuscriptSelect.addEventListener("change", function () {
-      const manuscriptId = this.value; // This will now be the numeric ID
-
-      // Update the iframe source to load the new manuscript
-      if (manuscriptId) {
-        const currentUrl = new URL(miradorFrame.src);
-        const newUrl = currentUrl.pathname.replace(
-          /\/\d+\/0001/,
-          `/${manuscriptId}/0001`,
-        );
-        miradorFrame.src = newUrl;
-      }
-    });
-  }
-});
+// Function to update the line code display
+function updateLineCodeDisplay(mode) {
+  const lineCodes = document.querySelectorAll('.line-code');
+  lineCodes.forEach(code => {
+    switch(mode) {
+      case 'shortened':
+        // Show only last part of line code (e.g., "01" from "01.01.01")
+        const shortCode = code.textContent.trim().split('.').pop();
+        code.style.display = '';
+        code.querySelector('span').textContent = shortCode;
+        break;
+      case 'hidden':
+        code.style.display = 'none';
+        break;
+      default: // 'full'
+        code.style.display = '';
+        // Restore original line code if needed
+        const originalCode = code.querySelector('a').id;
+        code.querySelector('span').textContent = originalCode;
+    }
+  });
+}

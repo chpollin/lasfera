@@ -60,8 +60,8 @@ class Command(BaseCommand):
         longitude,
         georef,
         country,
-        folio,
-        manuscript,
+        # folio,
+        # manuscript,
     ):
         try:
             location, created = Location.objects.get_or_create(
@@ -76,11 +76,21 @@ class Command(BaseCommand):
 
             # Assign the folio ManyToManyField
             try:
-                folio = Folio.objects.get(
+                # First, let's check how many matches we have
+                matching_folios = Folio.objects.filter(
                     folio_number=folio, manuscript__siglum=manuscript
                 )
-                folio.locations_mentioned.add(location)
-                folio.save()
+
+                if matching_folios.exists():
+                    # If we have matches, either use first() or handle all of them
+                    for matched_folio in matching_folios:
+                        matched_folio.locations_mentioned.add(location)
+                        matched_folio.save()
+                else:
+                    logger.warning(
+                        f"No folio found with number {folio} in manuscript {manuscript}"
+                    )
+
             except Exception as e:
                 logger.error("Error associating folio to location: %s", e)
 
@@ -146,15 +156,15 @@ class Command(BaseCommand):
 
             for sheet_name, df in dfs.items():
                 for index, row in df.iterrows():
-                    placename_id = self.process_field(row, "place_id", index)
-                    description = self.process_field(row, "comments", index)
-                    place_type = self.process_field(row, "place_type", index)
-                    latitude = self.process_field(row, "latitude", index)
-                    longitude = self.process_field(row, "longitude", index)
-                    georef = self.process_field(row, "geo_ref", index)
-                    modern_country = self.process_field(row, "mod_name", index)
-                    folio = self.process_field(row, "folio", index)
-                    manuscript = self.process_field(row, "ms", index)
+                    placename_id = self.process_field(row, "Place_ID", index)
+                    description = self.process_field(row, "Comments", index)
+                    place_type = self.process_field(row, "Place_Type", index)
+                    latitude = self.process_field(row, "Latitude", index)
+                    longitude = self.process_field(row, "Longitude", index)
+                    georef = self.process_field(row, "Geo_Ref", index)
+                    modern_country = self.process_field(row, "Mod_Name", index)
+                    # folio = self.process_field(row, "Folio", index)
+                    # manuscript = self.process_field(row, "ms", index)
 
                     try:
                         self.create_location(
@@ -165,8 +175,8 @@ class Command(BaseCommand):
                             longitude,
                             georef,
                             modern_country,
-                            folio,
-                            manuscript,
+                            # folio,
+                            # manuscript,
                         )
                     except IntegrityError:
                         logger.error(

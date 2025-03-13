@@ -141,11 +141,13 @@ class LineCode(models.Model):
         help_text="The URL to the IIIF manifest for the manuscript. If there isn't one, leave blank.",
         verbose_name="Associated IIIF URL",
     )
-    associated_toponym = models.ForeignKey(
+    # Change from ForeignKey to ManyToManyField
+    associated_toponyms = models.ManyToManyField(
         "Location",
-        on_delete=models.CASCADE,
         blank=True,
-        null=True,
+        related_name="line_codes",
+        help_text="The toponyms (locations) mentioned in this line.",
+        verbose_name="Associated Toponyms",
     )
     associated_folio = models.ForeignKey(
         "Folio",
@@ -424,9 +426,6 @@ class StanzaVariant(models.Model):
             + self.stanza_variation_line_code_starts
             + " associated with "
             + self.stanza.stanza_line_code_starts
-            + " ("
-            + self.stanza.related_manuscript.siglum
-            + ")"
         )
 
 
@@ -441,19 +440,11 @@ class Stanza(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    related_manuscript = models.ForeignKey(
-        "SingleManuscript",
-        on_delete=models.CASCADE,
-        blank=False,
-        null=False,
-        help_text="Required. The manuscript to which the stanza belongs.",
-    )
-    related_folio = models.ForeignKey(
+    folios = models.ManyToManyField(
         "Folio",
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
-        help_text="Optional. The folio to which the stanza belongs.",
+        related_name="stanzas",
+        help_text="The folios on which this stanza appears.",
     )
     stanza_line_code_starts = models.CharField(
         blank=True,
@@ -510,7 +501,7 @@ class Stanza(models.Model):
 
     def get_manuscript(self):
         """Get the associated manuscript through the folio"""
-        return self.related_folio.manuscript if self.related_folio else None
+        return self.folio.manuscript if self.folio else None
 
     def derive_folio_location(self):
         # We derive the folio based on the line code.
@@ -545,8 +536,7 @@ class Stanza(models.Model):
             ).first()
 
             Stanza.objects.create(
-                related_manuscript=self.related_folio.manuscript,
-                related_folio=folio,
+                folio=folio,
                 stanza_line_code_starts=variant_code,
                 stanza_line_code_end=variant_code,
                 stanza_text=self.stanza_text,
@@ -602,13 +592,13 @@ class StanzaTranslated(models.Model):
         verbose_name_plural = "Stanza translations"
 
 
-class FolioStanzaMixin:
-    def get_stanzas(self) -> List["Stanza"]:
-        """Get all stanzas that appear on this folio in order."""
-        return get_stanzas_in_folio(self)
+# class FolioStanzaMixin:
+#     def get_stanzas(self) -> List["Stanza"]:
+#         """Get all stanzas that appear on this folio in order."""
+#         return get_stanzas_in_folio(self)
 
 
-class Folio(FolioStanzaMixin, models.Model):
+class Folio(models.Model):  # (FolioStanzaMixin, models.Model):
     """This provides a way to collect several stanzas onto a single page, and associate them with a single manuscript."""
 
     FOLIO_MAP_CHOICES = (
@@ -676,9 +666,9 @@ class Folio(FolioStanzaMixin, models.Model):
 
         return get_canvas_id_for_folio(self.folio_number)
 
-    def get_stanzas(self) -> List[Stanza]:
-        """Get all stanzas that appear on this folio in order."""
-        return get_stanzas_in_folio(self)
+    # def get_stanzas(self) -> List[Stanza]:
+    #     """Get all stanzas that appear on this folio in order."""
+    #     return get_stanzas_in_folio(self)
 
     class Meta:
         ordering = ["folio_number"]
@@ -796,6 +786,9 @@ class Location(models.Model):
     placename_id = models.CharField(
         blank=True, null=True, verbose_name="Placename ID", max_length=510
     )
+    name = models.CharField(
+        blank=False, null=False, verbose_name="Name", max_length=255, default=""
+    )
     description = RichTextField(blank=True, null=True)
     modern_country = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Modern Country"
@@ -834,7 +827,7 @@ class Location(models.Model):
             geolocator = Nominatim(user_agent="lasfera_manuscript")
 
             if not self.latitude or not self.longitude:
-                if self.country:
+                if self.name:
                     # Define the bounding box for Europe and Africa
                     europe_africa_bbox = {
                         "viewbox": [
@@ -850,7 +843,7 @@ class Location(models.Model):
                         "bounded": True,
                     }
 
-                    location = geolocator.geocode(self.country, **europe_africa_bbox)
+                    location = geolocator.geocode(self.name, **europe_africa_bbox)
                     if location is not None:
                         self.latitude = str(location.latitude)
                         self.longitude = str(location.longitude)
@@ -867,6 +860,26 @@ class Location(models.Model):
             elif prefix == "P":
                 self.toponym_type = "pm"
         super(Location, self).save(*args, **kwargs)
+
+    def get_slug(self):
+        """Get the slug for this toponym, with fallback"""
+        if not self.name or not self.name.strip():
+            # Fallback options if name is empty
+            if self.placename_id:
+                return slugify(self.placename_id)
+            else:
+                return f"toponym-{self.id}"
+        return slugify(self.name)
+
+    def get_absolute_url(self):
+        """Return the URL for this toponym using the slug with fallback"""
+        from django.urls import reverse
+
+        slug = self.get_slug()
+        if not slug:
+            # If we still couldn't generate a slug, use the ID-based URL
+            return reverse("toponym_by_id", kwargs={"placename_id": self.placename_id})
+        return reverse("toponym_detail", kwargs={"toponym_slug": slug})
 
 
 class LocationAlias(models.Model):
@@ -911,12 +924,20 @@ class LocationAlias(models.Model):
     location = models.ForeignKey(
         Location, on_delete=models.CASCADE, blank=True, null=True
     )
+    manuscripts = models.ManyToManyField(
+        SingleManuscript,
+        blank=True,
+    )
+    folios = models.ManyToManyField(Folio, blank=True)
 
     class Meta:
-        verbose_name = "Location Alias"
-        verbose_name_plural = "Location Aliases"
+        verbose_name = "Toponym Alias"
+        verbose_name_plural = "Toponym Aliases"
         ordering = ["placename_standardized"]
-        unique_together = ["placename_standardized"]
+        unique_together = [
+            "location",
+            "placename_alias",
+        ]
 
     def __str__(self) -> str:
         return f"{self.placename_from_mss} / {self.placename_standardized} / {self.placename_modern} / {self.placename_alias}"

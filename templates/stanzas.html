@@ -5,7 +5,6 @@
 {% block title %}Poetic Text - La Sfera{% endblock title %}
 
 {% block extra_css %}
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     .annotated-text {
       background-color: #A8DCD9;
@@ -34,15 +33,44 @@
       color: #1e293b;
     }
 
-    .mirador-viewer {
+    /* Tify viewer styles */
+    .tify-container {
       width: 100% !important;
       height: 100% !important;
     }
-        /* Hide unnecessary UI elements */
-    .mirador-window-sidebar,
-    .mirador-companion-windows,
-    .mirador-primary-window .window-top-bar {
-      display: none !important;
+    
+    /* Custom styles for Tify */
+    .tify-header {
+      background-color: #f8f9fa !important;
+    }
+    
+    .tify-header__title {
+      display: none !important; /* Optional: Hide title if it's redundant */
+    }
+
+    /* Hamburger menu styles */
+    .hamburger-menu {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.5rem;
+      cursor: pointer;
+      border-radius: 0.375rem;
+      transition: background-color 0.2s;
+    }
+
+    .hamburger-menu:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .filter-panel {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      z-index: 50;
+      width: 450px;
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
   </style>
 {% endblock extra_css %}
@@ -50,78 +78,95 @@
 {% block content %}
   <div class="mx-auto">
     <section class="w-full p-4 my-10">
-    <!-- Title -->
-      <div>
-        <h3 class="text-4xl pb-8 font-bold" id="top">
-          "The Globe" (La sfera) by Gregorio Dati
+    <!-- Title and Hamburger Menu -->
+      <div class="flex justify-between items-center pb-8">
+        <h3 class="text-4xl font-bold" id="top">
+          "The Globe" (<em>La sfera</em>) by Gregorio Dati
         </h3>
-      </div>
-
-    <!-- Filter Panel -->
-      <div x-data="{ isOpen: true }" class="mb-8">
-        <button
-          @click="isOpen = !isOpen"
-          class="w-full flex items-center justify-between p-4 bg-gray-100 hover:bg-gray-200 rounded-t-lg border border-gray-300"
-        >
-          <span class="font-semibold">Text Options</span>
-          <svg
-            class="w-5 h-5 transition-transform duration-200"
-            :class="{'rotate-180': !isOpen}"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        
+        <!-- Hamburger Menu -->
+        <div x-data="{ isOpen: false }" class="relative">
+          <button 
+            @click="isOpen = !isOpen" 
+            class="hamburger-menu"
+            aria-label="Toggle filter options"
           >
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-          </svg>
-        </button>
+            <span class="mr-2 text-gray-700">Options</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-        <div
-          x-show="isOpen"
-          x-transition:enter="transition ease-out duration-200"
-          x-transition:enter-start="opacity-0 transform -translate-y-2"
-          x-transition:enter-end="opacity-100 transform translate-y-0"
-          x-transition:leave="transition ease-in duration-200"
-          x-transition:leave-start="opacity-100 transform translate-y-0"
-          x-transition:leave-end="opacity-0 transform -translate-y-2"
-          class="border border-t-0 border-gray-300 rounded-b-lg p-4 bg-white"
-        >
-          <div class="grid grid-cols-3 gap-4 p-4">
-    <!-- First column -->
-            <div class="w-full">
-              <label for="book-select" class="block text-gray-700 text-sm font-bold mb-2">Jump to a book:</label>
-              <select
-                id="book-select"
-                x-on:change="window.location.href = $event.target.value"
-                class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="#libre-1">Book/Libro 1</option>
-                <option value="#libre-2">Book/Libro 2</option>
-                <option value="#libre-3">Book/Libro 3</option>
-                <option value="#libre-4">Book/Libro 4</option>
-              </select>
-            </div>
-        <!-- Second column -->
-            <div class="w-full">
-              <label for="manuscript-select" class="block text-gray-700 text-sm font-bold mb-2">Select Manuscript:</label>
-              <select id="manuscript-select" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                {% for manuscript in manuscripts %}
-                  {% if manuscript.iiif_url %}
-                    <option value="{{ manuscript.id }}"
-                            {% if manuscript.siglum == default_manuscript.siglum %}selected{% endif %}>
-                      {{ manuscript.shelfmark }}{% if manuscript.name %} - {{ manuscript.name }}{% endif %} | {{ manuscript.library }}
-                    </option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            </div>
-    <!-- Third column -->
-            <div class="w-full">
-              <label for="manuscript-linecodes" class="block text-gray-700 text-sm font-bold mb-2">Line code display:</label>
-              <select id="lineCodeDisplay" class="w-full p-2 border rounded">
-                <option value="full">Show line codes</option>
-                <option value="shortened">Show shortened line codes</option>
-                <option value="hidden">Hide line codes</option>
-              </select>
+          <!-- Filter Panel -->
+          <div 
+            x-show="isOpen" 
+            @click.away="isOpen = false"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 transform scale-95"
+            x-transition:enter-end="opacity-100 transform scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 transform scale-100"
+            x-transition:leave-end="opacity-0 transform scale-95"
+            class="filter-panel"
+          >
+            <div class="border border-gray-300 rounded-lg">
+              <div class="p-4 border-b border-gray-300 bg-gray-100 rounded-t-lg">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold">Text Options</span>
+                  <button @click="isOpen = false" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="p-4 bg-white rounded-b-lg">
+                <div class="grid grid-cols-1 gap-4">
+
+                  <!-- Manuscript Select -->
+                  <div class="w-full">
+                    <label for="manuscript-select" class="block text-gray-700 text-sm font-bold mb-2">Select Manuscript:</label>
+                    <select 
+                      id="manuscript-select" 
+                      onchange="window.location.href=`/manuscripts/${this.value}/stanzas/`"
+                      class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      {% for manuscript in manuscripts %}
+                          {% if manuscript.iiif_url %}
+                          <option value="{{ manuscript.siglum }}"
+                                  {% if manuscript.siglum == default_manuscript.siglum %}selected{% endif %}>
+                          {{ manuscript.siglum }} &middot; {{manuscript.shelfmark}} | {{ manuscript.library }}
+                          </option>
+                          {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <!-- Book Select -->
+                  <div class="w-full">
+                    <label for="book-select" class="block text-gray-700 text-sm font-bold mb-2">Jump to a book:</label>
+                    <select
+                      id="book-select"
+                      x-on:change="window.location.href = $event.target.value; isOpen = false"
+                      class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="#libre-1">Book/Libro 1</option>
+                      <option value="#libre-2">Book/Libro 2</option>
+                      <option value="#libre-3">Book/Libro 3</option>
+                      <option value="#libre-4">Book/Libro 4</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Line Code Display -->
+                  <div class="w-full">
+                    <label for="lineCodeDisplay" class="block text-gray-700 text-sm font-bold mb-2">Line code display:</label>
+                    <select id="lineCodeDisplay" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      <option value="full">Show line codes</option>
+                      <option value="shortened">Show shortened line codes</option>
+                      <option value="hidden">Hide line codes</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -145,32 +190,31 @@
                 </div>
 
               <!-- Stanza pairs -->
-                {% for stanza_pair in stanza_pairs %}
+              {% for stanza_pair in stanza_pairs %}
+                {% with original_stanza=stanza_pair.original|first %}
+                {% if stanza_pair.new_folio and original_stanza.folios.exists %}
+                <div class="col-span-2 relative flex items-center my-6 folio-divider" data-folio-number="{{ stanza_pair.original.0.folios.first.folio_number }}">
+                  <div class="font-medium text-gray-500 pr-4">
+                    Folio {{ original_stanza.folios.first.folio_number }}
+                  </div>
+                  <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+                {% endif %}
+              {% endwith %}
                   <div class="grid grid-cols-2 gap-8 mb-8">
-                    {% with original_stanza=stanza_pair.original|first %}
-                      {% if original_stanza.related_folio %}
-                        {% if stanza_pair.new_folio %}
-                          <div class="col-span-2 relative flex items-center mt-4 mb-4">
-                            <div class="text-gray-300 font-bold bg-white pr-4">
-                              Folio {{ original_stanza.related_folio.folio_number }}
-                            </div>
-                            <div class="flex-grow border-t-2 border-gray-300"></div>
-                          </div>
-                        {% endif %}
-                      {% endif %}
-                    {% endwith %}
-
-                  <!-- Original stanza -->
+                    
+                    <!-- Original stanza -->
                     <div class="w-full">
                       {% for stanza in stanza_pair.original %}
                         <div class="relative">
                           <div class="flex items-start">
                             <span class="line-code mr-2">
-                              <a class="no-underline" href="#{{stanza.stanza_line_code_starts}}"
+                              <a class="no-underline" 
+                                 href="{% url 'manuscript_stanzas' default_manuscript.siglum %}#{{stanza.stanza_line_code_starts}}"
                                  id="{{stanza.stanza_line_code_starts}}"
                                  title="Anchor link to line code {{ stanza.stanza_line_code_starts}}"
                                  data-folio="{{ stanza.related_folio.canvas_number }}"
-                                 onclick="showManuscript(event, this)">
+                                 onclick="navigateToFolio(event, this)">
                                 <span class="font-serif text-red-700 text-sm">
                                   {{ stanza.stanza_line_code_starts }}
                                 </span>
@@ -218,27 +262,17 @@
           </div>
         </div>
 
-      <!-- Manuscript viewer container -->
-        <div class="w-1/3 relative">
-          <div class="sticky pt-8 top-0">
-            <div class="bg-white rounded-lg shadow-lg">
-              <div id="fixed-manuscript-viewer" class="w-full h-screen">
-                {% if default_manuscript.iiif_url %}
-                  <iframe
-                    id="mirador-frame"
-                    src="{% url 'mirador_view' manuscript_id=default_manuscript.id page_number='0001' %}"
-                    class="w-full h-full border-0 rounded-lg"
-                    title="Manuscript viewer">
-                  </iframe>
-                {% else %}
-                  <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                    <p class="text-gray-500">No manuscript page available</p>
-                  </div>
-                {% endif %}
-              </div>
-            </div>
+      <!-- Tify viewer container -->
+      <div class="w-1/3 relative" 
+           x-data="tifyViewer"
+           data-has-known-folios="{{ has_known_folios|lower }}"
+           data-manifest-url="{{ manuscript.iiif_url }}">
+        <div class="sticky pt-8 top-0">
+          <div class="bg-white rounded-lg shadow-lg">
+            <div id="tify-container" class="w-full h-screen"></div>
           </div>
         </div>
+      </div>
       </div>
 
     <!-- Return to top button -->
@@ -250,256 +284,11 @@
 {% endblock content %}
 
 {% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/tify@0.31.0/dist/tify.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tify@0.31.0/dist/tify.css">
+  <script src="{% static 'js/annotations.js' %}"></script>
+  <script src="{% static 'js/tify-sync.js' %}"></script>
   <script src="{% static 'js/stanza.js' %}"></script>
-  <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-  // Add styles for annotations and popup
-      const style = document.createElement("style");
-      style.textContent = `
-        .annotated-text {
-            background-color: #A8DCD9;
-            cursor: help;
-            position: relative;
-            color: #1A1A1A;
-        }
-
-        .annotation-popup {
-            position: absolute;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            padding: 12px;
-            z-index: 1000;
-            max-width: 300px;
-            font-size: 0.9em;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.2s ease-in-out;
-        }
-
-        .annotation-popup.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .annotation-popup::before {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 8px 8px 0;
-            border-style: solid;
-            border-color: white transparent transparent;
-            z-index: 1;
-        }
-
-        .annotation-popup::after {
-            content: '';
-            position: absolute;
-            bottom: -9px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 9px 9px 0;
-            border-style: solid;
-            border-color: #ddd transparent transparent;
-            z-index: 0;
-        }
-
-        .annotation-type {
-            font-size: 0.8em;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .annotation-content {
-            color: #333;
-            line-height: 1.4;
-        }
-
-        .annotation-loading {
-            color: #666;
-            font-style: italic;
-        }
-        /* Link styles in annotation popup */
-        .annotation-content a {
-            color: #2563eb;
-            text-decoration: none;
-            border-bottom: 1px solid #2563eb;
-            padding-bottom: 1px;
-            transition: all 0.2s ease;
-        }
-
-        .annotation-content a:hover {
-            color: #1d4ed8;
-            border-bottom-color: #1d4ed8;
-            background-color: rgba(37, 99, 235, 0.1);
-        }
-
-        .annotation-content a:focus {
-            outline: 2px solid #2563eb;
-            outline-offset: 2px;
-            border-radius: 2px;
-        }
-
-        .annotation-content a:active {
-            color: #1e40af;
-            border-bottom-color: #1e40af;
-        }
-
-        /* External link indicator */
-        .annotation-content a[href^="http"]::after {
-            content: "↗";
-            display: inline-block;
-            margin-left: 2px;
-            font-size: 0.8em;
-            transform: translateY(-1px);
-        }
-
-        .annotation-loading {
-            color: #666;
-            font-style: italic;
-        }
-    `;
-      document.head.appendChild(style);
-
-  // Keep track of active popup
-      let activePopup = null;
-
-  // Function to position popup
-      function positionPopup(popup, element) {
-        const rect = element.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollLeft =
-          window.pageXOffset || document.documentElement.scrollLeft;
-
-    // Position above the element
-        popup.style.left = `${rect.left + rect.width / 2 - popup.offsetWidth / 2}px`;
-        popup.style.top = `${rect.top + scrollTop - popup.offsetHeight - 10}px`;
-
-    // Check if popup would go off screen
-        const popupRect = popup.getBoundingClientRect();
-
-    // Check right edge
-        if (popupRect.right > window.innerWidth) {
-          popup.style.left = `${window.innerWidth - popup.offsetWidth - 10}px`;
-        }
-
-    // Check left edge
-        if (popupRect.left < 0) {
-          popup.style.left = "10px";
-        }
-
-    // If would go above viewport, show below instead
-        if (popupRect.top < 0) {
-          popup.style.top = `${rect.bottom + scrollTop + 10}px`;
-          popup.classList.add("below");
-        } else {
-          popup.classList.remove("below");
-        }
-      }
-
-      window.showAnnotation = function (event, element) {
-        event.preventDefault();
-        event.stopPropagation();
-
-    // Remove any existing popup
-        if (activePopup) {
-          activePopup.remove();
-          activePopup = null;
-        }
-
-        const annotationId = element.getAttribute("data-annotation-id");
-
-    // Create popup
-        const popup = document.createElement("div");
-        popup.className = "annotation-popup";
-        popup.innerHTML = '<div class="annotation-loading">Loading...</div>';
-        document.body.appendChild(popup);
-
-    // Position popup
-        positionPopup(popup, element);
-
-    // Show popup
-        setTimeout(() => popup.classList.add("active"), 10);
-
-    // Store as active popup
-        activePopup = popup;
-
-        fetch(`/text-annotations/annotation/${annotationId}/`)
-          .then((response) => {
-            if (!response.ok) throw new Error("Network response was not ok");
-            return response.json();
-          })
-          .then((data) => {
-            popup.innerHTML = `
-                    <div class="annotation-type">${data.annotation_type}</div>
-                    <div class="annotation-content">${data.annotation}</div>
-                `;
-        // Reposition after content loaded
-            positionPopup(popup, element);
-          })
-          .catch((error) => {
-            console.error("Error loading annotation:", error);
-            popup.innerHTML = `
-                    <div class="annotation-content text-red-500">
-                        Failed to load annotation
-                    </div>
-                `;
-          });
-      };
-
-  // Close popup when clicking outside
-      document.addEventListener("click", function (event) {
-        if (
-          activePopup &&
-          !event.target.closest(".annotated-text") &&
-          !event.target.closest(".annotation-popup")
-        ) {
-          activePopup.remove();
-          activePopup = null;
-        }
-      });
-
-  // Close popup on escape key
-      document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && activePopup) {
-          activePopup.remove();
-          activePopup = null;
-        }
-      });
-
-  // Update popup position on scroll
-      window.addEventListener("scroll", function () {
-        if (activePopup) {
-          const annotatedElement = document.querySelector(
-            '.annotated-text[data-annotation-id="' +
-            activePopup.dataset.annotationId +
-            '"]',
-          );
-          if (annotatedElement) {
-            positionPopup(activePopup, annotatedElement);
-          }
-        }
-      });
-
-  // Update popup position on window resize
-      window.addEventListener("resize", function () {
-        if (activePopup) {
-          const annotatedElement = document.querySelector(
-            '.annotated-text[data-annotation-id="' +
-            activePopup.dataset.annotationId +
-            '"]',
-          );
-          if (annotatedElement) {
-            positionPopup(activePopup, annotatedElement);
-          }
-        }
-      });
-    });
-  </script>
 {% endblock scripts %}
+
 

@@ -26,6 +26,9 @@ from manuscript.resources import (
     EditorialStatusResource,
     ReferenceResource,
     SingleManuscriptResource,
+    FolioResource,
+    LocationResource,
+    LocationAliasResource,
 )
 from textannotation.models import TextAnnotation
 
@@ -121,11 +124,6 @@ class AuthorityFileInline(admin.TabularInline):
     extra = 1
 
 
-class LineCodeInline(admin.TabularInline):
-    model = LineCode
-    extra = 1
-
-
 class TextAnnotationInline(GenericTabularInline):
     model = TextAnnotation
     extra = 0
@@ -152,39 +150,127 @@ class SingleManuscriptAdmin(ImportExportModelAdmin):
         "library",
         "manuscript_lost",
         "manuscript_destroyed",
+        "has_iiif_url",
         "item_id",
     )
     search_fields = ("siglum",)
     resource_class = SingleManuscriptResource
+
+    @admin.display(boolean=True, description="IIIF Available")
+    def has_iiif_url(self, obj):
+        return bool(obj.iiif_url)
 
     class Media:
         js = ("js/text_annotator.js",)
         css = {"all": ("css/text_annotator.css",)}
 
 
-class FolioAdmin(admin.ModelAdmin):
-    inlines = [
-        StanzaInline,
-    ]
-    list_filter = ("manuscript",)
-    list_display = (
-        "folio_number",
-        "manuscript",
-    )
-    search_fields = (
+class FolioAdmin(ImportExportModelAdmin):
+    resource_class = FolioResource
+
+    list_display = ["manuscript", "folio_number", "line_range_display", "stanza_count"]
+    list_filter = ["manuscript"]
+    search_fields = [
         "folio_number",
         "manuscript__siglum",
+        "line_code_range_start",
+        "line_code_range_end",
+    ]
+
+    readonly_fields = ["stanza_list", "line_range_display", "stanza_count"]
+
+    fieldsets = (
+        ("Folio Information", {"fields": ("manuscript", "folio_number")}),
+        (
+            "Line Range",
+            {
+                "fields": (
+                    "line_code_range_start",
+                    "line_code_range_end",
+                    "line_range_display",
+                )
+            },
+        ),
+        (
+            "Associated Stanzas",
+            {
+                "fields": ("stanza_count", "stanza_list"),
+            },
+        ),
     )
 
-    def add_link_to_edit_stanzas(self, obj):
-        url = reverse("admin:manuscript_stanza_add") + "?folio=" + str(obj.id)
-        return format_html('<a href="{}">Add Stanza</a>', url)
+    def stanza_count(self, obj):
+        return obj.stanzas.count()
 
-    def manuscript(self, obj):
-        url = reverse(
-            "admin:manuscript_singlemanuscript_change", args=[obj.singlemanuscript.id]
-        )
-        return format_html('<a href="{}">{}</a>', url, obj.singlemanuscript.siglum)
+    stanza_count.short_description = "Number of Stanzas"
+
+    def line_range_display(self, obj):
+        end = obj.line_code_range_end or "End"
+        return f"{obj.line_code_range_start} → {end}"
+
+    line_range_display.short_description = "Line Range"
+
+    def stanza_list(self, obj):
+        stanzas = obj.stanzas.order_by("stanza_line_code_starts")
+        if not stanzas.exists():
+            return "No stanzas associated"
+
+        html = ['<div style="max-height: 400px; overflow-y: auto;">']
+        html.append('<table style="width: 100%;">')
+        html.append("<tr><th>Line Code</th><th>Text Preview</th></tr>")
+
+        for stanza in stanzas:
+            preview = (
+                stanza.stanza_text[:100] + "..."
+                if len(stanza.stanza_text) > 100
+                else stanza.stanza_text
+            )
+            html.append(
+                f"<tr>"
+                f'<td style="padding: 5px; border-bottom: 1px solid #eee;">{stanza.stanza_line_code_starts}</td>'
+                f'<td style="padding: 5px; border-bottom: 1px solid #eee;">{preview}</td>'
+                f"</tr>"
+            )
+
+        html.append("</table></div>")
+        return format_html("".join(html))
+
+    stanza_list.short_description = "Stanzas on this Folio"
+
+    def has_add_permission(self, request):
+        """Disable manual adding - folios should be created via import"""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Allow deletion but with a warning"""
+        return True  # You might want to add a custom deletion warning/confirmation
+
+
+# class FolioAdmin(ImportExportModelAdmin):
+#     inlines = [
+#         StanzaInline,
+#     ]
+#     list_filter = ("manuscript",)
+#     list_display = (
+#         "folio_number",
+#         "manuscript",
+#     )
+#     search_fields = (
+#         "folio_number",
+#         "manuscript__siglum",
+#     )
+#     resource_class = FolioResource
+#
+#     def add_link_to_edit_stanzas(self, obj):
+#         url = reverse("admin:manuscript_stanza_add") + "?folio=" + str(obj.id)
+#         return format_html('<a href="{}">Add Stanza</a>', url)
+#
+#     def manuscript(self, obj):
+#         url = reverse(
+#             "admin:manuscript_singlemanuscript_change", args=[obj.singlemanuscript.id]
+#         )
+#         return format_html('<a href="{}">{}</a>', url, obj.singlemanuscript.siglum)
+#
 
 
 class ReferenceAdmin(ImportExportModelAdmin):
@@ -197,9 +283,9 @@ class LibraryAdmin(admin.ModelAdmin):
     list_filter = ("city",)
 
 
-class EditorialStatusAdmin(admin.ModelAdmin):
-    list_display = ("editorial_priority", "spatial_priority")
-    resource_class = EditorialStatusResource
+# class EditorialStatusAdmin(admin.ModelAdmin):
+#     list_display = ("editorial_priority", "spatial_priority")
+#     resource_class = EditorialStatusResource
 
 
 class CodexAdmin(admin.ModelAdmin):
@@ -208,8 +294,10 @@ class CodexAdmin(admin.ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(ImportExportModelAdmin):
+    resource_class = LocationResource
     list_display = (
         "placename_id",
+        "name",
         "get_placename_modern",
         "get_mss_placename",
         "toponym_type",
@@ -218,7 +306,8 @@ class LocationAdmin(ImportExportModelAdmin):
         "id",
     )
     search_fields = ("placename_id", "description", "modern_country")
-    inlines = [LocationAliasInline, LineCodeInline]
+    list_filter = ("place_type", "modern_country", "toponym_type")
+    inlines = [LocationAliasInline]
 
     def description_html(self, obj):
         return format_html(obj.description) if obj.description else ""
@@ -248,6 +337,23 @@ class LocationAdmin(ImportExportModelAdmin):
         instance.geocode()
 
 
+@admin.register(LocationAlias)
+class LocationAliasAdmin(ImportExportModelAdmin):
+    resource_class = LocationAliasResource
+    list_display = (
+        "location",
+        "placename_alias",
+        "placename_from_mss",
+        "placename_ancient",
+        "placename_standardized",
+        # "folio",
+        # "manuscript",
+    )
+    list_filter = ("location",)
+    search_fields = ("placename_alias",)
+    raw_id_fields = ("location",)
+
+
 @admin.action(description="Set language of the selected stanza to Italian")
 def set_language_to_italian(modeladmin, request, queryset):
     queryset.update(language="it")
@@ -262,39 +368,24 @@ class StanzaAdmin(admin.ModelAdmin):
     inlines = [TextAnnotationInline, StanzaVariantInline]
     list_display = (
         "stanza_line_code_starts",
-        "display_folio",
         "formatted_stanza_text",
-        "display_stanza_variants",
         "language",
     )
     search_fields = (
         "stanza_text",
         "stanza_line_code_starts",
     )
+    list_filter = ("language",)
     actions = [set_language_to_italian, set_language_to_english]
 
     class Media:
         css = {"all": ("css/text_annotations.css",)}
         js = ("js/text_annotations.js",)
 
-    def display_folio(self, obj):
-        if obj.related_folio:
-            return f"Folio {obj.related_folio.folio_number}"
-        return "-"
-
-    display_folio.short_description = "Folio"
-
     def formatted_stanza_text(self, obj):
         return format_html(obj.stanza_text)
 
     formatted_stanza_text.short_description = "Stanza Text"
-
-    # List any stanza variants associated with a stanza
-    def display_stanza_variants(self, obj):
-        variants = ["- {}".format(variant) for variant in obj.stanzavariant_set.all()]
-        return format_html("<br>".join(variants))
-
-    display_stanza_variants.short_description = "Stanza Variants"
 
 
 class StanzaVariantAdmin(admin.ModelAdmin):
@@ -316,14 +407,25 @@ class StanzaTranslatedAdmin(admin.ModelAdmin):
         js = ("js/text_annotations.js",)
 
 
+class LineCodeAdmin(admin.ModelAdmin):
+    list_display = ("code", "get_toponyms")
+    search_fields = ("code",)
+    list_filter = ("associated_folio__manuscript",)
+    filter_horizontal = ("associated_toponyms",)
+
+    def get_toponyms(self, obj):
+        return ", ".join([toponym.name for toponym in obj.associated_toponyms.all()])
+
+    get_toponyms.short_description = "Associated Toponyms"
+
+
+admin.site.register(LineCode, LineCodeAdmin)
+
 admin.site.register(Library, LibraryAdmin)
-admin.site.register(EditorialStatus, EditorialStatusAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
 admin.site.register(Stanza, StanzaAdmin)
-admin.site.register(StanzaVariant, StanzaVariantAdmin)
 admin.site.register(StanzaTranslated, StanzaTranslatedAdmin)
-admin.site.register(LineCode)
 admin.site.register(TextAnnotation)
 
 admin.site.site_header = "La Sfera Admin"

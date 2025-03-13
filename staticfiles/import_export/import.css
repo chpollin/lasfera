@@ -30,28 +30,23 @@ html[data-theme="light"] .validation-error-container {
   background-color: #ffc1c1;
 }
 
-table.import-preview tr.skip,
-html[data-theme="light"] table.import-preview tr.skip {
+table.import-preview tr.skip, html[data-theme="light"] table.import-preview tr.skip  {
   background-color: #d2d2d2;
 }
 
-table.import-preview tr.new,
-html[data-theme="light"] table.import-preview tr.new {
+table.import-preview tr.new, html[data-theme="light"] table.import-preview tr.new {
   background-color: #bdd8b2;
 }
 
-table.import-preview tr.delete,
-html[data-theme="light"] table.import-preview tr.delete {
+table.import-preview tr.delete, html[data-theme="light"] table.import-preview tr.delete {
   background-color: #f9bebf;
 }
 
-table.import-preview tr.update,
-html[data-theme="light"] table.import-preview tr.update {
+table.import-preview tr.update, html[data-theme="light"] table.import-preview tr.update {
   background-color: #fdfdcf;
 }
 
-table.import-preview td ins,
-html[data-theme="light"] table.import-preview td ins {
+table.import-preview td ins, html[data-theme="light"] table.import-preview td ins {
   background-color: #e6ffe6 !important;
 }
 

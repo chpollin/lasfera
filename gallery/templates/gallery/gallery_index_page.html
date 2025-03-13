@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load wagtailimages_tags wagtailcore_tags %}
+
+{% block content %}
+<div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">{{ page.title }}</h1>
+    
+    {% if page.intro %}
+    <div class="mb-8">{{ page.intro|richtext }}</div>
+    {% endif %}
+    
+    <!-- Theme filter with Alpine.js and HTMX -->
+    <div class="mb-8" x-data="{ selectedTheme: '{{ current_theme|default:"" }}' }">
+        <h2 class="text-xl font-semibold mb-3">Filter by Theme</h2>
+        <div class="flex gap-2">
+      <select 
+    name="theme" 
+    x-model="selectedTheme"
+    hx-get="{% url 'gallery:filter_gallery' page.id %}"
+    hx-trigger="change"
+    hx-target="#gallery-grid"
+    hx-indicator="#loading-indicator"
+    class="p-2 pr-8 border rounded appearance-none bg-white" <!-- Add padding-right and appearance-none -->
+    style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em;">
+    <option value="">All Themes</option>
+    {% for theme in themes %}
+        <option value="{{ theme.name }}" {% if current_theme == theme.name %}selected{% endif %}>
+            {{ theme.name }}
+        </option>
+    {% endfor %}
+</select>
+                    
+            <button 
+                type="button" 
+                x-show="selectedTheme !== ''"
+                x-on:click="selectedTheme = ''; $el.nextElementSibling.click()"
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded">
+                Clear
+            </button>
+            
+            <!-- Hidden button to trigger HTMX request when Clear is clicked -->
+            <button 
+                type="button"
+                x-show="false"
+                hx-get="{% url 'gallery:filter_gallery' page.id %}"
+                hx-target="#gallery-grid">
+            </button>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div id="loading-indicator" class="htmx-indicator mt-2">
+            <div class="flex items-center">
+                <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gallery grid with ID for HTMX targeting -->
+    <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% include "gallery/partials/gallery_grid.html" with gallery_pages=gallery_pages %}
+    </div>
+</div>
+{% endblock %}

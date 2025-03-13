@@ -1,0 +1,33 @@
+<!-- gallery/templates/gallery/partials/gallery_grid.html -->
+{% load wagtailimages_tags wagtailcore_tags %}
+
+{% for gallery_item in gallery_pages %}
+    <a href="{% pageurl gallery_item %}" class="group">
+        <div class="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all">
+            {% if gallery_item.main_image %}
+                {% image gallery_item.main_image fill-400x300 class="w-full h-64 object-cover" %}
+            {% else %}
+                <div class="w-full h-64 bg-gray-200 flex items-center justify-center">
+                    <span class="text-gray-500">No image</span>
+                </div>
+            {% endif %}
+            <div class="p-4">
+                <h3 class="font-semibold text-lg group-hover:text-blue-600">{{ gallery_item.title }}</h3>
+                {% if gallery_item.caption %}
+                    <p class="text-gray-600 mt-1">{{ gallery_item.caption }}</p>
+                {% endif %}
+                <div class="mt-2 flex flex-wrap gap-1">
+                    {% for theme_relationship in gallery_item.themes.all %}
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {{ theme_relationship.theme.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </a>
+{% empty %}
+    <div class="col-span-full text-center py-8">
+        <p>No images found{% if current_theme %} for this theme{% endif %}.</p>
+    </div>
+{% endfor %}
