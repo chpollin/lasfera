@@ -49,10 +49,16 @@ def annotate_text(html_content, annotations):
             text_end = text_start + len(target_text)
             annotated_content = inner_html[text_start:text_end]
 
+            # Determine the appropriate class based on annotation type
+            annotation_type = annotation.annotation_type.lower()
+            css_class = (
+                "textual-variant" if annotation_type == "variant" else "annotated-text"
+            )
+
             result.append(
-                f'<span class="annotated-text" '
+                f'<span class="{css_class}" '
                 f'data-annotation-id="{annotation.id}" '
-                f'data-annotation-type="{annotation.get_annotation_type_display()}" '
+                f'data-annotation-type="{annotation_type}" '
                 f'onclick="showAnnotation(event, this)">'
                 f"{annotated_content}"
                 f"</span>"
