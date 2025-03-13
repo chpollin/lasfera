@@ -17,6 +17,8 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import DetailView
+from django.utils.text import slugify
+
 from rest_framework import viewsets
 
 from manuscript.models import (
@@ -354,17 +356,17 @@ def index(request: HttpRequest):
         "nav_items": [
             {
                 "name": "Edition",
-                "url": "reverse('stanzas')",
+                "url": "/manuscripts/Urb1/stanzas/",
                 "thumbnail": "/static/images/home/Wellcome230 p44.png",
             },
             {
                 "name": "Gazetteer",
-                "url": "reverse('toponyms')",
+                "url": "/toponyms",
                 "thumbnail": "/static/images/home/BNCF CSopp2618 M1B.png",
             },
             {
                 "name": "Tradition",
-                "url": "reverse('manuscripts')",
+                "url": "/manuscripts/",
                 "thumbnail": "/static/images/home/BNCF Mag956 cosmos.png",
             },
             {
@@ -374,7 +376,7 @@ def index(request: HttpRequest):
             },
             {
                 "name": "Gallery",
-                "url": "",
+                "url": "/gallery/",
                 "thumbnail": "/static/images/home/NYPL f1v ship.png",
             },
             {
@@ -620,9 +622,10 @@ class ManuscriptViewer(DetailView):
 
 
 def manuscripts(request: HttpRequest):
+    """View for displaying all manuscripts with proper folio grouping"""
     folios = Folio.objects.all()
     stanzas = (
-        Stanza.objects.prefetch_related("annotations")
+        Stanza.objects.prefetch_related("annotations", "folios")
         .all()
         .order_by("stanza_line_code_starts")
     )
@@ -631,26 +634,51 @@ def manuscripts(request: HttpRequest):
     manuscripts = SingleManuscript.objects.all()
     default_manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
-    books = process_stanzas(stanzas)
+    # Process stanzas into books structure (same as in stanzas view)
+    books = defaultdict(lambda: defaultdict(list))
+    for stanza in stanzas:
+        if stanza.stanza_line_code_starts:
+            parts = stanza.stanza_line_code_starts.split(".")
+            if len(parts) >= 2:
+                book_number = int(parts[0])
+                stanza_number = int(parts[1])
 
-    # Group stanzas by book
+                # Process text for display
+                if hasattr(stanza, "stanza_text"):
+                    stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
+
+                books[book_number][stanza_number].append(stanza)
+
+    # Group stanzas by book and track folios - using same approach as stanzas view
     paired_books = {}
     for book_number, stanza_dict in books.items():
         paired_books[book_number] = []
+        current_folio = None
 
-        for stanza_number, original_stanzas in stanza_dict.items():
+        # Sort stanza numbers to ensure correct order
+        stanza_numbers = sorted(stanza_dict.keys())
+
+        for stanza_number in stanza_numbers:
+            original_stanzas = stanza_dict[stanza_number]
+
             # Create a stanza pair dictionary with just original stanzas
             stanza_pair = {
                 "original": original_stanzas,
-                "new_folio": False,  # You might want to add folio logic here
+                "new_folio": False,  # Default to false, set to true when needed
             }
 
+            # Check if this is a new folio by looking at the first stanza's folios
             if original_stanzas:
                 # Get the first stanza's folios ordered by folio_number
                 stanza_folios = original_stanzas[0].folios.order_by("folio_number")
 
-                if stanza_folios.exists():
+                # If the stanza has any folios and the current folio has changed
+                if stanza_folios.exists() and (
+                    current_folio is None or stanza_folios.first() != current_folio
+                ):
+                    current_folio = stanza_folios.first()
                     stanza_pair["new_folio"] = True
+                    # Add information about all folios this stanza appears on
                     stanza_pair["folios"] = list(
                         stanza_folios.values_list("folio_number", flat=True)
                     )
@@ -669,7 +697,7 @@ def manuscripts(request: HttpRequest):
         request,
         "manuscripts.html",
         {
-            "stanza_pairs": paired_books,  # Changed from paired_books
+            "stanza_pairs": paired_books,
             "manuscripts": manuscripts,
             "default_manuscript": default_manuscript,
             "manuscript": manuscript_data,
@@ -780,17 +808,86 @@ def manuscript(request: HttpRequest, siglum: str):
 #     )
 
 
+# Add this utility function to generate toponym slugs consistently
+def get_toponym_slug(toponym_name):
+    """Generate a slug from a toponym name"""
+    return slugify(toponym_name)
+
+
+def toponym_by_slug(request: HttpRequest, toponym_slug: str):
+    """View a toponym by its slugified name"""
+    # Try to find the toponym based on slugified name
+    location = None
+
+    # First try to find by name
+    locations = Location.objects.all()
+    for loc in locations:
+        if slugify(loc.name) == toponym_slug:
+            location = loc
+            break
+
+    # If not found by name, check aliases
+    if location is None:
+        aliases = LocationAlias.objects.all()
+        for alias in aliases:
+            # Check all the possible name fields
+            name_fields = [
+                alias.placename_from_mss,
+                alias.placename_standardized,
+                alias.placename_modern,
+                alias.placename_alias,
+                alias.placename_ancient,
+            ]
+
+            for name in name_fields:
+                if name and slugify(name) == toponym_slug:
+                    location = alias.location
+                    break
+
+            if location:
+                break
+
+    if location is None:
+        # If still not found, return 404
+        from django.http import Http404
+
+        raise Http404(f"No toponym found with slug: {toponym_slug}")
+
+    # Redirect to existing view using placename_id
+    return toponym(request, location.placename_id)
+
+
 def toponyms(request: HttpRequest):
-    # Get unique and sorted LocationAlias objects based on placename_modern
-    toponym_alias_objs = (
+    """View for displaying all toponyms with proper slugs"""
+    # Get unique and sorted Location objects
+    toponym_objects = (
         Location.objects.exclude(placename_id=None)
         .exclude(placename_id="")
+        .exclude(
+            Q(name="") | Q(name__isnull=True)
+        )  # Exclude locations with empty names
         .values("name", "placename_id", "id")
         .distinct()
         .order_by("name")
     )
+
+    # Add slug to each object and ensure it's not empty
+    toponyms_with_slugs = []
+    for obj in toponym_objects:
+        if obj["name"]:  # Double check name is not empty
+            slug = slugify(obj["name"])
+            if not slug:
+                # Generate a fallback slug
+                if obj["placename_id"]:
+                    slug = slugify(obj["placename_id"])
+                else:
+                    slug = f"toponym-{obj['id']}"
+
+            obj["slug"] = slug
+            toponyms_with_slugs.append(obj)
+
     return render(
-        request, "gazetteer/gazetteer_index.html", {"aliases": toponym_alias_objs}
+        request, "gazetteer/gazetteer_index.html", {"aliases": toponyms_with_slugs}
     )
 
 

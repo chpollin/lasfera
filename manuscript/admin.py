@@ -368,39 +368,24 @@ class StanzaAdmin(admin.ModelAdmin):
     inlines = [TextAnnotationInline, StanzaVariantInline]
     list_display = (
         "stanza_line_code_starts",
-        # "display_folio",
         "formatted_stanza_text",
-        "display_stanza_variants",
         "language",
     )
     search_fields = (
         "stanza_text",
         "stanza_line_code_starts",
     )
+    list_filter = ("language",)
     actions = [set_language_to_italian, set_language_to_english]
 
     class Media:
         css = {"all": ("css/text_annotations.css",)}
         js = ("js/text_annotations.js",)
 
-    # def display_folio(self, obj):
-    #     if obj.related_folio:
-    #         return f"Folio {obj.related_folio.folio_number}"
-    #     return "-"
-    #
-    # display_folio.short_description = "Folio"
-
     def formatted_stanza_text(self, obj):
         return format_html(obj.stanza_text)
 
     formatted_stanza_text.short_description = "Stanza Text"
-
-    # List any stanza variants associated with a stanza
-    def display_stanza_variants(self, obj):
-        variants = ["- {}".format(variant) for variant in obj.stanzavariant_set.all()]
-        return format_html("<br>".join(variants))
-
-    display_stanza_variants.short_description = "Stanza Variants"
 
 
 class StanzaVariantAdmin(admin.ModelAdmin):
@@ -440,7 +425,6 @@ admin.site.register(Library, LibraryAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(SingleManuscript, SingleManuscriptAdmin)
 admin.site.register(Stanza, StanzaAdmin)
-admin.site.register(StanzaVariant, StanzaVariantAdmin)
 admin.site.register(StanzaTranslated, StanzaTranslatedAdmin)
 admin.site.register(TextAnnotation)
 
