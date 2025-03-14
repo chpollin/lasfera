@@ -14,11 +14,10 @@ from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils.text import slugify
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import DetailView
-from django.utils.text import slugify
-
 from rest_framework import viewsets
 
 from manuscript.models import (
@@ -54,16 +53,13 @@ def get_manifest_data(manifest_url):
 
 
 def manuscript_stanzas(request, siglum):
-    """View for displaying stanzas of a specific manuscript"""
     manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
-    folios = manuscript.folio_set.all()
-    has_known_folios = folios.exists()
-
-    # Get folios for this manuscript
     folios = manuscript.folio_set.all()
 
     # Get stanzas that appear in these folios
-    stanzas = Stanza.objects.filter(folios__in=folios).distinct()
+    stanzas = Stanza.objects.filter(
+        folios__in=folios, folios__manuscript=manuscript
+    ).distinct()
     translated_stanzas = StanzaTranslated.objects.filter(stanza__in=stanzas).distinct()
 
     # Process stanzas into books structure
@@ -72,6 +68,7 @@ def manuscript_stanzas(request, siglum):
 
     # Build paired books structure
     paired_books = {}
+
     for book_number, stanza_dict in books.items():
         paired_books[book_number] = []
         current_folio = None
@@ -88,88 +85,20 @@ def manuscript_stanzas(request, siglum):
 
             # Add folio information
             if original_stanzas:
-                stanza_folios = original_stanzas[0].folios.order_by("folio_number")
-                if stanza_folios.exists() and (
-                    current_folio is None or stanza_folios.first() != current_folio
-                ):
-                    current_folio = stanza_folios.first()
-                    stanza_group["new_folio"] = True
-                    stanza_group["show_viewer"] = True
-
-            paired_books[book_number].append(stanza_group)
-
-    # Get all manuscripts for the dropdown
-    manuscripts = SingleManuscript.objects.all()
-
-    return render(
-        request,
-        "stanzas.html",
-        {
-            "paired_books": paired_books,
-            "manuscripts": manuscripts,
-            "default_manuscript": manuscript,
-            "has_known_folios": has_known_folios,
-            "manuscript": {
-                "iiif_url": manuscript.iiif_url if manuscript.iiif_url else None
-            },
-            "folios": folios,
-        },
-    )
-
-
-def manuscript_stanzas(request, siglum):
-    """View for displaying stanzas of a specific manuscript"""
-    manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
-
-    # Get all stanzas first
-    stanzas = (
-        Stanza.objects.all()
-        .prefetch_related("folios", "annotations")
-        .order_by("stanza_line_code_starts")
-    )
-    translated_stanzas = (
-        StanzaTranslated.objects.all()
-        .prefetch_related("annotations")
-        .order_by("stanza_line_code_starts")
-    )
-
-    # Get folios for this manuscript (if any)
-    folios = manuscript.folio_set.all()
-    has_folios = folios.exists()
-
-    # Process stanzas into books structure
-    books = process_stanzas(stanzas)
-    translated_books = process_stanzas(translated_stanzas, is_translated=True)
-
-    # Build paired books structure
-    paired_books = {}
-    for book_number, stanza_dict in books.items():
-        paired_books[book_number] = []
-        current_folio = None
-
-        for stanza_number, original_stanzas in stanza_dict.items():
-            translated_stanza_group = translated_books.get(book_number, {}).get(
-                stanza_number, []
-            )
-
-            stanza_group = {
-                "original": original_stanzas,
-                "translated": translated_stanza_group,
-            }
-
-            # Only add folio information if the manuscript has folios
-            if has_folios and original_stanzas:
+                # Get folios for this stanza from this manuscript
                 stanza_folios = (
                     original_stanzas[0]
                     .folios.filter(manuscript=manuscript)
                     .order_by("folio_number")
                 )
-                if stanza_folios.exists() and (
-                    current_folio is None or stanza_folios.first() != current_folio
-                ):
-                    current_folio = stanza_folios.first()
-                    stanza_group["new_folio"] = True
-                    stanza_group["show_viewer"] = True
+
+                if stanza_folios.exists():
+                    folio = stanza_folios.first()
+
+                    if current_folio is None or folio != current_folio:
+                        current_folio = folio
+                        stanza_group["new_folio"] = True
+                        stanza_group["current_folio"] = current_folio
 
             paired_books[book_number].append(stanza_group)
 
