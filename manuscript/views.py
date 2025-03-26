@@ -286,32 +286,32 @@ def index(request: HttpRequest):
             {
                 "name": "Edition",
                 "url": "/manuscripts/Urb1/stanzas/",
-                "thumbnail": "/static/images/home/Wellcome230 p44.png",
+                "thumbnail": "/static/images/home/wellcome230_p44.webp",
             },
             {
                 "name": "Gazetteer",
                 "url": "/toponyms",
-                "thumbnail": "/static/images/home/BNCF CSopp2618 M1B.png",
+                "thumbnail": "/static/images/home/bncf_csopp2618_m1b.webp",
             },
             {
                 "name": "Tradition",
                 "url": "/manuscripts/",
-                "thumbnail": "/static/images/home/BNCF Mag956 cosmos.png",
+                "thumbnail": "/static/images/home/bncf_mag956_cosmos.webp",
             },
             {
                 "name": "Resources",
                 "url": "",
-                "thumbnail": "/static/images/home/Basel CL194 p59.png",
+                "thumbnail": "/static/images/home/basel_cl194_p59.webp",
             },
             {
                 "name": "Gallery",
                 "url": "/gallery/",
-                "thumbnail": "/static/images/home/NYPL f1v ship.png",
+                "thumbnail": "/static/images/home/nypl_f1v_ship.webp",
             },
             {
                 "name": "About",
                 "url": "/about/",
-                "thumbnail": "/static/images/home/Oxford74 Jerusalem.png",
+                "thumbnail": "/static/images/home/oxford74_jerusalem.webp",
             },
         ],
     }
