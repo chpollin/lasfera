@@ -736,7 +736,9 @@ class SingleManuscript(models.Model):
 
     def has_pdf_or_images(self):
         if self.photographs:
-            return self.photographs.name.endswith((".pdf", ".jpg", ".jpeg", ".png"))
+            return self.photographs.name.endswith(
+                (".pdf", ".jpg", ".jpeg", ".png", ".webp")
+            )
         return False
 
 
