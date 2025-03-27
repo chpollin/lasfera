@@ -300,12 +300,12 @@ def index(request: HttpRequest):
             },
             {
                 "name": "Resources",
-                "url": "",
+                "url": "#",
                 "thumbnail": "/static/images/home/basel_cl194_p59.webp",
             },
             {
                 "name": "Gallery",
-                "url": "/gallery/",
+                "url": "/pages/gallery/",
                 "thumbnail": "/static/images/home/nypl_f1v_ship.webp",
             },
             {
@@ -559,7 +559,7 @@ def manuscripts(request: HttpRequest):
         .order_by("stanza_line_code_starts")
     )
 
-    # Remove the translated stanzas part since you only want original text
+    # Remove the translated stanzas
     manuscripts = SingleManuscript.objects.all()
     default_manuscript = SingleManuscript.objects.get(siglum="Urb1")
 
@@ -593,7 +593,7 @@ def manuscripts(request: HttpRequest):
             # Create a stanza pair dictionary with just original stanzas
             stanza_pair = {
                 "original": original_stanzas,
-                "new_folio": False,  # Default to false, set to true when needed
+                "new_folio": False,
             }
 
             # Check if this is a new folio by looking at the first stanza's folios

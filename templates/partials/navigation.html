@@ -15,7 +15,9 @@
             <div class="hidden md:flex items-center space-x-4">
                 <a href="/manuscripts/Urb1/stanzas/" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Edition</a>
                 <a href="{% url 'toponyms' %}" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Gazetteer</a>
-                <a href="{% url 'manuscripts' %}" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Manuscript Tradition</a>
+                <a href="{% url 'manuscripts' %}" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Textual Tradition</a>
+                <a href="#" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Manuscripts</a>
+                <a href="/pages/gallery/" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Gallery</a>
                 
                 <!-- Resources Dropdown -->
                 <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -75,7 +77,9 @@
         <div class="px-2 pt-2 pb-3 space-y-1">
             <a href="/manuscripts/Urb1/stanzas/" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Edition</a>
             <a href="{% url 'toponyms' %}" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Gazetteer</a>
-            <a href="{% url 'manuscripts' %}" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Manuscript Tradition</a>
+            <a href="{% url 'manuscripts' %}" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Textual Tradition</a>
+            <a href="#" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Manuscripts</a>
+            <a href="/pages/gallery/" class="block px-3 py-2 rounded-md hover:bg-gray-700 transition-colors">Gallery</a>
             
             <!-- Mobile Resources Dropdown -->
             <div class="relative">

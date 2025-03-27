@@ -154,7 +154,14 @@ class LineCode(models.Model):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
+        help_text="The folio where this line code appears.",
+        verbose_name="Associated Folio",
     )
+
+    class Meta:
+        verbose_name = "Line Code"
+        verbose_name_plural = "Line Codes"
+        ordering = ["code"]
 
     def __str__(self) -> str:
         return str(self.code)
