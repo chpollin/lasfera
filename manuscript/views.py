@@ -27,6 +27,8 @@ from manuscript.models import (
     SingleManuscript,
     Stanza,
     StanzaTranslated,
+    line_code_to_numeric,
+    parse_line_code,
 )
 from manuscript.serializers import SingleManuscriptSerializer, ToponymSerializer
 from pages.models import AboutPage, SitePage
@@ -53,57 +55,135 @@ def get_manifest_data(manifest_url):
 
 
 def manuscript_stanzas(request, siglum):
+    # Get the requested manuscript
     manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
-    folios = manuscript.folio_set.all()
-
-    # Get stanzas that appear in these folios
-    stanzas = Stanza.objects.filter(
-        folios__in=folios, folios__manuscript=manuscript
-    ).distinct()
+    logger.info(f"Loading manuscript_stanzas for {siglum}")
+    
+    # Get all folios for this manuscript
+    folios = manuscript.folio_set.all().order_by('folio_number')
+    logger.info(f"Found {folios.count()} folios for manuscript {siglum}")
+    
+    # Check if this is Urb1 (our known working case)
+    is_urb1 = (siglum == "Urb1")
+    
+    # Special handling for the Urb1 manuscript which we know works
+    if is_urb1:
+        # For Urb1, use the well-tested filtering approach
+        stanzas = Stanza.objects.filter(
+            folios__in=folios, folios__manuscript=manuscript
+        ).distinct()
+        logger.info(f"Found {stanzas.count()} stanzas for Urb1 using direct filtering")
+    else:
+        # For all other manuscripts
+        if folios.exists():
+            # If we have folios, try to use them to find matching stanzas
+            logger.info(f"Using folios to find stanzas for {siglum}")
+            stanzas = Stanza.objects.filter(
+                folios__in=folios, folios__manuscript=manuscript
+            ).distinct()
+            
+            # If we found stanzas, great! Otherwise, we'll show all stanzas with line codes
+            if stanzas.count() == 0:
+                logger.info(f"No stanzas found using folios for {siglum}, using all stanzas with line codes")
+                stanzas = Stanza.objects.exclude(stanza_line_code_starts__isnull=True)
+        else:
+            # No folios, so just use all stanzas with line codes
+            logger.info(f"No folios found for {siglum}, using all stanzas with line codes")
+            stanzas = Stanza.objects.exclude(stanza_line_code_starts__isnull=True)
+    
+    logger.info(f"Found {stanzas.count()} total stanzas")
+    
+    # Get translated stanzas for all stanzas
     translated_stanzas = StanzaTranslated.objects.filter(stanza__in=stanzas).distinct()
+    logger.info(f"Found {translated_stanzas.count()} translated stanzas")
 
     # Process stanzas into books structure
     books = process_stanzas(stanzas)
     translated_books = process_stanzas(translated_stanzas, is_translated=True)
+    logger.info(f"Processed stanzas into {len(books)} books")
 
     # Build paired books structure
     paired_books = {}
-
+    
+    # Prepare folio mapping if we have folios
+    has_folio_mapping = False
+    line_code_to_folio = {}
+    
+    if folios.exists():
+        # Try to build a map of line codes to folios
+        for folio in folios:
+            if folio.line_code_range_start and folio.line_code_range_end:
+                try:
+                    start_code = line_code_to_numeric(folio.line_code_range_start)
+                    end_code = line_code_to_numeric(folio.line_code_range_end)
+                    
+                    # Skip if we couldn't parse the codes
+                    if start_code is None or end_code is None:
+                        continue
+                    
+                    # Add codes to the map
+                    for code in range(start_code, end_code + 1):
+                        line_code_to_folio[code] = folio
+                    
+                    has_folio_mapping = True
+                    logger.info(f"Mapped codes {start_code}-{end_code} to folio {folio.folio_number}")
+                except Exception as e:
+                    logger.warning(f"Error mapping folio {folio.folio_number}: {e}")
+    
+    # Process each book
     for book_number, stanza_dict in books.items():
         paired_books[book_number] = []
         current_folio = None
-
-        for stanza_number, original_stanzas in stanza_dict.items():
+        
+        # Sort stanza numbers for consistent ordering
+        sorted_stanza_numbers = sorted(stanza_dict.keys())
+        
+        for stanza_number in sorted_stanza_numbers:
+            original_stanzas = stanza_dict[stanza_number]
+            
+            # Get corresponding translated stanzas
             translated_stanza_group = translated_books.get(book_number, {}).get(
                 stanza_number, []
             )
-
+            
+            # Create the stanza group - we'll show all stanzas for now
+            # This ensures manuscripts without folios still show stanzas
             stanza_group = {
                 "original": original_stanzas,
                 "translated": translated_stanza_group,
             }
-
-            # Add folio information
-            if original_stanzas:
-                # Get folios for this stanza from this manuscript
-                stanza_folios = (
-                    original_stanzas[0]
-                    .folios.filter(manuscript=manuscript)
-                    .order_by("folio_number")
-                )
-
-                if stanza_folios.exists():
-                    folio = stanza_folios.first()
-
-                    if current_folio is None or folio != current_folio:
-                        current_folio = folio
-                        stanza_group["new_folio"] = True
-                        stanza_group["current_folio"] = current_folio
-
+            
+            # If we have a folio mapping, try to add folio information
+            if has_folio_mapping and original_stanzas:
+                first_stanza = original_stanzas[0]
+                if first_stanza.stanza_line_code_starts:
+                    try:
+                        stanza_code = line_code_to_numeric(first_stanza.stanza_line_code_starts)
+                        if stanza_code in line_code_to_folio:
+                            matching_folio = line_code_to_folio[stanza_code]
+                            
+                            # If this is a new folio, mark it in the stanza group
+                            if current_folio is None or matching_folio != current_folio:
+                                current_folio = matching_folio
+                                stanza_group["new_folio"] = True
+                                stanza_group["current_folio"] = current_folio
+                                logger.info(f"New folio for stanza {stanza_number}: {current_folio.folio_number}")
+                                
+                                # Associate the stanza with this folio if not already done
+                                if not first_stanza.folios.filter(id=matching_folio.id).exists():
+                                    first_stanza.folios.add(matching_folio)
+                    except Exception as e:
+                        logger.warning(f"Error determining folio for stanza {first_stanza.id}: {e}")
+            
+            # Add the stanza group to the book
             paired_books[book_number].append(stanza_group)
 
     # Get all manuscripts for the dropdown
     manuscripts = SingleManuscript.objects.all()
+    
+    # Count the total stanzas we're sending to the template
+    total_stanzas = sum(len(book) for book in paired_books.values())
+    logger.info(f"Rendering template with {total_stanzas} stanza pairs")
 
     return render(
         request,
@@ -116,6 +196,7 @@ def manuscript_stanzas(request, siglum):
                 "iiif_url": manuscript.iiif_url if manuscript.iiif_url else None
             },
             "folios": folios,
+            "has_known_folios": True,
         },
     )
 
