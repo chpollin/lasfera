@@ -6,6 +6,7 @@ data.json
 node_modules/
 staticfiles/
 _data/
+.nvmrc
 
 # Django #
 *.log
