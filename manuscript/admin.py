@@ -29,6 +29,7 @@ from manuscript.resources import (
     FolioResource,
     LocationResource,
     LocationAliasResource,
+    LineCodeResource,
 )
 from textannotation.models import TextAnnotation
 
@@ -407,16 +408,23 @@ class StanzaTranslatedAdmin(admin.ModelAdmin):
         js = ("js/text_annotations.js",)
 
 
-class LineCodeAdmin(admin.ModelAdmin):
-    list_display = ("code", "get_toponyms")
+class LineCodeAdmin(ImportExportModelAdmin):
+    resource_class = LineCodeResource
+    list_display = ("code", "get_toponyms", "get_folio")
     search_fields = ("code",)
-    list_filter = ("associated_folio__manuscript",)
+    list_filter = ("associated_toponyms", "associated_folio__manuscript")
     filter_horizontal = ("associated_toponyms",)
 
     def get_toponyms(self, obj):
-        return ", ".join([toponym.name for toponym in obj.associated_toponyms.all()])
+        return ", ".join([toponym.placename_id for toponym in obj.associated_toponyms.all()])
 
-    get_toponyms.short_description = "Associated Toponyms"
+    def get_folio(self, obj):
+        if obj.associated_folio:
+            return f"{obj.associated_folio.manuscript.siglum}: {obj.associated_folio.folio_number}"
+        return "-"
+
+    get_toponyms.short_description = "Associated Toponyms (IDs)"
+    get_folio.short_description = "Associated Folio"
 
 
 admin.site.register(LineCode, LineCodeAdmin)
