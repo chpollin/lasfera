@@ -80,3 +80,23 @@ note[data-notation] {
   padding: 0;
   margin: 0;
 }
+
+/* Direct hover selector for tiles */
+.tile-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  transition: opacity 0.3s;
+  z-index: 5;
+}
+
+.image-tile:hover .tile-overlay {
+  opacity: 0 !important;
+}
+
+/* Force hover effect */
+@media (hover: hover) {
+  .image-tile:hover .tile-overlay {
+    opacity: 0 !important;
+  }
+}

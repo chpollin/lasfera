@@ -6,15 +6,13 @@
 {% endblock title %}
 
 {% block home %}
-<div class="relative h-screen overflow-hidden">
+<div class="relative h-screen overflow-hidden bg-gray-900">
   <div 
         x-data="imageGrid"
         class="absolute inset-0 grid grid-cols-3 gap-1 p-1 z-10">
         <template x-for="(tile, index) in tiles" :key="index">
             <div 
-                class="relative overflow-hidden h-full group cursor-pointer"
-                @mouseenter="highlightTile(index)"
-                @mouseleave="unhighlightTile()"
+                class="relative overflow-hidden h-full cursor-pointer image-tile"
             >
                 <!-- Current image with fade-out transition -->
                 <img 
@@ -33,23 +31,14 @@
                 </template>
                 
                 <!-- Individual dark overlay that disappears on hover -->
-                <div 
-                    class="absolute inset-0 bg-black/60 transition-opacity duration-300"
-                    :class="{'opacity-0': tile.isHighlighted}"
-                ></div>
+                <div class="tile-overlay"></div>
             </div>
         </template>
     </div>
-  
-     <!-- Global dark overlay that gets dimmer when hovering on an image -->
-        <div 
-            class="absolute inset-0 bg-black/60 transition-opacity duration-300 z-0"
-            :class="{'bg-black/80': isAnyTileHighlighted}"
-        ></div>
 
         <!-- Hero Content -->
-        <div class="relative z-20 h-full flex items-center">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white text-center">
+        <div class="relative z-20 h-full flex items-center pointer-events-none">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white text-center pointer-events-auto">
                 <h1 class="text-5xl md:text-6xl font-bold mb-6">
                    <em>La Sfera</em> &middot; The Globe
                 </h1>
@@ -62,7 +51,7 @@
         </div>
 
         <!-- Down Chevron -->
-        <div class="absolute bottom-14 left-1/2 transform -translate-x-1/2 z-20 text-white animate-bounce">
+        <div class="absolute bottom-14 left-1/2 transform -translate-x-1/2 z-20 text-white animate-bounce pointer-events-auto">
             <a href="#content" class="flex flex-col items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -131,10 +120,8 @@
       tiles: Array(9).fill().map(() => ({
         currentImage: null,
         nextImage: null,
-        isTransitioning: false,
-        isHighlighted: false
+        isTransitioning: false
       })),
-      isAnyTileHighlighted: false,
       
       init() {
         // Initialize tiles with random images
@@ -227,25 +214,41 @@
         };
       },
       
-      // Highlight functions for hover effect
-      highlightTile(index) {
-        console.log('Highlighting tile', index);
-        // Reset any previously highlighted tiles
-        this.tiles.forEach((tile, i) => {
-          tile.isHighlighted = (i === index);
-        });
-        this.isAnyTileHighlighted = true;
-      },
-      
-      unhighlightTile() {
-        console.log('Unhighlighting all tiles');
-        // Reset all tiles
-        this.tiles.forEach(tile => {
-          tile.isHighlighted = false;
-        });
-        this.isAnyTileHighlighted = false;
-      }
+      // No hover events needed since we're using Tailwind's group-hover
     }));
   });
  </script>
+       
+<!-- Vanilla JavaScript hover detection for overlay -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - setting up hover handlers');
+    
+    // Wait for Alpine.js to finish rendering
+    setTimeout(function() {
+      const tiles = document.querySelectorAll('.image-tile');
+      console.log('Found', tiles.length, 'image tiles');
+      
+      tiles.forEach((tile, index) => {
+        console.log('Setting up events for tile', index);
+        
+        tile.addEventListener('mouseenter', function() {
+          console.log('Mouse entered tile', index);
+          const overlay = this.querySelector('.tile-overlay');
+          if (overlay) {
+            overlay.style.opacity = '0';
+          }
+        });
+        
+        tile.addEventListener('mouseleave', function() {
+          console.log('Mouse left tile', index);
+          const overlay = this.querySelector('.tile-overlay');
+          if (overlay) {
+            overlay.style.opacity = '0.6';
+          }
+        });
+      });
+    }, 500); // Small delay to ensure Alpine.js has initialized everything
+  });
+</script>
        {% endblock home %}
