@@ -368,7 +368,7 @@ class ViewerNote(models.Model):
 
 
 class StanzaVariant(models.Model):
-    """Notes about variants in a stanza"""
+    """Notes about textual variants within a stanza"""
 
     AVAIL_LANGUAGE = (
         ("en", "English"),

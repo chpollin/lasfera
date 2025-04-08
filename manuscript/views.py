@@ -58,14 +58,14 @@ def manuscript_stanzas(request, siglum):
     # Get the requested manuscript
     manuscript = get_object_or_404(SingleManuscript, siglum=siglum)
     logger.info(f"Loading manuscript_stanzas for {siglum}")
-    
+
     # Get all folios for this manuscript
-    folios = manuscript.folio_set.all().order_by('folio_number')
+    folios = manuscript.folio_set.all().order_by("folio_number")
     logger.info(f"Found {folios.count()} folios for manuscript {siglum}")
-    
-    # Check if this is Urb1 (our known working case)
-    is_urb1 = (siglum == "Urb1")
-    
+
+    # Check if this is Urb1
+    is_urb1 = siglum == "Urb1"
+
     # Special handling for the Urb1 manuscript which we know works
     if is_urb1:
         # For Urb1, use the well-tested filtering approach
@@ -81,18 +81,21 @@ def manuscript_stanzas(request, siglum):
             stanzas = Stanza.objects.filter(
                 folios__in=folios, folios__manuscript=manuscript
             ).distinct()
-            
-            # If we found stanzas, great! Otherwise, we'll show all stanzas with line codes
+
             if stanzas.count() == 0:
-                logger.info(f"No stanzas found using folios for {siglum}, using all stanzas with line codes")
+                logger.info(
+                    f"No stanzas found using folios for {siglum}, using all stanzas with line codes"
+                )
                 stanzas = Stanza.objects.exclude(stanza_line_code_starts__isnull=True)
         else:
             # No folios, so just use all stanzas with line codes
-            logger.info(f"No folios found for {siglum}, using all stanzas with line codes")
+            logger.info(
+                f"No folios found for {siglum}, using all stanzas with line codes"
+            )
             stanzas = Stanza.objects.exclude(stanza_line_code_starts__isnull=True)
-    
+
     logger.info(f"Found {stanzas.count()} total stanzas")
-    
+
     # Get translated stanzas for all stanzas
     translated_stanzas = StanzaTranslated.objects.filter(stanza__in=stanzas).distinct()
     logger.info(f"Found {translated_stanzas.count()} translated stanzas")
@@ -102,13 +105,13 @@ def manuscript_stanzas(request, siglum):
     translated_books = process_stanzas(translated_stanzas, is_translated=True)
     logger.info(f"Processed stanzas into {len(books)} books")
 
-    # Build paired books structure
+    # Build paired books structure (will be sorted by book number)
     paired_books = {}
-    
+
     # Prepare folio mapping if we have folios
     has_folio_mapping = False
     line_code_to_folio = {}
-    
+
     if folios.exists():
         # Try to build a map of line codes to folios
         for folio in folios:
@@ -116,71 +119,93 @@ def manuscript_stanzas(request, siglum):
                 try:
                     start_code = line_code_to_numeric(folio.line_code_range_start)
                     end_code = line_code_to_numeric(folio.line_code_range_end)
-                    
+
                     # Skip if we couldn't parse the codes
                     if start_code is None or end_code is None:
                         continue
-                    
+
                     # Add codes to the map
                     for code in range(start_code, end_code + 1):
                         line_code_to_folio[code] = folio
-                    
+
                     has_folio_mapping = True
-                    logger.info(f"Mapped codes {start_code}-{end_code} to folio {folio.folio_number}")
+                    logger.info(
+                        f"Mapped codes {start_code}-{end_code} to folio {folio.folio_number}"
+                    )
                 except Exception as e:
                     logger.warning(f"Error mapping folio {folio.folio_number}: {e}")
-    
+
     # Process each book
     for book_number, stanza_dict in books.items():
         paired_books[book_number] = []
         current_folio = None
-        
+
         # Sort stanza numbers for consistent ordering
         sorted_stanza_numbers = sorted(stanza_dict.keys())
-        
+
         for stanza_number in sorted_stanza_numbers:
             original_stanzas = stanza_dict[stanza_number]
-            
+
             # Get corresponding translated stanzas
             translated_stanza_group = translated_books.get(book_number, {}).get(
                 stanza_number, []
             )
-            
+
+            # If no translations found or this is Yale3 manuscript, use FK relationship instead
+            if (not translated_stanza_group or siglum == "Yale3") and original_stanzas:
+                # Create a map of original stanza IDs
+                original_ids = [s.id for s in original_stanzas]
+                # Find translations directly linked to these stanzas
+                linked_translations = [
+                    ts for ts in translated_stanzas if ts.stanza_id in original_ids
+                ]
+                if linked_translations:
+                    # Override the translations with the directly linked ones
+                    translated_stanza_group = linked_translations
+
             # Create the stanza group - we'll show all stanzas for now
             # This ensures manuscripts without folios still show stanzas
             stanza_group = {
                 "original": original_stanzas,
                 "translated": translated_stanza_group,
             }
-            
+
             # If we have a folio mapping, try to add folio information
             if has_folio_mapping and original_stanzas:
                 first_stanza = original_stanzas[0]
                 if first_stanza.stanza_line_code_starts:
                     try:
-                        stanza_code = line_code_to_numeric(first_stanza.stanza_line_code_starts)
+                        stanza_code = line_code_to_numeric(
+                            first_stanza.stanza_line_code_starts
+                        )
                         if stanza_code in line_code_to_folio:
                             matching_folio = line_code_to_folio[stanza_code]
-                            
+
                             # If this is a new folio, mark it in the stanza group
                             if current_folio is None or matching_folio != current_folio:
                                 current_folio = matching_folio
                                 stanza_group["new_folio"] = True
                                 stanza_group["current_folio"] = current_folio
-                                logger.info(f"New folio for stanza {stanza_number}: {current_folio.folio_number}")
-                                
+                                logger.info(
+                                    f"New folio for stanza {stanza_number}: {current_folio.folio_number}"
+                                )
+
                                 # Associate the stanza with this folio if not already done
-                                if not first_stanza.folios.filter(id=matching_folio.id).exists():
+                                if not first_stanza.folios.filter(
+                                    id=matching_folio.id
+                                ).exists():
                                     first_stanza.folios.add(matching_folio)
                     except Exception as e:
-                        logger.warning(f"Error determining folio for stanza {first_stanza.id}: {e}")
-            
+                        logger.warning(
+                            f"Error determining folio for stanza {first_stanza.id}: {e}"
+                        )
+
             # Add the stanza group to the book
             paired_books[book_number].append(stanza_group)
 
     # Get all manuscripts for the dropdown
     manuscripts = SingleManuscript.objects.all()
-    
+
     # Count the total stanzas we're sending to the template
     total_stanzas = sum(len(book) for book in paired_books.values())
     logger.info(f"Rendering template with {total_stanzas} stanza pairs")
@@ -328,7 +353,8 @@ def process_stanzas(stanzas, is_translated=False):
 
         books[book_number][stanza_number].append(stanza)
 
-    return {k: dict(v) for k, v in books.items()}
+    # Return books with keys sorted by book number
+    return {k: dict(v) for k, v in sorted(books.items())}
 
 
 def index(request: HttpRequest):
@@ -373,11 +399,6 @@ def index(request: HttpRequest):
                 "name": "Gazetteer",
                 "url": "/toponyms",
                 "thumbnail": "/static/images/home/bncf_csopp2618_m1b.webp",
-            },
-            {
-                "name": "Tradition",
-                "url": "/manuscripts/",
-                "thumbnail": "/static/images/home/bncf_mag956_cosmos.webp",
             },
             {
                 "name": "Resources",
@@ -508,7 +529,7 @@ def stanzas(request: HttpRequest):
 
     # Group stanzas by folio within each book
     paired_books = {}
-    for book_number, stanza_dict in books.items():
+    for book_number, stanza_dict in sorted(books.items()):  # Sort by book number
         paired_books[book_number] = []
         current_folio = None
 
@@ -517,6 +538,15 @@ def stanzas(request: HttpRequest):
             translated_stanza_group = translated_books.get(book_number, {}).get(
                 stanza_number, []
             )
+
+            # If we can't find translations by line code, try using the FK relationship
+            if not translated_stanza_group and original_stanzas:
+                original_ids = [s.id for s in original_stanzas]
+                linked_translations = [
+                    ts for ts in translated_stanzas if ts.stanza_id in original_ids
+                ]
+                if linked_translations:
+                    translated_stanza_group = linked_translations
 
             # Add folio information
             stanza_group = {
@@ -661,7 +691,7 @@ def manuscripts(request: HttpRequest):
 
     # Group stanzas by book and track folios - using same approach as stanzas view
     paired_books = {}
-    for book_number, stanza_dict in books.items():
+    for book_number, stanza_dict in sorted(books.items()):  # Sort by book number
         paired_books[book_number] = []
         current_folio = None
 
