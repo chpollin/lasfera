@@ -352,6 +352,11 @@ def process_stanzas(stanzas, is_translated=False):
             stanza.unescaped_stanza_text = unescape(stanza.stanza_text)
 
         books[book_number][stanza_number].append(stanza)
+        
+        # Sort stanzas within each stanza number by line code for proper ordering
+        books[book_number][stanza_number].sort(
+            key=lambda s: line_code_to_numeric(s.stanza_line_code_starts)
+        )
 
     # Return books with keys sorted by book number
     return {k: dict(v) for k, v in sorted(books.items())}
