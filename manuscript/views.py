@@ -162,6 +162,13 @@ def manuscript_stanzas(request, siglum):
                 if linked_translations:
                     # Override the translations with the directly linked ones
                     translated_stanza_group = linked_translations
+                    
+            # Ensure translations are always sorted by line code
+            if translated_stanza_group:
+                translated_stanza_group = sorted(
+                    translated_stanza_group, 
+                    key=lambda s: line_code_to_numeric(s.stanza_line_code_starts)
+                )
 
             # Create the stanza group - we'll show all stanzas for now
             # This ensures manuscripts without folios still show stanzas
@@ -552,6 +559,13 @@ def stanzas(request: HttpRequest):
                 ]
                 if linked_translations:
                     translated_stanza_group = linked_translations
+                    
+            # Ensure translations are always sorted by line code
+            if translated_stanza_group:
+                translated_stanza_group = sorted(
+                    translated_stanza_group, 
+                    key=lambda s: line_code_to_numeric(s.stanza_line_code_starts)
+                )
 
             # Add folio information
             stanza_group = {
