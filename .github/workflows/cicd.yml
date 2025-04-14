@@ -21,7 +21,7 @@ jobs:
       django-context-root: "."
 
       website-devl-fqdn: "dev.lasfera.rrchnm.org"
-      website-prod-fqdn: "dev.lasfera.rrchnm.org"
+      website-prod-fqdn: "lasfera.rrchnm.org"
       
   deploy:
     uses: chnm/.github/.github/workflows/django--deploy.yml@main
@@ -30,4 +30,4 @@ jobs:
     secrets: inherit
     with:
       website-devl-fqdn: "dev.lasfera.rrchnm.org"
-      website-prod-fqdn: "dev.lasfera.rrchnm.org"
+      website-prod-fqdn: "lasfera.rrchnm.org"
