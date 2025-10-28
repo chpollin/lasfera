@@ -1,101 +1,111 @@
 # La Sfera - Executive Summary
 
-**Datum:** 28. Oktober 2025
-**Status:** Code-Verifikation abgeschlossen
+**Datum:** 28. Oktober 2025 (v3.0 - LIVE-SITE VERIFIED)
+**Status:** Vollständige Verifikation abgeschlossen (Code + Browser)
 **Projekt:** La Sfera Digital Edition Bug-Fixes
 
 ---
 
-## 🎯 KERNERKENNTNISSE
+## 🎯 KERNERKENNTNISSE (NACH LIVE-TESTS)
 
-### Ursprüngliche Annahme (FALSCH)
+### Ursprüngliche Annahme (v1.0 - FALSCH)
 - 5 Bugs identifiziert
 - ~35-40h Entwicklungsaufwand
 - ~10.000€ Kosten
 
-### Nach vollständiger Code-Verifikation (KORREKT)
-- **2 echte Bugs** (3 waren Fehlannahmen!)
-- **12-17h Entwicklungsaufwand** (-70%)
-- **~2.340€ Kosten** (-77%)
+### Nach Code-Verifikation (v2.0 - ZU OPTIMISTISCH)
+- 2 echte Bugs
+- 12-17h Entwicklungsaufwand
+- ~2.340€ Kosten
 
-**Einsparung: 7.660€ / 77% weniger als geschätzt**
+### Nach Live-Site Browser-Tests (v3.0 - FINAL)
+- **3 echte Bugs** (Bug #2 existiert doch!)
+- **18h Entwicklungsaufwand**
+- **~3.510€ Kosten**
+
+**Einsparung vs. Original: 6.490€ / 65% weniger**
+**Änderung v2.0 → v3.0: +1.170€ / +50% (Bug #2 ist real!)**
 
 ---
 
-## ✅ VERIFIZIERTE BUGS (müssen gefixt werden)
+## ✅ VERIFIZIERTE BUGS (3)
 
-### Bug #1: Urb1-Hardcoding (HOCH)
-- **Location:** manuscript/views.py (5 Stellen)
-- **Problem:** "Urb1" ist hardcoded, andere Manuscripts fallen bei Fehlern zurück
-- **Impact:** Cambridge, Florence, Yale funktionieren nicht korrekt
-- **Aufwand:** 4-6h
-- **Kosten:** 600-900€
+### Bug #1: Fehlende IIIF-Manifeste + Hardcoding (KRITISCH)
+- **Location:** manuscript/views.py (5 Stellen) + Datenbank
+- **Problem:** Die meisten Manuscripts haben keine IIIF-URLs in DB
+- **Live-Test:** Yale1, Fn1 zeigen "No IIIF manifest or photographs available"
+- **Sekundär:** Hardcoding-Fallback zu "Urb1" ohne Prüfung
+- **Impact:** Nur Urb1 und Cam funktionieren vollständig
+- **Aufwand:** 4h
+- **Kosten:** 600€
+
+### Bug #2: IIIF-Viewer rendert nicht (HOCH)
+- **Location:** JavaScript-Initialisierung, templates/stanzas.html
+- **Problem:** Viewer-Code vorhanden, ABER rendert nicht im Browser
+- **Live-Test:** Weder /stanzas/ noch /manuscripts/Urb1/stanzas/ zeigen Viewer
+- **Ursache:** JavaScript-Initialisierung, nicht Template-Problem
+- **Impact:** Hauptfeature der Edition nicht sichtbar
+- **Aufwand:** 8h (JavaScript-Debugging)
+- **Kosten:** 1.200€
 
 ### Bug #3: page_number ignoriert (MITTEL)
 - **Location:** manuscript/views.py:485-506
 - **Problem:** URL-Parameter `page_number` wird akzeptiert aber nicht verwendet
 - **Impact:** Deep-Links zu spezifischen Seiten funktionieren nicht
-- **Aufwand:** 3-5h
-- **Kosten:** 450-750€
+- **Aufwand:** 4h
+- **Kosten:** 600€
 
 ---
 
 ## ❌ NICHT-BUGS (Code ist korrekt!)
 
-### Bug #2: IIIF-Viewer fehlt - FALSCH!
-- **Status:** Viewer ist vorhanden!
-- **Beweis:** templates/stanzas.html:265-275 hat Tify-Container
-- **Beweis:** JavaScript wird geladen (Tify 0.31.0)
-- **Beweis:** Backend übergibt IIIF URL korrekt
-- **Fazit:** Evtl. Browser/Daten-Problem, KEIN Code-Bug
-- **Aufwand:** 0h
-
 ### Bug #4: Silent Exceptions - BEREITS GEFIXT!
 - **Status:** Kein bare `except:` mehr im Code
 - **Beweis:** Alle Exceptions sind spezifisch (ObjectDoesNotExist, etc.)
-- **Beweis:** Logging bei unerwarteten Fehlern vorhanden
 - **Fazit:** Bereits korrekt implementiert
 - **Aufwand:** 0h
 
 ---
 
-## ❓ UNKLAR (Browser-Test nötig)
+## ✅ FUNKTIONIERT PERFEKT (kein Fix nötig)
 
 ### Gazetteer Map-Rendering
-- **Backend:** ✅ Funktioniert (API gibt Daten zurück)
-- **Frontend:** ❓ Unbekannt (Leaflet-Map Status)
-- **Was zu tun:** Browser öffnen → https://lasfera.rrchnm.org/toponyms
-- **Aufwand (falls Bug):** 2-6h (300-900€)
+- **Backend:** ✅ API gibt Daten zurück
+- **Frontend:** ✅ Leaflet-Map rendert perfekt
+- **Live-Test:** https://lasfera.rrchnm.org/toponyms funktioniert einwandfrei
+- **Details:** ~80 Toponyme (nicht 700+), circleMarkers, Hover-Effekte
+- **Aufwand:** 0h
 
 ---
 
-## 💰 KOSTENÜBERSICHT
+## 💰 KOSTENÜBERSICHT (FINAL)
 
-### Empfohlene Option: Szenario A
+### Empfohlene Option: Alle 3 Bugs
 
 ```
-Bug #1 (Urb1):                6h × 150€ =   900€
+Bug #1 (IIIF + Hardcoding):   4h × 150€ =   600€
+Bug #2 (Viewer JavaScript):   8h × 150€ = 1.200€
 Bug #3 (page_number):         4h × 150€ =   600€
 Testing & Review:             2h × 150€ =   300€
 ────────────────────────────────────────────────
-Entwicklung:                 12h         1.800€
-× Overhead (1.3x):                       2.340€
+Entwicklung:                 18h         2.700€
+× Overhead (1.3x):                       3.510€
 ════════════════════════════════════════════════
-TOTAL:                                   2.340€
-```
-
-**Timeline:** 2 Wochen (10 Arbeitstage)
-
-### Optional: +Gazetteer (Szenario B)
-
-```
-Szenario A:                              2.340€
-+ Gazetteer (falls nötig):   4h × 150€     600€
-────────────────────────────────────────────────
-TOTAL:                                   2.940€
+TOTAL:                                   3.510€
 ```
 
 **Timeline:** 3 Wochen (15 Arbeitstage)
+
+### Kostenvergleich
+
+```
+v1.0 (Ursprünglich):        10.000€  (5 Bugs angenommen)
+v2.0 (Code-Analyse):         2.340€  (2 Bugs, zu optimistisch)
+v3.0 (Live-Tests):           3.510€  (3 Bugs, realistisch)
+──────────────────────────────────────────────────────
+Einsparung vs. v1.0:        -6.490€  (-65%)
+Änderung v2.0 → v3.0:       +1.170€  (+50%)
+```
 
 ---
 
@@ -192,11 +202,11 @@ def mirador_view(request, manuscript_id, page_number):
 ## ❌ WAS IST NICHT ENTHALTEN?
 
 ### Bugs die nicht existieren
-- ❌ IIIF-Viewer fehlt (Viewer ist vorhanden!)
 - ❌ Silent Exceptions (bereits gefixt!)
+- ❌ Gazetteer-Fix (funktioniert perfekt!)
 
 ### Andere
-- ❌ Gazetteer-Fix (erst nach Browser-Test)
+- ❌ IIIF-Manifeste in DB erfassen (außerhalb Scope, institutionelle Koordination)
 - ❌ Neue Features
 - ❌ Mirador Upgrade (Alpha → Stable)
 - ❌ Hosting-Migration
@@ -207,60 +217,68 @@ def mirador_view(request, manuscript_id, page_number):
 ## 🎓 ERKENNTNISSE FÜR DIE ZUKUNFT
 
 ### Was gut war
-- ✅ Vollständige Code-Verifikation BEVOR Angebot
-- ✅ Keine Annahmen, sondern Fakten
-- ✅ Template-Code gelesen, nicht nur Backend
-- ✅ 77% Kostenersparnis durch gründliche Analyse
+- ✅ Code-Analyse war notwendiger erster Schritt
+- ✅ Live-Site Tests verhinderten falsche Schätzung
+- ✅ Methodische Kombination: Code + Browser
+- ✅ 65% Kostenersparnis durch gründliche Analyse
+
+### Kritische Lektion: Code-Analyse allein reicht NICHT!
+1. **v2.0 Fehler:** "Bug #2 existiert nicht" (nur Code geprüft)
+2. **v3.0 Korrektur:** "Bug #2 ist real" (Browser-Test zeigte es)
+3. **Impact:** +8h Aufwand, +1.200€ Kosten (+50%)
+
+**Root Cause:** JavaScript-Initialisierung kann man im Code nicht sehen, nur im Browser!
 
 ### Was wir gelernt haben
-1. **Bug-Reports verifizieren:** Nicht alles was "kaputt aussieht" ist Code-Bug
-2. **Templates prüfen:** Backend kann korrekt sein, Template ist entscheidend
-3. **Exception-Handling:** Modern vs. Legacy Code unterscheiden
-4. **Browser vs. Code:** Manche Bugs sind Data/Config, nicht Code
+1. **Code-Analyse ist nötig, aber nicht ausreichend**
+2. **Browser-Tests sind PFLICHT für Frontend-Features**
+3. **JavaScript-Bugs sind unsichtbar im Code**
+4. **Daten-Probleme vs. Code-Probleme unterscheiden**
 
 ### Für ähnliche Projekte
-- Immer vollständige Verifikation VOR Angebot
-- Template + Backend + JavaScript zusammen prüfen
-- Browser-Tests für Frontend-Features
-- Nicht auf alte Analysen verlassen
+- Code-Analyse + Live-Site Tests BEIDE durchführen
+- Nie nur Code prüfen bei Frontend-Features
+- Browser DevTools verwenden (Console, Network)
+- Verifikation in 2 Phasen: Statisch + Dynamisch
 
 ---
 
 ## 🚀 NÄCHSTE SCHRITTE
 
-### OPTION 1: Bugs jetzt fixen (empfohlen)
+### EMPFOHLEN: Alle 3 Bugs fixen
 
-1. Bug #1 und #3 als Pull Requests implementieren
-2. Code ist ready, keine Unklarheiten
-3. 2 Wochen Aufwand
-4. 2.340€ Kosten
+1. Alle 3 Bugs als Pull Requests implementieren
+2. Bug #1: Fallback-Logik (4h)
+3. Bug #2: IIIF-Viewer JavaScript (8h)
+4. Bug #3: page_number Navigation (4h)
+5. Testing & Review (2h)
+6. **Timeline:** 3 Wochen
+7. **Kosten:** 3.510€
 
-### OPTION 2: Gazetteer erst testen
-
-1. Browser-Test: https://lasfera.rrchnm.org/toponyms
-2. Funktioniert Map? → Nur Szenario A nötig
-3. Funktioniert nicht? → Szenario B (2.940€)
-
-### OPTION 3: Mit Laura besprechen
+### Mit Laura besprechen
 
 1. Erkenntnisse präsentieren
-2. "Nur 2 Bugs, nicht 5!"
-3. Budget-Freigabe einholen
-4. Dann starten
+2. "3 echte Bugs gefunden, 2 widerlegte Annahmen"
+3. Live-Site Tests zeigen: Bug #2 ist real (Viewer rendert nicht)
+4. Gazetteer funktioniert perfekt (kein Fix nötig)
+5. Budget-Freigabe einholen: 3.510€
+6. Dann starten
 
 ---
 
 ## 📊 VERGLEICH ALT vs. NEU
 
-| Aspekt | Vor Verifikation | Nach Verifikation | Differenz |
-|--------|-----------------|-------------------|-----------|
-| **Bugs** | 5 | 2 | -60% |
-| **Aufwand** | 35-40h | 12-17h | -70% |
-| **Kosten** | ~10.000€ | ~2.340€ | -77% |
-| **Timeline** | 6-8 Wochen | 2 Wochen | -75% |
-| **Risiko** | HOCH | NIEDRIG | ↓↓↓ |
+| Aspekt | v1.0 (Annahmen) | v2.0 (Code) | v3.0 (Live) | Änderung |
+|--------|----------------|-------------|-------------|----------|
+| **Bugs** | 5 | 2 | 3 | +50% |
+| **Aufwand** | 35-40h | 12h | 18h | +50% |
+| **Kosten** | ~10.000€ | ~2.340€ | ~3.510€ | +50% |
+| **Timeline** | 6-8 Wochen | 2 Wochen | 3 Wochen | +50% |
+| **Risiko** | HOCH | NIEDRIG | MITTEL | ↑ |
+| **Methodik** | Vermutungen | Code-Analyse | Code + Browser | ✅ |
 
-**Fazit:** Gründliche Verifikation hat sich gelohnt!
+**Fazit:** Gründliche Verifikation (Code + Browser) liefert realistisches Bild!
+**Lektion:** v2.0 war zu optimistisch (nur Code), v3.0 ist realistisch (Code + Browser)
 
 ---
 
