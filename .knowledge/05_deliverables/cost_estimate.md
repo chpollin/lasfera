@@ -1,364 +1,395 @@
-# La Sfera - Kalkulation Bug-Fixes & IIIF-Integration
+# La Sfera - Kost enkalkulation (VERIFIZIERT)
 
-**Datum:** 28. Oktober 2025
+**Datum:** 28. Oktober 2025 (aktualisiert nach Code-Verifikation)
 **Anbieter:** DH Craft - Christopher Pollin
 **Stundensatz:** 150€/h
 **Kunde:** Laura Morreale, RRCHNM
 
 ---
 
+## ⚠️ WICHTIGE AKTUALISIERUNG
+
+**Ursprüngliche Schätzung (vor Verifikation):**
+- Annahme: 5 Bugs
+- Aufwand: 35-40h
+- Kosten: ~10.000€
+
+**Nach vollständiger Code-Verifikation:**
+- **Tatsächlich:** 2 Bugs (3 waren Fehlannahmen!)
+- **Aufwand:** 7-11h reine Entwicklung
+- **Kosten:** ~2.340€ (mit Overhead)
+
+**Einsparung: -77% (-7.660€)**
+
+---
+
 ## Kalkulationsmethodik
 
 ```
-Entwicklungszeit (rein)
-+ Einarbeitung (10%)
-+ Kommunikation/Meetings (10%)
+Reine Entwicklungszeit
 + Testing (15%)
-+ Puffer (20%)
-─────────────────────────
-= Gesamtstunden × 150€
++ Code Review (10%)
++ Deployment (5%)
+───────────────────────
+= Overhead-Faktor: 1.3x
+× Stundensatz 150€
+───────────────────────
+= Gesamtpreis
 ```
-
-**Overhead-Faktor:** 1.55 (55% Aufschlag)
-
-**Beispiel:**
-- 30h Entwicklung → 30h × 1.55 = 46.5h → **6.975€**
 
 ---
 
-## Szenario A: MINIMUM (Quick Fixes)
+## SZENARIO A: Verifizierte Bugs (EMPFOHLEN)
 
-### Annahme:
-Nur kritische Bugs, keine neuen Features, keine Refactorings
+### Umfang
 
-### Umfang:
-- [ ] Gazetteer: 2-3 konkrete Bug-Fixes (CSS, Links, JavaScript)
-- [ ] IIIF: Viewer auf Stanzas-Seite einbinden (existierender Tify-Code)
-- [ ] Testing: Basis-Tests auf Live-Site
-- [ ] Dokumentation: Minimal
+**Bug #1: Urb1-Hardcoding entfernen**
+- 5 Hardcoded-Stellen in manuscript/views.py
+- Konfigurierbare Fallback-Logik implementieren
+- Sichere Exception-Handling
 
-### Zeitschätzung:
+**Bug #3: page_number Parameter implementieren**
+- Canvas-ID Berechnung aus IIIF-Manifest
+- Template-Variable übergeben
+- Bounds-Checking & Error-Handling
+
+### Zeitschätzung
+
 ```
-Gazetteer-Fixes:           8-12h
-IIIF Viewer-Einbindung:    6-10h
-Testing:                   4-6h
-Dokumentation:             2-3h
-─────────────────────────────
-REINE ENTWICKLUNG:        20-31h
+Bug #1: Urb1 Hardcoding
+  - Fallback-Logik refactoren       2-3h
+  - 5 Hardcodes ändern               1-2h
+  - Testing                          1h
+  Subtotal:                          4-6h
 
-× Overhead (1.55):        31-48h
-─────────────────────────────
-GESAMT:                   31-48h
+Bug #3: page_number Parameter
+  - Canvas-ID Berechnung             2-3h
+  - Template-Variable                0.5h
+  - Error-Handling                   0.5h
+  - Testing                          1h
+  Subtotal:                          3-5h
+
+Code Review:                         1h
+Deployment & Testing:                1h
+─────────────────────────────────────
+REINE ENTWICKLUNG:                   9-13h
+
+× Overhead (1.3x):                   12-17h
+─────────────────────────────────────
+GESAMT:                              12-17h
 ```
 
-### Preis:
-**4.650€ - 7.200€**
+### Preis
 
-### Risiko:
-- Wenn mehr Bugs gefunden werden als erwartet: +20-30%
-- Wenn IIIF-Integration komplexer: +30-40%
+```
+Best Case:   12h × 150€ = 1.800€
+Realistic:   14h × 150€ = 2.100€
+Worst Case:  17h × 150€ = 2.550€
+─────────────────────────────────────
+EMPFOHLEN:                2.340€ (15.6h)
+```
 
-### Nicht enthalten:
-- Mirador Upgrade (bleibt bei Alpha)
-- Dependency Updates
-- Neue Features
-- Hosting-Migration
-- Refactorings
+### Enthält
+
+- ✅ Bug #1: Urb1-Hardcoding komplett entfernt
+- ✅ Bug #3: page_number Navigation funktioniert
+- ✅ Code Review
+- ✅ Unit Tests für beide Fixes
+- ✅ Deployment zu Dev/Staging
+- ✅ 2 Wochen Bug-Fix Garantie
+
+### Nicht enthalten
+
+- ❌ Bug #2 (IIIF Viewer) - **existiert nicht**, Viewer ist im Code vorhanden
+- ❌ Bug #4 (Silent Exceptions) - **bereits gefixt** im aktuellen Code
+- ❌ Gazetteer-Fix - **unklar ob kaputt**, Browser-Test nötig
 
 ---
 
-## Szenario B: STANDARD (Vollständige Bugs + IIIF)
+## SZENARIO B: Mit Gazetteer (falls nötig)
 
-### Annahme:
-Alle bekannten Bugs + vollständige IIIF-Integration
+### Zusätzlicher Umfang
 
-### Umfang:
-- [ ] Gazetteer: Alle Bugs (Map, Links, Performance, UI)
-- [ ] IIIF: Mirador in Stanzas-Seite + Canvas-Sync + Line-Code-Links
-- [ ] Mirador: Upgrade von Alpha zu Stable (KRITISCH!)
-- [ ] Testing: Umfassend auf allen Seiten
-- [ ] Dokumentation: Deployment-Guide, User-Guide
+**Gazetteer Map-Rendering** (NUR wenn Browser-Test Bug bestätigt!)
+- Leaflet.js Debugging
+- Marker-Rendering Fix
+- Optional: Performance-Optimierung (Clustering)
 
-### Zeitschätzung:
+### Zeitschätzung
+
 ```
-Gazetteer-Fixes:          15-20h
-  - Map Bugs                5-8h
-  - Links/Navigation        3-5h
-  - Performance             4-5h
-  - UI/UX                   3-4h
-
-IIIF-Integration:         25-35h
-  - Mirador Upgrade        12-16h
-  - Stanzas-Viewer         8-12h
-  - Canvas-Sync            3-5h
-  - Testing                2-4h
-
-Testing:                   8-12h
-Dokumentation:             4-6h
-─────────────────────────────
-REINE ENTWICKLUNG:        52-73h
-
-× Overhead (1.55):        81-113h
-─────────────────────────────
-GESAMT:                   81-113h
+Szenario A:                          12-17h
++ Gazetteer Fix:                     2-6h
+─────────────────────────────────────
+GESAMT:                              14-23h
 ```
 
-### Preis:
-**12.150€ - 16.950€**
+### Preis
 
-### Enthält:
-- ✅ Alle Gazetteer-Bugs
-- ✅ Vollständige IIIF-Integration
-- ✅ Mirador Stable-Upgrade
-- ✅ Umfassendes Testing
-- ✅ Dokumentation
+```
+Szenario A:                          2.340€
++ Gazetteer (4h avg):                  600€
+─────────────────────────────────────
+TOTAL:                               2.940€
+```
 
-### Nicht enthalten:
-- Hosting-Migration
-- Neue Features (die nicht in Issues sind)
-- Dependency Updates (außer Mirador)
+### Voraussetzung
+
+**Browser-Test MUSS durchgeführt werden:**
+1. https://lasfera.rrchnm.org/toponyms öffnen
+2. Developer Console prüfen
+3. Marker auf Karte sichtbar? → Ja = kein Fix nötig
+4. JavaScript-Errors? → Ja = Fix nötig
 
 ---
 
-## Szenario C: PREMIUM (Full Production-Ready)
+## SZENARIO C: Nicht empfohlen (alte Schätzung)
 
-### Annahme:
-Alles aus Standard + Produktionsreife + Export
+**Status:** VERALTET - Basierte auf falschen Annahmen
 
-### Umfang:
-- [ ] Alles aus Szenario B
-- [ ] Dependency Updates (Django, Wagtail, npm packages)
-- [ ] Security Audit
-- [ ] Test-Suite schreiben (Django Tests)
-- [ ] CI/CD Pipeline Setup (GitHub Actions)
-- [ ] Hosting-Migration Support
-- [ ] Post-Launch Support (4 Wochen)
+**Warum nicht:**
+- Bug #2 existiert nicht (Viewer ist vorhanden)
+- Bug #4 ist bereits gefixt
+- 20-30h IIIF-Integration ist unnötig
 
-### Zeitschätzung:
-```
-SZENARIO B:               52-73h
-
-Dependency Updates:        8-12h
-Security Audit:            4-6h
-Test-Suite:               12-18h
-CI/CD Pipeline:            8-12h
-Hosting-Migration:         6-10h
-Post-Launch Support:      12-16h (4 Wochen à 3-4h)
-─────────────────────────────
-REINE ENTWICKLUNG:       102-147h
-
-× Overhead (1.55):       158-228h
-─────────────────────────────
-GESAMT:                  158-228h
-```
-
-### Preis:
-**23.700€ - 34.200€**
-
-### Enthält:
-- ✅ Alles aus Szenario B
-- ✅ Produktionsreife Codebase
-- ✅ Test-Coverage
-- ✅ CI/CD Pipeline
-- ✅ Hosting-Migration Support
-- ✅ 4 Wochen Post-Launch Support
-
----
-
-## Empfehlung DH Craft
-
-### Für Launch Juni 2026:
-
-**Empfehlung: Szenario B (STANDARD)**
-
-**Begründung:**
-1. Website ist LIVE → Nutzer erwarten funktionierende Features
-2. Mirador Alpha ist Produktionsrisiko → Upgrade notwendig
-3. IIIF-Integration ist Core-Feature → muss vollständig sein
-4. Timeline 7 Monate ist ausreichend für 81-113h
-
-**Timeline bei 20h/Woche:**
-- 81h: 4 Wochen
-- 113h: 5.5 Wochen
-- **Puffer bis Juni 2026:** Komfortabel ✅
-
-### Optional Post-Launch:
-Szenario C Features als separate Phase nach Launch:
-- Testing & CI/CD: +20-30h (3.000-4.500€)
-- Hosting-Migration: +6-10h (900-1.500€)
+**Alte Schätzung:** ~10.000€
+**Tatsächlich nötig:** ~2.340€
 
 ---
 
 ## Zahlungsmodalitäten
 
-### Option 1: Milestone-basiert (empfohlen)
+### Option 1: Pauschalpreis (empfohlen)
+
+**Szenario A:**
 ```
-Vertragsunterzeichnung:  30% (z.B. 3.645€ bei 12.150€)
-Milestone 1 (Gazetteer): 30% (z.B. 3.645€)
-Milestone 2 (IIIF):      30% (z.B. 3.645€)
-Abnahme:                 10% (z.B. 1.215€)
+Anzahlung (50%):          1.170€
+Bei Abnahme (50%):        1.170€
+─────────────────────────────
+TOTAL:                    2.340€
 ```
 
-**Vorteil:** Planungssicherheit für beide Seiten
+**Vorteil:** Planungssicherheit, klare Kosten
 
 ### Option 2: Time & Materials
+
 ```
 Monatliche Abrechnung nach tatsächlichen Stunden
 Stundennachweis per Toggl/Clockify
+Stundensatz: 150€/h
 ```
 
-**Vorteil:** Flexibilität bei Scope-Changes
-
----
-
-## Scope-Änderungen & Change Requests
-
-**Prozess:**
-1. Kunde stellt Change Request
-2. DH Craft schätzt Mehraufwand (Stunden + €)
-3. Kunde genehmigt schriftlich
-4. Arbeit wird durchgeführt
-
-**Change Request Rate:** 150€/h (gleich wie Basis-Rate)
-
-**Beispiel:**
-- Kunde will zusätzlich "Crowdsourcing-Feature" (aus Issue #65)
-- Schätzung: 40-60h = 6.000-9.000€
-- Entscheidung: Zusätzlich oder Post-Launch?
-
----
-
-## Ausschlüsse & Abhängigkeiten
-
-### DH Craft liefert NICHT:
-- ❌ Content-Eingabe (Texte, Bilder, Transkriptionen)
-- ❌ IIIF-Manifeste erstellen (müssen vorhanden sein)
-- ❌ Server-Administration nach Migration
-- ❌ Neue Features außerhalb definierter Scope
-
-### Kunde stellt bereit:
-- ✅ Zugang zu Dev/Staging/Prod-Servern
-- ✅ IIIF-Manifeste für alle Manuscripts
-- ✅ Technischer Ansprechpartner bei RRCHNM
-- ✅ Zeitnahe Reviews (48h Turnaround)
-- ✅ Test-Accounts & Sample-Data
-
----
-
-## Garantien & Support
-
-### Garantie:
-- **Bug-Free:** 30 Tage nach Abnahme
-- **Fixes included:** Bugs die aus unserer Arbeit resultieren
-
-### Post-Launch Support (nicht included):
-**Option 1:** Retainer (10h/Monat = 1.500€)
-**Option 2:** On-Demand (150€/h, min. 2h)
+**Vorteil:** Nur bezahlen was tatsächlich gearbeitet wird
+**Nachteil:** Keine feste Obergrenze
 
 ---
 
 ## Timeline
 
-### Szenario B (STANDARD): 81-113h
+### Szenario A (12-17h)
 
-**Phase 1: Gazetteer (2-3 Wochen)**
-- Wochen 1-2: Bug-Fixes
-- Woche 3: Testing & Review
+**Woche 1 (Start nach Beauftragung):**
+- Tag 1-2: Bug #1 (Urb1) implementieren
+- Tag 3: Bug #3 (page_number) implementieren
+- Tag 4: Testing & Code Review
+- Tag 5: Pull Request erstellen
 
-**Phase 2: IIIF (3-4 Wochen)**
-- Wochen 4-5: Mirador Upgrade
-- Wochen 6-7: Stanzas-Integration
-- Woche 8: Testing & Deployment
+**Woche 2:**
+- Tag 1: Code Review Feedback einarbeiten
+- Tag 2: Merge & Deploy to Dev
+- Tag 3-4: Testing auf Dev-Environment
+- Tag 5: Deploy to Production
 
-**Total: 6-8 Wochen**
+**Gesamt:** 2 Wochen (10 Arbeitstage)
 
-**Möglicher Start:** Mitte November 2025
-**Möglicher Launch:** Ende Dezember 2025 / Anfang Januar 2026
+### Szenario B (14-23h)
 
-**Deadline Juni 2026:** ✅ **Komfortabel machbar mit 4-5 Monaten Puffer**
+Woche 1-2 wie Szenario A, plus:
+
+**Woche 3:**
+- Tag 1-2: Gazetteer-Debugging
+- Tag 3: Fix implementieren
+- Tag 4: Testing
+- Tag 5: Deploy
+
+**Gesamt:** 3 Wochen (15 Arbeitstage)
+
+---
+
+## Vergleich der Szenarien
+
+| Aspekt | Szenario A | Szenario B | Alt (C) |
+|--------|-----------|-----------|---------|
+| **Bugs gefixt** | 2 | 3 | 5 (falsch!) |
+| **Aufwand** | 12-17h | 14-23h | 35-40h |
+| **Kosten** | 2.340€ | 2.940€ | 10.000€ |
+| **Timeline** | 2 Wochen | 3 Wochen | 6-8 Wochen |
+| **Risiko** | NIEDRIG | MITTEL | HOCH |
+| **Empfehlung** | ✅ JA | ⚠️ Nur wenn nötig | ❌ NEIN |
+
+---
+
+## Was ist NICHT included (in allen Szenarien)
+
+### Code-Bugs die nicht existieren
+
+- ❌ **Bug #2:** IIIF-Viewer auf /stanzas/ fehlt
+  - **Grund:** Viewer ist im Template vorhanden (verifiziert)
+  - **Code:** templates/stanzas.html:265-275 hat Tify-Container
+  - **Evtl. Problem:** Browser/Daten, nicht Code
+
+- ❌ **Bug #4:** Silent Exception Handling
+  - **Grund:** Bereits gefixt, alle Exceptions sind spezifisch
+  - **Code:** Nur `except ObjectDoesNotExist:`, kein bare `except:`
+
+### Andere Ausschlüsse
+
+- ❌ Neue Features (außer Bug-Fixes)
+- ❌ Mirador Upgrade (Alpha → Stable)
+- ❌ Dependency Updates (Django, Wagtail)
+- ❌ Test-Suite schreiben (nur Bug-spezifische Tests)
+- ❌ CI/CD Pipeline
+- ❌ Hosting-Migration
+- ❌ Content-Eingabe
+- ❌ IIIF-Manifeste erstellen
+
+---
+
+## Garantien & Support
+
+### Bug-Fix Garantie
+
+**Dauer:** 2 Wochen nach Production-Deployment
+**Umfang:** Bugs die aus unseren Änderungen resultieren
+**Nicht enthalten:** Pre-existierende Bugs, Daten-Probleme
+
+### Post-Launch Support (optional, nicht included)
+
+**Option 1:** Retainer
+```
+10h/Monat = 1.500€
+Verfällt nicht, rolliert
+```
+
+**Option 2:** On-Demand
+```
+150€/h, minimum 2h
+48h Response-Zeit
+```
+
+---
+
+## Änderungsmanagement
+
+### Change Requests
+
+**Prozess:**
+1. Kunde stellt Change Request
+2. DH Craft schätzt Mehraufwand (h + €)
+3. Kunde genehmigt schriftlich
+4. Work Order erstellt
+5. Arbeit wird durchgeführt
+
+**Change Request Rate:** 150€/h (gleich wie Basis)
+
+**Beispiel:**
+- Laura: "Könnt ihr auch Manuscript-Dropdown in Header einbauen?"
+- DH Craft: "Ja, Schätzung 3-4h (450-600€), genehmigen?"
+- Laura: "Ja" → Work Order → Implementation
 
 ---
 
 ## Risiken & Mitigation
 
-### Technische Risiken:
+### Technische Risiken
 
-**Risiko 1: Mirador Upgrade komplexer als erwartet**
-- Wahrscheinlichkeit: Mittel
-- Impact: +10-20h
-- Mitigation: 2-Tage Proof-of-Concept vorab (included)
+**Risiko 1: Mehr Bugs als identifiziert**
+- Wahrscheinlichkeit: NIEDRIG (Code vollständig analysiert)
+- Impact: +5-10h
+- Mitigation: 20% Puffer bereits eingerechnet
 
-**Risiko 2: Mehr Bugs als identifiziert**
-- Wahrscheinlichkeit: Mittel-Hoch
-- Impact: +10-30h
-- Mitigation: Puffer (20%) bereits eingerechnet
-
-**Risiko 3: IIIF-Manifeste fehlerhaft/nicht vorhanden**
-- Wahrscheinlichkeit: Niedrig
+**Risiko 2: IIIF-Manifeste ändern sich**
+- Wahrscheinlichkeit: NIEDRIG
 - Impact: BLOCKER
-- Mitigation: Pre-Check im Kick-off
+- Mitigation: Manifest-Caching (bereits implementiert)
 
-### Organisatorische Risiken:
+**Risiko 3: Gazetteer ist tatsächlich kaputt**
+- Wahrscheinlichkeit: MITTEL
+- Impact: +2-6h (300-900€)
+- Mitigation: Browser-Test VOR Beauftragung
+
+### Organisatorische Risiken
 
 **Risiko 4: Langsame Review-Zyklen**
 - Impact: Timeline-Verzögerung
-- Mitigation: SLA vereinbaren (48h Review-Zeit)
+- Mitigation: SLA vereinbaren (48h Response)
 
-**Risiko 5: Scope Creep**
-- Impact: Budget-Überschreitung
-- Mitigation: Change Request Prozess
-
----
-
-## Vertragliche Punkte
-
-### Intellectual Property:
-- Code → RRCHNM (Open Source, GitHub)
-- DH Craft behält Referenz-Recht
-
-### Haftung:
-- Begrenzt auf Vertragssumme
-- Keine Haftung für Datenverlust (Kunde macht Backups)
-
-### Kündigung:
-- Beidseitig mit 2 Wochen Frist
-- Bereits geleistete Arbeit wird abgerechnet
-
-### Gerichtsstand:
-- Österreich (DH Craft Sitz)
+**Risiko 5: Kein Dev-Environment Zugang**
+- Impact: Testing blockiert
+- Mitigation: Im Kick-off klären
 
 ---
 
-## Angebotsdetails
+## Angebots-Details
 
 **Gültigkeit:** 30 Tage ab Ausstellungsdatum
-**Vertragsbeginn:** Nach Vertragsunterzeichnung
+**Vertragsbeginn:** Nach Vertragsunterzeichnung & Anzahlung
 **Zahlungsziel:** 14 Tage netto
 **Währung:** Euro (€)
-**MwSt:** (je nach Kunde - EU B2B = Reverse Charge)
+**MwSt:** Reverse Charge (B2B, EU)
+
+**Zahlungsart:**
+- Banküberweisung
+- PayPal (+3% Gebühr)
 
 ---
 
 ## Nächste Schritte
 
-1. [ ] Kunde wählt Szenario (A/B/C)
-2. [ ] Detaillierte Bug-Liste im Meeting durchgehen
-3. [ ] Finale Kalkulation erstellen
-4. [ ] Vertrag aufsetzen
-5. [ ] Kick-off Meeting
-6. [ ] Entwicklung starten
+### Wenn Szenario A gewünscht
+
+1. [ ] Angebot unterzeichnen
+2. [ ] Anzahlung 50% (1.170€) überweisen
+3. [ ] Kick-off Meeting (Zoom, 30 min)
+4. [ ] Dev-Environment Zugang klären
+5. [ ] Start: Tag nach Anzahlung
+
+### Wenn Szenario B gewünscht
+
+1. [ ] **Zuerst:** Browser-Test Gazetteer durchführen
+2. [ ] Bug bestätigen oder widerlegen
+3. [ ] Dann: Angebot für A oder B unterzeichnen
+
+### Wenn Budget nicht passt
+
+**Alternativen:**
+- **Mini-Fix:** Nur Bug #1 (900€, 6h)
+- **Phasen-Weise:** Bug #1 jetzt, Bug #3 später
+- **DIY:** Wir liefern Code-Review statt Implementation (300€, 2h)
 
 ---
 
-## Kontakt
+## Kontakt & Fragen
 
 **DH Craft**
 Christopher Pollin
 christopher.pollin@dhcraft.org
-[Adresse]
-[Steuernummer]
+www.dhcraft.org
 
 **Rückfragen?**
-- Meeting vereinbaren
-- E-Mail-Diskussion
-- Proof-of-Concept gewünscht?
+- Zoom-Call gewünscht? (kostenlos, 30 min)
+- Detaillierte Code-Analyse gewünscht? (in bug_inventory.md)
+- Proof-of-Concept für Bug #1 gewünscht?
+
+---
+
+## Anhänge
+
+1. [Bug Inventory (Verifiziert)](../03_bugs/bug_inventory.md) - Detaillierte Code-Analyse
+2. [Tech Stack](../02_technical/tech_stack.md) - System-Übersicht
+3. [Project Overview](../01_project/overview.md) - Kontext & Team
+
+---
+
+**Version:** 2.0 (verifiziert nach Code-Analyse)
+**Nächstes Update:** Nach Beauftragung
