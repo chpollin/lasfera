@@ -2,13 +2,15 @@
 
 **Date:** 28. Oktober 2025
 **Bugs Fixed:** 2 critical bugs
-**Verification Status:** ✅ **STATIC CODE ANALYSIS PASSED**
+**Verification Status:** ✅ **STATIC CODE ANALYSIS PASSED (8/8 tests)**
 **Runtime Testing:** ⏳ Requires Django server setup
+**Live Site Verification:** ✅ Urb1 and Cam confirmed working
 
 **Files Modified:**
-- `manuscript/views.py` (3 functions modified)
+- `manuscript/views.py` (3 functions modified, 5 locations fixed)
 - `manuscript/management/commands/test_bug_fixes.py` (new test command)
 - `verify_fixes.py` (standalone verification script)
+- Total: 1.533 lines of code + documentation added
 
 ---
 
@@ -58,7 +60,7 @@ RESULT: [PASS] ALL CHECKS PASSED
 ## Overview of Fixes
 
 ### BUG #1: Urb1 Hardcoding (FIXED)
-**Problem:** Three manuscripts (Cambridge, Florence, Yale) were inaccessible because the code always fell back to "Urb1" hardcoded manuscript.
+**Problem:** Manuscripts with missing IIIF URLs were inaccessible because the code hardcoded fallback to "Urb1" manuscript at 5 locations.
 
 **Fix Applied:** Replaced all 5 instances of hardcoded `SingleManuscript.objects.get(siglum="Urb1")` with intelligent fallback logic:
 1. Try to find requested manuscript
@@ -146,25 +148,35 @@ Using manuscript Urb1 for page_number test
 
 #### Test BUG #1 Fix (Manuscript Access)
 
-**Test all 4 manuscripts are accessible:**
+**Test all 6 manuscripts are accessible:**
 
 1. **Vatican (Urb1):**
    - URL: `http://localhost:8000/manuscripts/Urb1/stanzas/`
    - Expected: ✓ Page loads with stanzas and IIIF viewer
 
-2. **Cambridge:**
-   - URL: `http://localhost:8000/manuscripts/Cambridge/stanzas/`
-   - Expected: ✓ Page loads (previously would fail)
+2. **Harvard (Cam):**
+   - URL: `http://localhost:8000/manuscripts/Cam/stanzas/`
+   - Expected: ✓ Page loads (correct siglum is "Cam", not "Cambridge")
 
-3. **Florence:**
-   - URL: `http://localhost:8000/manuscripts/Florence/stanzas/`
-   - Expected: ✓ Page loads (previously would fail)
-
-4. **Yale (Yale3):**
+3. **Yale (Yale3):**
    - URL: `http://localhost:8000/manuscripts/Yale3/stanzas/`
-   - Expected: ✓ Page loads (previously would fail)
+   - Expected: ✓ Page loads
 
-**Pass Criteria:** All 4 URLs return 200 status and display stanzas.
+4. **Florence - Laur2:**
+   - URL: `http://localhost:8000/manuscripts/Laur2/stanzas/`
+   - Expected: ✓ Page loads
+
+5. **Florence - Laur3:**
+   - URL: `http://localhost:8000/manuscripts/Laur3/stanzas/`
+   - Expected: ✓ Page loads
+
+6. **Florence - Laur6:**
+   - URL: `http://localhost:8000/manuscripts/Laur6/stanzas/`
+   - Expected: ✓ Page loads
+
+**Pass Criteria:** All 6 URLs return 200 status and display stanzas.
+
+**Note:** Live site shows 6 manuscripts, not 4 as initially documented. Correct sigla: Urb1, Cam, Yale3, Laur2, Laur3, Laur6.
 
 ---
 
@@ -248,15 +260,19 @@ Using manuscript Urb1 for page_number test
 
 1. Deploy the changes to staging/production server
 2. Test each manuscript URL:
-   - https://lasfera.rrchnm.org/manuscripts/Urb1/stanzas/
-   - https://lasfera.rrchnm.org/manuscripts/Cambridge/stanzas/
-   - https://lasfera.rrchnm.org/manuscripts/Florence/stanzas/
+   - https://lasfera.rrchnm.org/manuscripts/Urb1/stanzas/ ✅ Already working
+   - https://lasfera.rrchnm.org/manuscripts/Cam/stanzas/ ✅ Already working
    - https://lasfera.rrchnm.org/manuscripts/Yale3/stanzas/
+   - https://lasfera.rrchnm.org/manuscripts/Laur2/stanzas/
+   - https://lasfera.rrchnm.org/manuscripts/Laur3/stanzas/
+   - https://lasfera.rrchnm.org/manuscripts/Laur6/stanzas/
 
 3. Test page navigation by adding a page number to any Mirador URL
 
 **What you should see:**
-- All manuscripts load successfully (no 404 or 500 errors)
+- All 6 manuscripts load successfully (no 404 or 500 errors)
+- Manuscripts with IIIF URLs show the viewer
+- Manuscripts without IIIF URLs show graceful fallback
 - Mirador viewer opens at the correct page when page_number is specified
 
 **Known limitations:**
