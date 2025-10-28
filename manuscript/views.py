@@ -486,22 +486,49 @@ def mirador_view(request, manuscript_id, page_number):
     try:
         manuscript = SingleManuscript.objects.get(id=manuscript_id)
     except SingleManuscript.DoesNotExist:
-        manuscript = SingleManuscript.objects.get(siglum="Urb1")
+        # Try to find any available manuscript with IIIF URL as fallback
+        manuscript = SingleManuscript.objects.filter(iiif_url__isnull=False).exclude(iiif_url="").first()
+        if not manuscript:
+            # If still no manuscript found, try Urb1 as last resort
+            manuscript = SingleManuscript.objects.filter(siglum="Urb1").first()
 
-    if not manuscript.iiif_url:
-        manuscript = SingleManuscript.objects.get(siglum="Urb1")
+    if not manuscript or not manuscript.iiif_url:
+        # Find any manuscript with a valid IIIF URL
+        manuscript = SingleManuscript.objects.filter(iiif_url__isnull=False).exclude(iiif_url="").first()
+        if not manuscript:
+            # If no manuscripts with IIIF URLs exist, try Urb1
+            manuscript = SingleManuscript.objects.filter(siglum="Urb1").first()
 
+    # Fetch manifest data to calculate canvas_id if page_number is provided
+    canvas_id = None
     try:
-        get_manifest_data(manuscript.iiif_url)
+        manifest_data = get_manifest_data(manuscript.iiif_url)
+
+        # If page_number is provided, calculate the canvas_id
+        if page_number and manifest_data:
+            try:
+                # Convert page_number to integer and get the corresponding canvas
+                page_idx = int(page_number) - 1  # Convert to 0-indexed
+                if "sequences" in manifest_data and len(manifest_data["sequences"]) > 0:
+                    canvases = manifest_data["sequences"][0].get("canvases", [])
+                    if 0 <= page_idx < len(canvases):
+                        canvas_id = canvases[page_idx]["@id"]
+                        logger.info(f"Resolved page {page_number} to canvas_id: {canvas_id}")
+            except (ValueError, KeyError, IndexError) as e:
+                logger.warning(f"Could not resolve page_number {page_number} to canvas_id: {e}")
+
     except requests.RequestException:
-        # Fallback to default manuscript if manifest can't be fetched
-        manuscript = SingleManuscript.objects.get(siglum="Urb1")
+        # Fallback to any available manuscript with working IIIF
+        manuscript = SingleManuscript.objects.filter(iiif_url__isnull=False).exclude(iiif_url="").first()
+        if not manuscript:
+            manuscript = SingleManuscript.objects.filter(siglum="Urb1").first()
 
     return render(
         request,
         "manuscript/mirador.html",
         {
             "manifest_url": manuscript.iiif_url,
+            "canvas_id": canvas_id,
         },
     )
 
@@ -534,7 +561,10 @@ def stanzas(request: HttpRequest):
         .order_by("stanza_line_code_starts")
     )
     manuscripts = SingleManuscript.objects.all()
-    default_manuscript = SingleManuscript.objects.get(siglum="Urb1")
+    # Try to get Urb1 as default, but fall back to first available manuscript
+    default_manuscript = SingleManuscript.objects.filter(siglum="Urb1").first()
+    if not default_manuscript:
+        default_manuscript = SingleManuscript.objects.first()
 
     books = process_stanzas(stanzas)
     translated_books = process_stanzas(translated_stanzas)
@@ -691,7 +721,10 @@ def manuscripts(request: HttpRequest):
 
     # Remove the translated stanzas
     manuscripts = SingleManuscript.objects.all()
-    default_manuscript = SingleManuscript.objects.get(siglum="Urb1")
+    # Try to get Urb1 as default, but fall back to first available manuscript
+    default_manuscript = SingleManuscript.objects.filter(siglum="Urb1").first()
+    if not default_manuscript:
+        default_manuscript = SingleManuscript.objects.first()
 
     # Process stanzas into books structure (same as in stanzas view)
     books = defaultdict(lambda: defaultdict(list))
