@@ -16,7 +16,8 @@
 ├── 03_bugs/             Bug-Reports & Fixes
 ├── 04_meetings/         Meeting-Protokolle & Vorbereitung
 ├── 05_deliverables/     Angebote, Verträge, Rechnungen
-└── 06_reference/        Referenzmaterial & Recherche
+├── 06_reference/        Referenzmaterial & Recherche
+└── 07_implementation/   Implementation Plan & Feasibility
 ```
 
 ---
@@ -34,8 +35,8 @@
 
 ### Für Entwicklung
 - [Repository-Struktur](02_technical/repository_structure.md)
-- [Code-Locations](02_technical/code_locations.md) - Wo ist was?
-- [Deployment](02_technical/deployment.md)
+- [Implementation Plan](07_implementation/immediate_action_plan.md) - Was JETZT tun?
+- [Feasibility Analysis](07_implementation/claude_code_feasibility.md) - Detaillierte Machbarkeits-Analyse
 
 ### Für Abrechnung
 - [Kalkulation](05_deliverables/cost_estimate.md)
