@@ -2,9 +2,56 @@
 
 **Date:** 28. Oktober 2025
 **Bugs Fixed:** 2 critical bugs
+**Verification Status:** ✅ **STATIC CODE ANALYSIS PASSED**
+**Runtime Testing:** ⏳ Requires Django server setup
+
 **Files Modified:**
 - `manuscript/views.py` (3 functions modified)
 - `manuscript/management/commands/test_bug_fixes.py` (new test command)
+- `verify_fixes.py` (standalone verification script)
+
+---
+
+## ✅ Verification Results (28. Oktober 2025)
+
+**Static Code Analysis: PASSED**
+
+```bash
+$ python verify_fixes.py
+
+======================================================================
+La Sfera Bug Fix Verification
+======================================================================
+
+BUG #1: Urb1 Hardcoding Removal
+----------------------------------------------------------------------
+  [PASS] No hardcoded .get(siglum="Urb1"): CORRECTLY REMOVED
+  [PASS] Uses .filter().first() pattern: FOUND (5 occurrences)
+  [PASS] Has IIIF URL fallback logic: FOUND (3 occurrences)
+
+BUG #2: page_number Parameter Implementation
+----------------------------------------------------------------------
+  [PASS] canvas_id variable declared: FOUND (1 occurrences)
+  [PASS] page_number conversion logic: FOUND (1 occurrences)
+  [PASS] Canvas extraction from manifest: FOUND (1 occurrences)
+  [PASS] canvas_id passed to template: FOUND (1 occurrences)
+  [PASS] Logging for resolved pages: FOUND (1 occurrences)
+
+Test Infrastructure
+----------------------------------------------------------------------
+  [PASS] Django test command: manuscript/management/commands/test_bug_fixes.py
+  [PASS] Testing documentation: TESTING_BUG_FIXES.md
+
+======================================================================
+RESULT: [PASS] ALL CHECKS PASSED
+```
+
+**What This Means:**
+- ✅ All hardcoded "Urb1" references successfully removed from fallback logic
+- ✅ Intelligent IIIF URL fallback implemented in 3 locations
+- ✅ page_number parameter correctly processed and converted to canvas_id
+- ✅ All code patterns match expected implementation
+- ⏳ Runtime behavior requires Django server for full verification
 
 ---
 
@@ -177,12 +224,21 @@ Using manuscript Urb1 for page_number test
 
 | Test | Method | Pass Criteria | Status |
 |------|--------|---------------|--------|
-| Urb1 accessible | Browser: `/manuscripts/Urb1/stanzas/` | Page loads | ✓ |
-| Cambridge accessible | Browser: `/manuscripts/Cambridge/stanzas/` | Page loads | ⏳ |
-| Florence accessible | Browser: `/manuscripts/Florence/stanzas/` | Page loads | ⏳ |
-| Yale accessible | Browser: `/manuscripts/Yale3/stanzas/` | Page loads | ⏳ |
-| Page navigation | Browser: `/mirador/1/10/` | Opens at page 10 | ⏳ |
-| Automated tests | Command: `python manage.py test_bug_fixes` | All tests pass | ⏳ |
+| No hardcoded Urb1 | Code: `grep 'objects.get(siglum="Urb1")' manuscript/views.py` | No results | ✅ VERIFIED |
+| Fallback logic present | Code: `.filter().first()` pattern | 5 occurrences | ✅ VERIFIED |
+| IIIF URL fallback | Code: `filter(iiif_url__isnull=False)` | 3 occurrences | ✅ VERIFIED |
+| canvas_id declared | Code: `canvas_id = None` | Found | ✅ VERIFIED |
+| page_number conversion | Code: `page_idx = int(page_number) - 1` | Found | ✅ VERIFIED |
+| Canvas extraction | Code: `canvas_id = canvases[page_idx]["@id"]` | Found | ✅ VERIFIED |
+| canvas_id to template | Code: `"canvas_id": canvas_id` | Found | ✅ VERIFIED |
+| Page logging | Code: `logger.info(f"Resolved page")` | Found | ✅ VERIFIED |
+| Static verification | Command: `python verify_fixes.py` | All checks pass | ✅ PASSED |
+| Urb1 accessible | Browser: `/manuscripts/Urb1/stanzas/` | Page loads | ⏳ REQUIRES SERVER |
+| Cambridge accessible | Browser: `/manuscripts/Cambridge/stanzas/` | Page loads | ⏳ REQUIRES SERVER |
+| Florence accessible | Browser: `/manuscripts/Florence/stanzas/` | Page loads | ⏳ REQUIRES SERVER |
+| Yale accessible | Browser: `/manuscripts/Yale3/stanzas/` | Page loads | ⏳ REQUIRES SERVER |
+| Page navigation | Browser: `/mirador/1/10/` | Opens at page 10 | ⏳ REQUIRES SERVER |
+| Django unit tests | Command: `python manage.py test_bug_fixes` | All tests pass | ⏳ REQUIRES POETRY INSTALL |
 
 ---
 
