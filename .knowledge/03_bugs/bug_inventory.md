@@ -1,31 +1,42 @@
 # La Sfera - Bug Inventory (VERIFIZIERT)
 
-**Datum:** 28. Oktober 2025
-**Methode:** Vollständige Code-Analyse mit File-Verifikation
-**Status:** ✅ ALLE BUGS VERIFIZIERT
-**Quelle:** Repository chnm/lasfera
+**Datum:** 28. Oktober 2025 (Updated nach Live-Site Tests)
+**Methode:** Code-Analyse + Live-Site Browser-Tests
+**Status:** ✅ VOLLSTÄNDIG VERIFIZIERT (Code + Live-Site)
+**Quelle:** Repository chnm/lasfera + https://lasfera.rrchnm.org
 
 ---
 
-## ⚠️ WICHTIGE ERKENNTNISSE
+## ⚠️ WICHTIGE ERKENNTNISSE (NACH LIVE-TESTS)
 
-**Ursprüngliche Annahme:** 5 Bugs, ~35-40h Aufwand, ~10.000€
-**Nach Verifikation:** 2 echte Bugs, 7-11h Aufwand, ~1.500-2.500€
+**Ursprüngliche Annahme (Code-only):** 2 Bugs, 12h Aufwand, 2.340€
+**Nach Live-Site Tests:** 3 echte Bugs, 18h Aufwand, 3.510€
 
-**3 vermutete Bugs existieren NICHT:**
-- ❌ Bug #2 (IIIF Viewer fehlt) - **FALSCH:** Viewer ist im Template vorhanden!
-- ❌ Bug #4 (Silent Exceptions) - **BEREITS GEFIXT:** Kein bare `except:` mehr im Code
-- ❓ Bug #5 (Gazetteer) - **UNKLAR:** Muss via Browser getestet werden
+**KRITISCHE REVISION:**
+- ✅ Bug #1 (Urb1 Hardcoding) - Bestätigt, aber weniger kritisch (fehlende Daten)
+- ✅ Bug #2 (IIIF Viewer fehlt) - **EXISTIERT DOCH!** Viewer rendert nicht (JS-Problem)
+- ✅ Bug #3 (page_number) - Bestätigt
+- ❌ Bug #4 (Silent Exceptions) - Widerlegt (bereits korrekt)
+- ✅ Bug #5 (Gazetteer) - **FUNKTIONIERT PERFEKT** (kein Bug)
 
 ---
 
-## ✅ VERIFIZIERTE BUGS (2)
+## ✅ VERIFIZIERTE BUGS (3)
 
-### BUG #1: Urb1-Hardcoding an 5 Stellen
+### BUG #1: Fehlende IIIF-Manifeste + Hardcoding-Fallback
 
-**Status:** ✅ VERIFIZIERT durch Code-Analyse
-**Severity:** HOCH
-**Impact:** Andere Manuscripts (Cambridge, Florence, Yale) fallen bei Fehlern immer auf Urb1 zurück
+**Status:** ✅ VERIFIZIERT durch Code-Analyse + Live-Tests
+**Severity:** KRITISCH (aber Daten-Problem dominiert)
+**Impact:** Die meisten Manuscripts zeigen "No IIIF manifest or photographs available"
+
+**Live-Test Ergebnisse:**
+- ✅ Urb1: Hat IIIF-Manifest (https://digi.vatlib.it/iiif/MSS_Urb.lat.752/manifest.json)
+- ❌ Yale1: "No IIIF manifest or photographs available"
+- ❌ Fn1: "No IIIF manifest or photographs available"
+- ✅ Cam: Funktioniert (Harvard IIIF: https://iiif.lib.harvard.edu/manifests/drs:3684069)
+
+**HAUPTPROBLEM:** Daten fehlen in DB, nicht Code-Fehler!
+**SEKUNDÄRPROBLEM:** Hardcoding-Bug in Fallback-Logik
 
 **Betroffene Files:**
 - [manuscript/views.py:489](manuscript/views.py#L489) - `mirador_view()` DoesNotExist fallback
@@ -75,10 +86,39 @@ except SingleManuscript.DoesNotExist:
             raise Http404("No manuscripts available")
 ```
 
-**Aufwand:** 4-6 Stunden
-- Fallback-Logik refactoren: 2-3h
-- Alle 5 Hardcodes ändern: 1-2h
+**Aufwand:** 4 Stunden (reduziert, da weniger kritisch)
+- Fallback-Logik refactoren: 2h
+- Alle 5 Hardcodes ändern: 1h
 - Testing: 1h
+- **Kosten:** 600€
+
+---
+
+### BUG #2: IIIF-Viewer rendert nicht
+
+**Status:** ✅ VERIFIZIERT durch Live-Tests (EXISTIERT DOCH!)
+**Severity:** HOCH
+**Impact:** Viewer nicht sichtbar auf /stanzas/ und /manuscripts/Urb1/stanzas/
+
+**Live-Test Ergebnisse:**
+- ❌ /stanzas/ - Kein Viewer sichtbar
+- ❌ /manuscripts/Urb1/stanzas/ - Kein Viewer sichtbar
+- ⚠️ Code HAT Tify-Container (templates/stanzas.html:265-275)
+- ⚠️ CSS vorhanden (.tify-container), aber keine Initialisierung
+
+**URSACHE:** JavaScript-Initialisierungsproblem, nicht Template-Problem
+
+**Code-Analyse vs. Live-Reality:**
+- Code-Analyse sagte: "Viewer vorhanden, kein Bug"
+- Live-Tests zeigen: "Viewer rendert NICHT"
+- Problem: JS-Initialisierung, AlpineJS-Problem, oder missing dependency
+
+**Aufwand:** 8 Stunden (JavaScript-Debugging komplex)
+- Browser DevTools Debugging: 2h
+- Root-Cause identifizieren: 2h
+- Fix implementieren: 3h
+- Testing: 1h
+- **Kosten:** 1.200€
 
 ---
 
@@ -143,23 +183,24 @@ def mirador_view(request, manuscript_id, page_number):
     })
 ```
 
-**Aufwand:** 3-5 Stunden
-- Canvas-ID Berechnung implementieren: 2-3h
+**Aufwand:** 4 Stunden
+- Canvas-ID Berechnung implementieren: 2h
 - Template-Variable übergeben: 0.5h
 - Bounds-Checking & Error-Handling: 0.5h
 - Testing: 1h
+- **Kosten:** 600€
 
 ---
 
 ## ❌ NICHT-BUGS (Verifikation widerlegt ursprüngliche Annahmen)
 
-### NICHT-BUG #2: IIIF-Viewer fehlt auf /stanzas/
+### NICHT-BUG #4: Silent Exception Handling
 
-**Status:** ❌ KEIN BUG - Viewer ist vorhanden!
-**Ursprüngliche Annahme:** "Viewer fehlt komplett, nur Text sichtbar"
-**Nach Code-Verifikation:** Viewer ist im Template integriert!
+**Status:** ❌ BEREITS GEFIXT - Kein bare `except:` mehr!
+**Ursprüngliche Annahme:** "Bare `except: pass` an 3 Stellen"
+**Nach Code-Verifikation:** Alle Exceptions sind spezifisch!
 
-**Code-Beweis Backend:** [manuscript/views.py:625-631](manuscript/views.py#L625-L631)
+**Code-Beweis:** [manuscript/views.py:625-631](manuscript/views.py#L625-L631)
 ```python
 manuscript_data = {
     "iiif_url": (
@@ -255,147 +296,136 @@ except Exception as e:
 
 ---
 
-## ❓ UNKLARER STATUS (Browser-Test nötig)
+## ✅ VERIFIZIERT ALS FUNKTIONIEREND
 
-### PROBLEM #5: Gazetteer Map-Rendering
+### NICHT-BUG #5: Gazetteer Map-Rendering
 
-**Status:** ❓ UNKLAR - Code ist okay, Frontend-Status unklar
-**Backend:** ✅ Funktioniert (API gibt Daten zurück)
-**Frontend:** ❓ Unbekannt (Leaflet-Map-Rendering)
+**Status:** ✅ FUNKTIONIERT PERFEKT (Live-Test durchgeführt!)
+**Backend:** ✅ API liefert Daten
+**Frontend:** ✅ Leaflet-Map rendert einwandfrei
 
-**Code-Beweis Backend:** [manuscript/views.py:1060-1073](manuscript/views.py#L1060-L1073)
-```python
-class ToponymViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = ToponymSerializer
+**Live-Test Ergebnisse (https://lasfera.rrchnm.org/toponyms):**
+- ✅ Leaflet-Map wird angezeigt
+- ✅ CircleMarkers für alle ~80 Toponyme gerendert
+- ✅ Hover-Effekte funktionieren
+- ✅ API `/api/toponyms/` liefert Daten in akzeptabler Geschwindigkeit
+- ✅ JavaScript-Bibliotheken laden: Leaflet + MarkerClusterGroup
 
-    def get_queryset(self):
-        queryset = Location.objects.all()  # ✅ Gibt alle Locations zurück
-        query = self.request.query_params.get("q", None)
-        if query is not None:
-            queryset = queryset.filter(country__icontains=query)
-        return queryset
-```
+**Wichtige Korrektur:**
+- Ursprüngliche Annahme: "700+ Toponyme"
+- Realität: **~80 Toponyme** (keine Performance-Probleme!)
 
-**Models vorhanden:**
-- ✅ `Location` ([models.py:782](manuscript/models.py#L782))
-- ✅ `LocationAlias` ([models.py:894](manuscript/models.py#L894))
-- ✅ Latitude/Longitude Fields vorhanden
-- ✅ API-Endpoints konfiguriert
+**Code-Analyse bestätigt:**
+- Backend: ToponymViewSet funktioniert
+- Frontend: Leaflet-Integration korrekt
+- Keine JavaScript-Errors im Browser
 
-**Mögliche Frontend-Probleme (zu testen):**
-- Leaflet.js lädt nicht
-- Marker-Clustering fehlt oder fehlerhaft
-- Performance-Problem bei 700+ Toponymen
-- JavaScript-Fehler in gazetteer.js
+**Fazit:** KEIN BUG, KEIN FIX NÖTIG!
 
-**Was zu tun ist:**
-1. Browser öffnen: https://lasfera.rrchnm.org/toponyms
-2. Developer Console öffnen
-3. Prüfen: Werden Marker angezeigt?
-4. Prüfen: JavaScript-Errors?
-5. Prüfen: API-Call zu `/api/toponyms/` erfolgreich?
-
-**Aufwand (FALLS kaputt):** 2-6 Stunden
-- Frontend-Debugging: 1-2h
-- Leaflet-Map Fix: 1-2h
-- Performance-Optimierung (Clustering): 0-2h
+**Aufwand:** 0h
 
 ---
 
-## 📊 FINALE ZUSAMMENFASSUNG
+## 📊 FINALE ZUSAMMENFASSUNG (NACH LIVE-TESTS)
 
 ### Verifizierte Bugs
 
 | Bug | Status | Severity | Aufwand | Kosten (150€/h) |
 |-----|--------|----------|---------|-----------------|
-| #1: Urb1 Hardcoding | ✅ BESTÄTIGT | HOCH | 4-6h | 600-900€ |
-| #3: page_number ignoriert | ✅ BESTÄTIGT | MITTEL | 3-5h | 450-750€ |
-| **SUBTOTAL** | | | **7-11h** | **1.050-1.650€** |
+| #1: Fehlende IIIF + Hardcoding | ✅ BESTÄTIGT | KRITISCH | 4h | 600€ |
+| #2: IIIF-Viewer rendert nicht | ✅ BESTÄTIGT | HOCH | 8h | 1.200€ |
+| #3: page_number ignoriert | ✅ BESTÄTIGT | MITTEL | 4h | 600€ |
+| Testing & Review | | | 2h | 300€ |
+| **SUBTOTAL** | | | **18h** | **2.700€** |
 
 ### Nicht-Bugs (verifiziert als korrekt)
 
 | Item | Status | Grund |
 |------|--------|-------|
-| #2: IIIF Viewer fehlt | ❌ KEIN BUG | Viewer ist im Template vorhanden |
-| #4: Silent Exceptions | ❌ KEIN BUG | Bereits gefixt, spezifische Exceptions |
-
-### Unklar (Browser-Test nötig)
-
-| Item | Status | Aufwand (falls Bug) |
-|------|--------|---------------------|
-| #5: Gazetteer Map | ❓ UNKLAR | 2-6h (300-900€) |
+| #4: Silent Exceptions | ❌ KEIN BUG | Bereits korrekt, spezifische Exceptions |
+| #5: Gazetteer Map | ✅ FUNKTIONIERT | Leaflet-Map rendert perfekt, ~80 Toponyme |
 
 ---
 
-## 💰 KOSTENRECHNUNG (KORRIGIERT)
+## 💰 KOSTENRECHNUNG (FINAL NACH LIVE-TESTS)
 
-### Minimum (nur verifizierte Bugs)
-
-```
-Bug #1: Urb1 Hardcoding        6h × 150€ =    900€
-Bug #3: page_number             4h × 150€ =    600€
-Testing & Code Review           2h × 150€ =    300€
-────────────────────────────────────────────────
-REINE ENTWICKLUNG:            12h         1.800€
-
-× Overhead (1.3x für Testing/Deploy):     2.340€
-════════════════════════════════════════════════
-TOTAL MINIMUM:                           2.340€
-```
-
-### Mit Gazetteer (falls kaputt)
+### Verifizierte Bugs (alle 3)
 
 ```
-Minimum                                  2.340€
-+ Gazetteer Fix                4h × 150€   600€
-────────────────────────────────────────────────
-TOTAL MIT GAZETTEER:                     2.940€
+Bug #1: Fehlende IIIF + Hardcoding  4h × 150€ =    600€
+Bug #2: IIIF-Viewer nicht rendering 8h × 150€ =  1.200€
+Bug #3: page_number ignoriert       4h × 150€ =    600€
+Testing & Code Review               2h × 150€ =    300€
+────────────────────────────────────────────────────
+REINE ENTWICKLUNG:                18h         2.700€
+
+× Overhead (1.3x für Deploy/Kommunikation):     3.510€
+════════════════════════════════════════════════════
+TOTAL:                                          3.510€
 ```
 
-### Vergleich zur ursprünglichen Schätzung
+**Timeline:** 3 Wochen (15 Arbeitstage)
+
+### Vergleich: Schätzungen im Zeitverlauf
 
 ```
-ALTE SCHÄTZUNG (falsch):       ~10.000€  (35-40h)
-NEUE SCHÄTZUNG (verifiziert):   ~2.340€  (12h)
-────────────────────────────────────────────────
-DIFFERENZ:                      -7.660€  (-77%!)
+URSPRÜNGLICH (vor Code-Analyse):   ~10.000€  (35-40h, 5 Bugs)
+NACH CODE-ANALYSE (v2.0):           ~2.340€  (12h, 2 Bugs)
+NACH LIVE-TESTS (v3.0):             ~3.510€  (18h, 3 Bugs)
+──────────────────────────────────────────────────────────
+DIFFERENZ zu ursprünglich:          -6.490€  (-65%!)
+DIFFERENZ zu v2.0:                  +1.170€  (+50%)
 ```
+
+**Grund für Erhöhung v2.0 → v3.0:**
+- Bug #2 wurde als "kein Bug" eingeschätzt (nur Code-Analyse)
+- Live-Tests zeigten: Viewer rendert NICHT (JavaScript-Problem)
+- +8h JavaScript-Debugging nötig
 
 ---
 
-## 🎯 EMPFEHLUNGEN
+## 🎯 EMPFEHLUNGEN (FINAL)
 
-### Was JETZT tun?
+### Was JETZT implementieren?
 
-1. **Bug #1 und #3 fixen** (12h, 2.340€)
-   - Direkt im Repo implementieren
-   - Pull Requests erstellen
-   - Code ist klar, keine Unklarheiten
+1. **Alle 3 Bugs fixen** (18h, 3.510€)
+   - Bug #1: Fallback-Logik (4h)
+   - Bug #2: IIIF-Viewer JavaScript-Fix (8h)
+   - Bug #3: page_number Navigation (4h)
+   - Testing & Review (2h)
 
-2. **Gazetteer via Browser testen**
-   - Live-Site öffnen: https://lasfera.rrchnm.org/toponyms
-   - Funktioniert Map? → Kein Fix nötig
-   - Funktioniert nicht? → +4h Fix
+2. **Gazetteer: KEIN FIX NÖTIG**
+   - Live-Tests bestätigen: Funktioniert perfekt
+   - ~80 Toponyme, keine Performance-Probleme
+   - Leaflet-Map rendert einwandfrei
 
-3. **Laura NICHT über Bug #2 informieren**
-   - Viewer ist vorhanden (Code beweist es)
-   - Wenn Laura sagt "Viewer fehlt" → Browser-Problem, nicht Code
+3. **Priorität für Laura-Meeting**
+   - Bug #2 demonstrieren (Viewer fehlt)
+   - Bug #1 erklären (aber Daten-Problem dominiert)
+   - Bug #3 zeigen (page_number funktioniert nicht)
 
 ### Was Laura fragen?
 
-Nur wenn du Meeting hast:
-1. "Funktioniert der Gazetteer bei euch?" (Browser-Test)
-2. "Habt ihr Probleme mit anderen Manuscripts außer Urb1?" (Bug #1 User-Impact)
-3. "Braucht ihr Deep-Links zu bestimmten Seiten?" (Bug #3 Relevanz)
+Im Meeting:
+1. "Siehst du den IIIF-Viewer auf /stanzas/?" → Demonstrieren dass er fehlt
+2. "Welche Manuscripts außer Urb1 nutzt du?" → Priorisierung für IIIF-Manifest-Erfassung
+3. "Brauchst du Deep-Links zu spezifischen Seiten?" → Bug #3 Relevanz
 
 ---
 
 ## 📝 VERSIONS-HISTORIE
 
-**v2.0 (28. Oktober 2025):** Vollständige Verifikation durch Code-Analyse
-- Bug #2 als NICHT-BUG identifiziert
-- Bug #4 als bereits gefixt identifiziert
-- Kosten von 10k€ auf 2.3k€ korrigiert
+**v3.0 (28. Oktober 2025):** LIVE-SITE VERIFIKATION
+- Bug #2: "KEIN BUG" → "EXISTIERT DOCH!" (Viewer rendert nicht)
+- Bug #5 (Gazetteer): "UNKLAR" → "FUNKTIONIERT PERFEKT"
+- Kosten: 2.340€ → 3.510€ (+50%)
+- Aufwand: 12h → 18h
+- Methodik: Code-Analyse + Live-Site Browser-Tests
+
+**v2.0 (28. Oktober 2025):** Code-Analyse
+- Bug #2 als NICHT-BUG identifiziert (FALSCH - nur Code geprüft!)
+- Bug #4 als bereits gefixt identifiziert (KORREKT)
+- Kosten von 10k€ auf 2.3k€ reduziert
 
 **v1.0 (28. Oktober 2025):** Initiale Analyse (enthielt falsche Annahmen)
 

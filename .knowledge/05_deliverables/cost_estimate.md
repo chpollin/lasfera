@@ -1,25 +1,31 @@
 # La Sfera - Kost enkalkulation (VERIFIZIERT)
 
-**Datum:** 28. Oktober 2025 (aktualisiert nach Code-Verifikation)
+**Datum:** 28. Oktober 2025 (aktualisiert nach Live-Site Tests)
 **Anbieter:** DH Craft - Christopher Pollin
 **Stundensatz:** 150€/h
 **Kunde:** Laura Morreale, RRCHNM
 
 ---
 
-## ⚠️ WICHTIGE AKTUALISIERUNG
+## ⚠️ FINALE AKTUALISIERUNG (NACH LIVE-TESTS)
 
 **Ursprüngliche Schätzung (vor Verifikation):**
 - Annahme: 5 Bugs
 - Aufwand: 35-40h
 - Kosten: ~10.000€
 
-**Nach vollständiger Code-Verifikation:**
-- **Tatsächlich:** 2 Bugs (3 waren Fehlannahmen!)
-- **Aufwand:** 7-11h reine Entwicklung
-- **Kosten:** ~2.340€ (mit Overhead)
+**Nach Code-Analyse (v2.0):**
+- 2 Bugs identifiziert
+- Aufwand: 12h
+- Kosten: ~2.340€
 
-**Einsparung: -77% (-7.660€)**
+**Nach Live-Site Browser-Tests (v3.0 - FINAL):**
+- **Tatsächlich:** 3 Bugs (Bug #2 existiert doch!)
+- **Aufwand:** 18h reine Entwicklung
+- **Kosten:** ~3.510€ (mit Overhead)
+
+**Einsparung gegenüber Original: -65% (-6.490€)**
+**Änderung v2.0 → v3.0: +50% (+1.170€)**
 
 ---
 
@@ -39,14 +45,20 @@ Reine Entwicklungszeit
 
 ---
 
-## SZENARIO A: Verifizierte Bugs (EMPFOHLEN)
+## SZENARIO A: Alle verifizierten Bugs (EMPFOHLEN)
 
 ### Umfang
 
-**Bug #1: Urb1-Hardcoding entfernen**
+**Bug #1: Fehlende IIIF-Manifeste + Hardcoding-Fallback**
 - 5 Hardcoded-Stellen in manuscript/views.py
-- Konfigurierbare Fallback-Logik implementieren
-- Sichere Exception-Handling
+- Verbesserte Fallback-Logik implementieren
+- Aussagekräftige Fehler meldungen
+
+**Bug #2: IIIF-Viewer rendert nicht**
+- JavaScript-Debugging auf Live-Site
+- Tify-Initialisierung korrigieren
+- AlpineJS-Komponenten prüfen
+- Template-Variablen verifizieren
 
 **Bug #3: page_number Parameter implementieren**
 - Canvas-ID Berechnung aus IIIF-Manifest
@@ -56,45 +68,54 @@ Reine Entwicklungszeit
 ### Zeitschätzung
 
 ```
-Bug #1: Urb1 Hardcoding
-  - Fallback-Logik refactoren       2-3h
-  - 5 Hardcodes ändern               1-2h
+Bug #1: IIIF-Manifeste + Hardcoding
+  - Fallback-Logik refactoren       2h
+  - 5 Hardcodes ändern               1h
   - Testing                          1h
-  Subtotal:                          4-6h
+  Subtotal:                          4h
+
+Bug #2: IIIF-Viewer JavaScript
+  - Browser DevTools Debugging      2h
+  - Root-Cause identifizieren       2h
+  - Fix implementieren               3h
+  - Testing                          1h
+  Subtotal:                          8h
 
 Bug #3: page_number Parameter
-  - Canvas-ID Berechnung             2-3h
+  - Canvas-ID Berechnung             2h
   - Template-Variable                0.5h
   - Error-Handling                   0.5h
   - Testing                          1h
-  Subtotal:                          3-5h
+  Subtotal:                          4h
 
 Code Review:                         1h
 Deployment & Testing:                1h
 ─────────────────────────────────────
-REINE ENTWICKLUNG:                   9-13h
+REINE ENTWICKLUNG:                   18h
 
-× Overhead (1.3x):                   12-17h
+× Overhead (1.3x):                   23.4h
 ─────────────────────────────────────
-GESAMT:                              12-17h
+GESAMT:                              23.4h
 ```
 
 ### Preis
 
 ```
-Best Case:   12h × 150€ = 1.800€
-Realistic:   14h × 150€ = 2.100€
-Worst Case:  17h × 150€ = 2.550€
-─────────────────────────────────────
-EMPFOHLEN:                2.340€ (15.6h)
+Entwicklung:        18h × 150€ = 2.700€
+× Overhead (1.3x):               +  810€
+───────────────────────────────────────
+TOTAL:                            3.510€
 ```
+
+**Timeline:** 3 Wochen (15 Arbeitstage)
 
 ### Enthält
 
-- ✅ Bug #1: Urb1-Hardcoding komplett entfernt
+- ✅ Bug #1: Hardcoding-Fallback verbessert
+- ✅ Bug #2: IIIF-Viewer JavaScript-Fix
 - ✅ Bug #3: page_number Navigation funktioniert
 - ✅ Code Review
-- ✅ Unit Tests für beide Fixes
+- ✅ Unit Tests für alle Fixes
 - ✅ Deployment zu Dev/Staging
 - ✅ 2 Wochen Bug-Fix Garantie
 
