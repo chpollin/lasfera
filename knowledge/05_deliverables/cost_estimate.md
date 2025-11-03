@@ -390,6 +390,142 @@ Verfällt nicht, rolliert
 
 ---
 
+## SZENARIO D: Task Analysis - Full Scope (NEU)
+
+**Basierend auf:** Task Analysis and Status Report.md (Nov 3, 2025)
+**Status:** EXPLORATIV - Zeigt GESAMTES Projekt-Scope
+
+### Scope-Erweiterung vs. Bug-Only
+
+**Bug-Only (Szenario A):** 3.510€
+**Task Analysis (alle Tasks):** 26.200€ - 73.500€
+
+**HINWEIS:** Dies ist 7-20x mehr als ursprüngliche Bug-Schätzung!
+
+### Phase-by-Phase Breakdown
+
+#### PHASE 1: Quick Wins (Sofort umsetzbar)
+**Tasks:** 8 Tasks (A1, A2, A3, B1, B2, B3, C1, D1)
+**Aufwand:** 20-27h reine Entwicklung
+**Mit Overhead (1.55x):** 31-42h
+**Kosten:** 4.650€ - 6.300€
+**Timeline:** 3-4 Wochen
+
+**Enthält:**
+- Urb1 Hardcoding entfernen (Bug #1)
+- page_number Fix (Bug #3)
+- Introduction Button hinzufügen
+- Gazetteer Links fixen
+- Gazetteer Popups verbessern
+- Manuscript List wiederherstellen
+- Gallery Documentation schreiben
+- Logging Enhancement
+
+**Nicht enthält:**
+- Bug #2 (IIIF Viewer) - das ist Phase 2
+
+---
+
+#### PHASE 2: IIIF Integration (Komplex)
+**Tasks:** 2 Tasks (E1, E2)
+**Aufwand:** 35-55h reine Entwicklung
+**Mit Overhead (1.55x):** 54-85h
+**Kosten:** 8.100€ - 12.750€
+**Timeline:** 4-6 Wochen
+
+**Enthält:**
+- IIIF Viewer auf /stanzas/ (Bug #2)
+- MSS IIIF Integration (falls gewünscht)
+
+**Risiko:** JavaScript-Debugging kann länger dauern
+
+---
+
+#### PHASE 3: Backend/Datenbank (Größte Komponente)
+**Tasks:** 10 Tasks (F1-F5, G1-G3, plus Support)
+**Aufwand:** 89-151h reine Entwicklung
+**Mit Overhead (1.55x):** 138-234h
+**Kosten:** 20.700€ - 35.100€
+**Timeline:** 10-15 Wochen
+
+**Enthält:**
+- Textual Variant Data Model Revision
+- Textual Variant Import Scripts
+- Textual Variant Display
+- Toponym Bidirectional Links
+- Annotation Toponym Links
+- WHG Integration (World Historical Gazetteer)
+
+**CRITICAL BLOCKER:** Braucht Daten von:
+- Laura Ingallinella (Variant Dataset, due Feb 28, 2026)
+- Carrie Benes (Toponym Dataset, no date specified)
+
+**Kann NICHT starten bis Daten geliefert!**
+
+---
+
+#### PHASE 4: Content Support (Developer Support für Content Team)
+**Tasks:** 5 Developer-Support Tasks
+**Aufwand:** 10-20h (only when content delivered)
+**Mit Overhead (1.55x):** 15-31h
+**Kosten:** 2.250€ - 4.650€
+**Timeline:** Abhängig von Content-Lieferung
+
+**Wartezeit:** Monate (Content wird von Laura/Carrie erstellt)
+
+---
+
+### Scenario Comparison (Updated mit Task Analysis)
+
+| Scenario | Scope | Aufwand | Kosten | Timeline | Status |
+|----------|-------|---------|--------|----------|--------|
+| **A: Bug-Only** | 3 Bugs | 18h | 3.510€ | 3 Wochen | EMPFOHLEN |
+| **B: Bug + Gazetteer** | 4 Bugs | 22h | 4.290€ | 3 Wochen | Falls nötig |
+| **D1: Phase 1** | 8 Quick Wins | 31-42h | 4.650€-6.300€ | 3-4 Wochen | LOW RISK |
+| **D2: Phase 1+2** | + IIIF | 85-127h | 12.750€-19.050€ | 7-10 Wochen | MEDIUM RISK |
+| **D3: Phase 1+2+3** | + Backend | 223-361h | 33.450€-54.150€ | 17-25 Wochen | HIGH RISK |
+| **D4: FULL SCOPE** | All Phases | 238-395h | 35.700€-59.250€ | 20-30 Wochen | VERY HIGH RISK |
+
+---
+
+### EMPFEHLUNG: Iterative Approach
+
+**START WITH:** Szenario D1 (Phase 1 Quick Wins) - 6.300€ max
+**RATIONALE:**
+- Alle 8 Tasks sind LOW-RISK (keine Daten-Dependencies)
+- SOFORT umsetzbar (lokales Docker läuft)
+- Hoher Wert (8 Issues gelöst)
+- Schnelles Ergebnis (3-4 Wochen)
+
+**THEN DECIDE:** Nach Phase 1 Review
+- Laura kann Phase 2 (IIIF) genehmigen (+12.750€)
+- ODER auf Daten warten für Phase 3 (Backend)
+- ODER stoppen (Phase 1 ist bereits wertvoll)
+
+**AVOID:** Full Scope Commitment (D4) upfront
+- Zu viele Unbekannte
+- Daten-Dependencies unklar
+- 59k€ Risiko ohne Proof-of-Concept
+
+---
+
+### Budget Szenarien - Zusammenfassung
+
+```
+BUG-ONLY (Minimal):              3.510€   (3 Wochen)
+QUICK WINS (Phase 1):            6.300€   (4 Wochen)
++ IIIF (Phase 1+2):             19.050€   (10 Wochen)
++ BACKEND (Phase 1+2+3):        54.150€   (25 Wochen)
+FULL SCOPE (All Phases):        59.250€   (30 Wochen)
+```
+
+**Empfohlener Pfad:**
+1. START: Bug-Only (3.510€) ODER Phase 1 (6.300€)
+2. REVIEW: Nach 3-4 Wochen
+3. DECIDE: Weitermachen oder stoppen?
+
+---
+
 ## Kontakt & Fragen
 
 **DH Craft**
@@ -400,6 +536,7 @@ www.dhcraft.org
 **Rückfragen?**
 - Zoom-Call gewünscht? (kostenlos, 30 min)
 - Detaillierte Code-Analyse gewünscht? (in bug_inventory.md)
+- Task Analysis Review gewünscht? (in IMPLEMENTATION_ROADMAP.md)
 - Proof-of-Concept für Bug #1 gewünscht?
 
 ---
@@ -409,8 +546,11 @@ www.dhcraft.org
 1. [Bug Inventory (Verifiziert)](../03_bugs/bug_inventory.md) - Detaillierte Code-Analyse
 2. [Tech Stack](../02_technical/tech_stack.md) - System-Übersicht
 3. [Project Overview](../01_project/overview.md) - Kontext & Team
+4. [Implementation Roadmap](../IMPLEMENTATION_ROADMAP.md) - Vollständiger Task-Plan (NEU!)
+5. [Task Tracking](../07_implementation/task_tracking.md) - Sprint Planning (NEU!)
 
 ---
 
-**Version:** 2.0 (verifiziert nach Code-Analyse)
-**Nächstes Update:** Nach Beauftragung
+**Version:** 3.0 (aktualisiert mit Task Analysis)
+**Nächstes Update:** Nach Meeting mit Laura
+**Wichtigste Änderung:** Full Scope ist 7-20x größer als ursprüngliche Bug-Schätzung!
