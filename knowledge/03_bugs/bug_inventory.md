@@ -86,11 +86,10 @@ except SingleManuscript.DoesNotExist:
             raise Http404("No manuscripts available")
 ```
 
-**Aufwand:** 4 Stunden (reduziert, da weniger kritisch)
-- Fallback-Logik refactoren: 2h
-- Alle 5 Hardcodes ändern: 1h
-- Testing: 1h
-- **Kosten:** 600€
+**Complexity:** MEDIUM
+- Fallback-Logik refactoren
+- Alle 5 Hardcodes ändern
+- Testing required
 
 ---
 
@@ -113,12 +112,11 @@ except SingleManuscript.DoesNotExist:
 - Live-Tests zeigen: "Viewer rendert NICHT"
 - Problem: JS-Initialisierung, AlpineJS-Problem, oder missing dependency
 
-**Aufwand:** 8 Stunden (JavaScript-Debugging komplex)
-- Browser DevTools Debugging: 2h
-- Root-Cause identifizieren: 2h
-- Fix implementieren: 3h
-- Testing: 1h
-- **Kosten:** 1.200€
+**Complexity:** MEDIUM-HIGH (JavaScript debugging complex)
+- Browser DevTools Debugging
+- Root-Cause identifizieren
+- Fix implementieren
+- Testing
 
 ---
 
@@ -183,12 +181,11 @@ def mirador_view(request, manuscript_id, page_number):
     })
 ```
 
-**Aufwand:** 4 Stunden
-- Canvas-ID Berechnung implementieren: 2h
-- Template-Variable übergeben: 0.5h
-- Bounds-Checking & Error-Handling: 0.5h
-- Testing: 1h
-- **Kosten:** 600€
+**Complexity:** MEDIUM
+- Canvas-ID Berechnung implementieren
+- Template-Variable übergeben
+- Bounds-Checking & Error-Handling
+- Testing
 
 ---
 
@@ -330,13 +327,13 @@ except Exception as e:
 
 ### Verifizierte Bugs
 
-| Bug | Status | Severity | Aufwand | Kosten (150€/h) |
-|-----|--------|----------|---------|-----------------|
-| #1: Fehlende IIIF + Hardcoding | ✅ BESTÄTIGT | KRITISCH | 4h | 600€ |
-| #2: IIIF-Viewer rendert nicht | ✅ BESTÄTIGT | HOCH | 8h | 1.200€ |
-| #3: page_number ignoriert | ✅ BESTÄTIGT | MITTEL | 4h | 600€ |
-| Testing & Review | | | 2h | 300€ |
-| **SUBTOTAL** | | | **18h** | **2.700€** |
+| Bug | Status | Severity | Complexity |
+|-----|--------|----------|------------|
+| #1: Fehlende IIIF + Hardcoding | ✅ BESTÄTIGT | KRITISCH | MEDIUM |
+| #2: IIIF-Viewer rendert nicht | ✅ BESTÄTIGT | HOCH | MEDIUM-HIGH |
+| #3: page_number ignoriert | ✅ BESTÄTIGT | MITTEL | MEDIUM |
+| Testing & Review | | | Required |
+| **TOTAL** | | | **3 bugs** |
 
 ### Nicht-Bugs (verifiziert als korrekt)
 
@@ -347,21 +344,17 @@ except Exception as e:
 
 ---
 
-## 💰 KOSTENRECHNUNG (FINAL NACH LIVE-TESTS)
+## 📊 SCOPE SUMMARY (FINAL NACH LIVE-TESTS)
 
 ### Verifizierte Bugs (alle 3)
 
 ```
-Bug #1: Fehlende IIIF + Hardcoding  4h × 150€ =    600€
-Bug #2: IIIF-Viewer nicht rendering 8h × 150€ =  1.200€
-Bug #3: page_number ignoriert       4h × 150€ =    600€
-Testing & Code Review               2h × 150€ =    300€
+Bug #1: Fehlende IIIF + Hardcoding  MEDIUM complexity
+Bug #2: IIIF-Viewer nicht rendering MEDIUM-HIGH complexity
+Bug #3: page_number ignoriert       MEDIUM complexity
+Testing & Code Review               Required
 ────────────────────────────────────────────────────
-REINE ENTWICKLUNG:                18h         2.700€
-
-× Overhead (1.3x für Deploy/Kommunikation):     3.510€
-════════════════════════════════════════════════════
-TOTAL:                                          3.510€
+TOTAL:                              3 bugs verified
 ```
 
 **Timeline:** 3 Wochen (15 Arbeitstage)
@@ -369,18 +362,18 @@ TOTAL:                                          3.510€
 ### Vergleich: Schätzungen im Zeitverlauf
 
 ```
-URSPRÜNGLICH (vor Code-Analyse):   ~10.000€  (35-40h, 5 Bugs)
-NACH CODE-ANALYSE (v2.0):           ~2.340€  (12h, 2 Bugs)
-NACH LIVE-TESTS (v3.0):             ~3.510€  (18h, 3 Bugs)
+URSPRÜNGLICH (vor Code-Analyse):   5 Bugs (COMPLEX scope)
+NACH CODE-ANALYSE (v2.0):           2 Bugs (too optimistic)
+NACH LIVE-TESTS (v3.0):             3 Bugs (verified)
 ──────────────────────────────────────────────────────────
-DIFFERENZ zu ursprünglich:          -6.490€  (-65%!)
-DIFFERENZ zu v2.0:                  +1.170€  (+50%)
+DIFFERENZ zu ursprünglich:          -2 bugs (-40%)
+DIFFERENZ zu v2.0:                  +1 bug (+50%)
 ```
 
 **Grund für Erhöhung v2.0 → v3.0:**
 - Bug #2 wurde als "kein Bug" eingeschätzt (nur Code-Analyse)
 - Live-Tests zeigten: Viewer rendert NICHT (JavaScript-Problem)
-- +8h JavaScript-Debugging nötig
+- Additional JavaScript debugging needed
 
 ---
 
@@ -388,11 +381,11 @@ DIFFERENZ zu v2.0:                  +1.170€  (+50%)
 
 ### Was JETZT implementieren?
 
-1. **Alle 3 Bugs fixen** (18h, 3.510€)
-   - Bug #1: Fallback-Logik (4h)
-   - Bug #2: IIIF-Viewer JavaScript-Fix (8h)
-   - Bug #3: page_number Navigation (4h)
-   - Testing & Review (2h)
+1. **Alle 3 Bugs fixen** (3 weeks timeline)
+   - Bug #1: Fallback-Logik (MEDIUM)
+   - Bug #2: IIIF-Viewer JavaScript-Fix (MEDIUM-HIGH)
+   - Bug #3: page_number Navigation (MEDIUM)
+   - Testing & Review (Required)
 
 2. **Gazetteer: KEIN FIX NÖTIG**
    - Live-Tests bestätigen: Funktioniert perfekt

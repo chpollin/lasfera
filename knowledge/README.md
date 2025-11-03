@@ -26,14 +26,14 @@
 
 ### 🚨 LIVE-SITE VERIFIKATION ABGESCHLOSSEN!
 
-**Ursprüngliche Annahme (v1.0):** 5 Bugs, ~10.000€
-**Nach Code-Analyse (v2.0):** 2 Bugs, ~2.340€ (-77%) ← ZU OPTIMISTISCH!
-**Nach Live-Tests (v3.0):** **3 Bugs, ~3.510€** (-65% vs. Original)
+**Ursprüngliche Annahme (v1.0):** 5 Bugs
+**Nach Code-Analyse (v2.0):** 2 Bugs ← ZU OPTIMISTISCH!
+**Nach Live-Tests (v3.0):** **3 Bugs verified**
 
 ### Kritische Korrektur v2.0 → v3.0:
 - **Bug #2 existiert doch!** (Viewer rendert nicht, JavaScript-Problem)
 - **Gazetteer funktioniert perfekt** (kein Fix nötig)
-- **+1.170€ / +50%** gegenüber v2.0
+- **+1 bug / +50% complexity** gegenüber v2.0
 
 **Siehe:** [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md) für Details
 **Siehe:** [VERIFICATION_REPORT.md](../VERIFICATION_REPORT.md) für Live-Test Ergebnisse
@@ -86,21 +86,20 @@
 - Implementation Roadmap erstellt (Phase 1-4)
 - Task Tracking System aufgesetzt (Sprint-basiert)
 - GitHub Issues Inventory erstellt (8 Issues)
-- Kosten-Update: 3.510€ (Bug-Only) bis 59.250€ (Full Scope)
+- Scope ranges from 3 bugs (SIMPLE) to full project (53 tasks, COMPLEX)
 - IMPLEMENTATION_ROADMAP.md erstellt (15.000+ Wörter)
 
 **v3.0 (2025-10-28):** ✅ LIVE-SITE VERIFIKATION ABGESCHLOSSEN
 - **KRITISCHE KORREKTUR:** Bug #2 existiert doch! (Viewer rendert nicht)
 - Gazetteer funktioniert perfekt (kein Fix nötig)
-- Bugs: 2 → 3 (+50%)
-- Kosten: 2.340€ → 3.510€ (+50%)
+- Bugs: 2 → 3 bugs verified
 - Methodik: Code-Analyse + Live-Site Browser-Tests
 - VERIFICATION_REPORT.md erstellt (10.500 Wörter)
 
 **v2.1 (2025-10-28):** CODE-VERIFIKATION (ZU OPTIMISTISCH!)
 - Bugs von 5 auf 2 reduziert
 - Bug #2 als "KEIN BUG" eingestuft (FALSCH - nur Code geprüft!)
-- Kosten auf 2.340€ geschätzt (zu niedrig)
+- Estimate too optimistic (revised upward in v3.0)
 
 **v2.0 (2025-10-28):** Vollständiger Knowledge Vault mit strukturierter Ablage
 **v1.0 (2025-10-28):** Initiale Analyse (enthielt falsche Annahmen)
@@ -118,12 +117,12 @@ Versions-Historie am Ende jedes Dokuments dokumentiert Änderungen.
 ## Wichtige Lektionen
 
 ### Lektion 1: Code-Analyse allein reicht nicht!
-v2.0 hatte Bug #2 als "nicht existent" eingestuft, weil Template-Code vorhanden war. Live-Browser-Tests zeigten: Viewer rendert trotzdem nicht (JavaScript-Problem). **Impact:** +8h, +1.200€.
+v2.0 hatte Bug #2 als "nicht existent" eingestuft, weil Template-Code vorhanden war. Live-Browser-Tests zeigten: Viewer rendert trotzdem nicht (JavaScript-Problem). **Impact:** Additional complexity identified.
 
 **Fazit:** Immer Code-Analyse + Live-Site Tests kombinieren!
 
 ### Lektion 2: Scope-Creep ist real!
-v1.0-v3.0 fokussierte auf Bug-Fixes (3.510€). Task Analysis Report zeigt: Full Project Scope ist **53 Tasks, 59.250€** - das ist 17x mehr!
+v1.0-v3.0 fokussierte auf Bug-Fixes (3 bugs). Task Analysis Report zeigt: Full Project Scope ist **53 Tasks** - das ist 17x mehr!
 
 **Fazit:** Meeting Notes enthalten VIEL mehr als ursprüngliche Bug-Liste. Immer ALLE Dokumente lesen!
 
@@ -137,12 +136,12 @@ Phase 3 (Backend Integration) braucht:
 ## KRITISCHE ERKENNTNIS (v4.0)
 
 **BUG-FIXES vs. FULL PROJECT:**
-- Bug-Only: 3 Bugs, 18h, 3.510€
-- Task Analysis: 53 Tasks, 238-395h, 35.700€-59.250€
-- **Faktor: 17-20x Unterschied!**
+- Bug-Only: 3 Bugs (SIMPLE to MEDIUM complexity)
+- Task Analysis: 53 Tasks (ranging from SIMPLE to COMPLEX)
+- **Faktor: 17-20x Unterschied in scope!**
 
 **EMPFEHLUNG:** Iterativer Ansatz
-1. START: Phase 1 Quick Wins (6.300€, 4 Wochen)
+1. START: Phase 1 Quick Wins (4 Wochen)
 2. REVIEW: Laura entscheidet ob weiter
 3. THEN: Phase 2 oder Phase 3 (wenn Daten ready)
 

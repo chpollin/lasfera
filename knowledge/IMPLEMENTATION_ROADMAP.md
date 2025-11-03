@@ -10,8 +10,8 @@
 ## EXECUTIVE SUMMARY
 
 **Gesamtübersicht:** 53 identifizierte Tasks aus Meeting Notes
-- **SOFORT umsetzbar (Developer):** 8 Tasks (15-25h)
-- **Braucht Backend/DB:** 12 Tasks (40-80h)
+- **SOFORT umsetzbar (Developer):** 8 Tasks (SIMPLE to MEDIUM complexity)
+- **Braucht Backend/DB:** 12 Tasks (MEDIUM to COMPLEX)
 - **Braucht Content von Laura/Carrie:** 18 Tasks (nicht Developer-Aufgabe)
 - **BLOCKED/Low Priority:** 8 Tasks
 - **Unklar/Need Clarification:** 7 Tasks
@@ -22,13 +22,13 @@
 
 ## 1. SOFORT UMSETZBAR (Ohne zusätzliche Daten)
 
-### CATEGORY A: Navigation & UI Quick Wins (1-3h pro Task)
+### CATEGORY A: Navigation & UI Quick Wins (SIMPLE)
 
 #### Task A1: Add "Introduction" Button to Navigation Bar
 **Source:** Project 4, HIGH PRIORITY, Due: Oct 17, 2025 (überfällig)
 **Owner:** Jason Heppler (originally)
 **Files:** `templates/base.html` oder Wagtail Navigation Template
-**Aufwand:** 1-2h
+**Complexity:** SIMPLE
 **Dependencies:** KEINE (Content-Seite sollte bereits existieren)
 
 **Implementation:**
@@ -53,7 +53,7 @@
 #### Task A2: Fix Broken Links in Gazetteer Landing Page Map
 **Source:** Project 6, HIGH PRIORITY
 **Files:** `templates/manuscript/toponyms.html`, `manuscript/views.py:952`
-**Aufwand:** 2-3h (debugging + fix)
+**Complexity:** SIMPLE (debugging + fix)
 
 **Symptoms:**
 - "Broken links" nicht spezifiziert
@@ -83,7 +83,7 @@ def toponyms(request: HttpRequest):
 **Files:**
 - `templates/manuscript/toponyms.html` (Leaflet init)
 - `manuscript/views.py:1093` (ToponymViewSet)
-**Aufwand:** 2-4h
+**Complexity:** SIMPLE
 
 **Current Code Check:**
 ```python
@@ -112,7 +112,7 @@ L.marker([lat, lng]).bindPopup(`
 #### Task B1: Remove Urb1 Hardcoding (Bug #1)
 **Source:** Bug Inventory (bereits identifiziert)
 **Files:** `manuscript/views.py:489, 492, 498, 537, 694`
-**Aufwand:** 4h (bereits geplant)
+**Complexity:** MEDIUM
 **Status:** BEREIT ZUM IMPLEMENTIEREN (Code prepared)
 
 **Implementation:** Siehe `knowledge/03_bugs/bug_inventory.md`
@@ -124,7 +124,7 @@ L.marker([lat, lng]).bindPopup(`
 #### Task B2: Fix page_number Parameter (Bug #3)
 **Source:** Bug Inventory
 **Files:** `manuscript/views.py:485-506`
-**Aufwand:** 4h
+**Complexity:** MEDIUM
 **Status:** BEREIT ZUM IMPLEMENTIEREN
 
 **READY TO GO:** ✅ Ja, Branch `fix/mirador-page-number` kann erstellt werden
@@ -134,7 +134,7 @@ L.marker([lat, lng]).bindPopup(`
 #### Task B3: Fix Silent Exceptions
 **Source:** Bug Inventory (bereits als "fixed" verifiziert, aber Logging verbessern)
 **Files:** `manuscript/models.py`, `manuscript/resources.py`
-**Aufwand:** 2-3h
+**Complexity:** SIMPLE
 **Status:** OPTIONAL (Code ist bereits korrekt, aber Logging kann erweitert werden)
 
 **Enhancement:**
@@ -158,7 +158,7 @@ logger.warning(
 - `manuscript/views.py` (create/reactivate view)
 - `manuscript/urls.py` (add route)
 - `templates/manuscript/manuscript_list.html` (create/find)
-**Aufwand:** 3-5h
+**Complexity:** MEDIUM
 
 **Investigation:**
 ```bash
@@ -187,7 +187,7 @@ def manuscript_list(request):
 #### Task C2: Update About Page Team Members
 **Source:** Project 5, HIGH PRIORITY, Due: Oct 31, 2025 (überfällig)
 **Files:** Wagtail CMS-Seite oder `templates/about.html`
-**Aufwand:** 1-2h (wenn Content bereitgestellt wird)
+**Complexity:** SIMPLE (wenn Content bereitgestellt wird)
 
 **BLOCKED BY:** Content von Laura/Carrie
 
@@ -204,7 +204,7 @@ def manuscript_list(request):
 #### Task D1: Write Documentation for Adding Gallery Images
 **Source:** Project 2, MEDIUM/HIGH Priority, Due: Oct 17, 2025
 **Files:** Create `docs/gallery_images.md` or update README
-**Aufwand:** 2-3h
+**Complexity:** SIMPLE
 **Owner:** Jason Heppler (originally)
 
 **Content:**
@@ -231,19 +231,18 @@ def manuscript_list(request):
 
 ### **PHASE 1 SUMMARY: Quick Wins**
 
-| Task | Priority | Aufwand | Dependencies | Status |
-|------|----------|---------|--------------|--------|
-| A1: Introduction Button | HIGH | 1-2h | Content-Check | READY (if content exists) |
-| A2: Fix Gazetteer Links | HIGH | 2-3h | Live-Site Debug | NEEDS INVESTIGATION |
-| A3: Improve Popups | HIGH | 2-4h | Laura Input | NEEDS DESIGN |
-| B1: Urb1 Hardcoding | HIGH | 4h | NONE | ✅ READY |
-| B2: page_number Fix | MED | 4h | NONE | ✅ READY |
-| B3: Logging Enhancement | LOW | 2-3h | NONE | OPTIONAL |
-| C1: Manuscript List | MED | 3-5h | Git History | NEEDS INVESTIGATION |
-| D1: Gallery Docs | MED | 2-3h | NONE | ✅ READY |
+| Task | Priority | Complexity | Dependencies | Status |
+|------|----------|------------|--------------|--------|
+| A1: Introduction Button | HIGH | SIMPLE | Content-Check | READY (if content exists) |
+| A2: Fix Gazetteer Links | HIGH | SIMPLE | Live-Site Debug | NEEDS INVESTIGATION |
+| A3: Improve Popups | HIGH | SIMPLE | Laura Input | NEEDS DESIGN |
+| B1: Urb1 Hardcoding | HIGH | MEDIUM | NONE | ✅ READY |
+| B2: page_number Fix | MED | MEDIUM | NONE | ✅ READY |
+| B3: Logging Enhancement | LOW | SIMPLE | NONE | OPTIONAL |
+| C1: Manuscript List | MED | MEDIUM | Git History | NEEDS INVESTIGATION |
+| D1: Gallery Docs | MED | SIMPLE | NONE | ✅ READY |
 
-**TOTAL PHASE 1:** 20-27h (3-4 Arbeitstage)
-**KOSTEN:** ~3.900€ (mit Overhead)
+**TOTAL PHASE 1:** 8 tasks (mix of SIMPLE and MEDIUM complexity)
 
 ---
 
@@ -259,16 +258,16 @@ def manuscript_list(request):
 - `templates/manuscript/stanzas.html`
 - `manuscript/views.py:550` (stanzas view)
 - `static/js/tify-sync.js`
-**Aufwand:** 20-30h
+**Complexity:** COMPLEX
 
 **Current Status:** Viewer code exists but doesn't render (JavaScript issue)
 
 **Sub-Tasks:**
-1. Debug why Tify doesn't initialize (2-3h)
-2. Fix JavaScript initialization (3-5h)
-3. Add canvas synchronization with text (8-12h)
-4. Test across different manuscripts (3-5h)
-5. Performance optimization (2-3h)
+1. Debug why Tify doesn't initialize
+2. Fix JavaScript initialization
+3. Add canvas synchronization with text
+4. Test across different manuscripts
+5. Performance optimization
 
 **COMPLEXITY:** HIGH
 - JavaScript debugging
@@ -285,7 +284,7 @@ def manuscript_list(request):
 #### Task E2: Add MSS to IIIF Integration on Edition Interface
 **Source:** Project 2, HIGH Priority, Due: Feb 13, 2026
 **Owner:** Jason Heppler (IN PROGRESS)
-**Aufwand:** 15-25h
+**Complexity:** COMPLEX
 
 **Interpretation:** "MSS" = Multiple Manuscripts gleichzeitig?
 **Possible Feature:** Compare view with multiple IIIF viewers side-by-side
@@ -305,7 +304,7 @@ def manuscript_list(request):
 **Source:** Project 1, MEDIUM/HIGH Priority
 **Owner:** Jason Heppler
 **Files:** `manuscript/models.py` (StanzaVariant model)
-**Aufwand:** 8-15h
+**Complexity:** MEDIUM
 
 **Current Model:** (needs inspection)
 ```python
@@ -327,7 +326,7 @@ class StanzaVariant(models.Model):
 **Files:**
 - `manuscript/resources.py` (import logic)
 - `manuscript/management/commands/load_textual_variants.py` (create?)
-**Aufwand:** 10-20h
+**Complexity:** MEDIUM
 
 **Requirements:**
 - Import CSV/Excel with textual variants
@@ -359,7 +358,7 @@ class Command(BaseCommand):
 **Files:**
 - `templates/manuscript/stanza_detail.html` (?)
 - CSS for variant highlighting
-**Aufwand:** 8-15h
+**Complexity:** MEDIUM
 
 **Features:**
 - Display variants inline or side-by-side
@@ -380,7 +379,7 @@ class Command(BaseCommand):
 - `manuscript/models.py` (ensure ManyToMany exists)
 - `templates/manuscript/toponym_detail.html`
 - `templates/manuscript/stanzas.html`
-**Aufwand:** 6-10h
+**Complexity:** MEDIUM
 
 **Current Status:** Check if ManyToMany relationship exists
 ```python
@@ -415,7 +414,7 @@ class Location(models.Model):
 **Files:**
 - `manuscript/models.py` (Annotation model?)
 - `templates/manuscript/stanzas.html` (rendering)
-**Aufwand:** 8-15h
+**Complexity:** MEDIUM
 
 **Feature:** Clickable toponyms in transcription text
 **Example:**
@@ -442,7 +441,7 @@ class Location(models.Model):
 #### Task G1: Create WHG Data Model
 **Source:** Project 7, MEDIUM Priority, Due: Mar 31, 2026
 **Owner:** Carrie Benes (IN PROGRESS)
-**Aufwand:** 10-15h (Backend Developer part)
+**Complexity:** MEDIUM (Backend Developer part)
 
 **WHG:** World Historical Gazetteer (https://whgazetteer.org/)
 
@@ -460,7 +459,7 @@ class Location(models.Model):
 #### Task G2: Create Toponym Dataset in WHG Format
 **Source:** Project 7, MEDIUM Priority, Due: Mar 31, 2026
 **Owner:** Carrie Benes (IN PROGRESS)
-**Aufwand:** 2-3h (Developer part: implement export script)
+**Complexity:** SIMPLE (Developer part: implement export script)
 
 **Implementation:**
 ```python
@@ -479,7 +478,7 @@ class Command(BaseCommand):
 #### Task G3: Add WHG Links to Toponym Pages [Not-SH]
 **Source:** Project 7, MEDIUM Priority, Due: Mar 31, 2026
 **Files:** `templates/manuscript/toponym_detail.html`
-**Aufwand:** 2-3h
+**Complexity:** SIMPLE
 
 **Implementation:**
 ```html
@@ -499,21 +498,20 @@ class Command(BaseCommand):
 
 ### **PHASE 2 SUMMARY: Backend/DB Changes**
 
-| Task | Priority | Aufwand | Dependencies | Status |
-|------|----------|---------|--------------|--------|
-| E1: IIIF Viewer /stanzas/ | HIGH | 20-30h | Laura approval | COMPLEX |
-| E2: MSS IIIF Integration | HIGH | 15-25h | Clarification | UNCLEAR |
-| F1: Variant Data Model | MED/HIGH | 8-15h | Issue #74, Laura | NEEDS REVIEW |
-| F2: Variant Importing | MED/HIGH | 10-20h | F1 done | BLOCKED |
-| F3: Variant Display | MED/HIGH | 8-15h | F1 done, Design | BLOCKED |
-| F4: Toponym Links | HIGH | 6-10h | Carrie dataset | DATA NEEDED |
-| F5: Annotation Links | HIGH | 8-15h | Carrie dataset | DATA NEEDED |
-| G1: WHG Data Model | MED | 10-15h | Carrie | IN PROGRESS |
-| G2: WHG Export | MED | 2-3h | G1 done | BLOCKED |
-| G3: WHG Links | MED | 2-3h | G2 done | BLOCKED |
+| Task | Priority | Complexity | Dependencies | Status |
+|------|----------|------------|--------------|--------|
+| E1: IIIF Viewer /stanzas/ | HIGH | COMPLEX | Laura approval | COMPLEX |
+| E2: MSS IIIF Integration | HIGH | COMPLEX | Clarification | UNCLEAR |
+| F1: Variant Data Model | MED/HIGH | MEDIUM | Issue #74, Laura | NEEDS REVIEW |
+| F2: Variant Importing | MED/HIGH | MEDIUM | F1 done | BLOCKED |
+| F3: Variant Display | MED/HIGH | MEDIUM | F1 done, Design | BLOCKED |
+| F4: Toponym Links | HIGH | MEDIUM | Carrie dataset | DATA NEEDED |
+| F5: Annotation Links | HIGH | MEDIUM | Carrie dataset | DATA NEEDED |
+| G1: WHG Data Model | MED | MEDIUM | Carrie | IN PROGRESS |
+| G2: WHG Export | MED | SIMPLE | G1 done | BLOCKED |
+| G3: WHG Links | MED | SIMPLE | G2 done | BLOCKED |
 
-**TOTAL PHASE 2:** 89-151h (11-19 Arbeitstage)
-**KOSTEN:** ~20.000€ (mit Overhead)
+**TOTAL PHASE 2:** 10 tasks (mostly MEDIUM to COMPLEX complexity)
 
 **CRITICAL:** Viele Tasks blockiert durch Data/Design-Entscheidungen
 
@@ -529,7 +527,7 @@ class Command(BaseCommand):
 **Deliverable:** Student-focused introduction content
 **Developer Part:** NONE (Wagtail CMS entry)
 
-**Developer Support (if needed):** Template adjustments (1-2h)
+**Developer Support (if needed):** Template adjustments (SIMPLE)
 
 ---
 
@@ -545,7 +543,7 @@ class Command(BaseCommand):
 **Owner:** Laura Morreale, Carrie
 **Developer Part:** NONE (data import wenn CSV geliefert)
 
-**IF Developer needed:** Import command schreiben (2-3h)
+**IF Developer needed:** Import command schreiben (SIMPLE)
 
 ---
 
@@ -570,14 +568,14 @@ class Command(BaseCommand):
 **Owner:** Carrie Benes
 **Developer Part:** NONE (wait for dataset)
 
-**Developer Task AFTER delivery:** Import script if format changes (2-3h)
+**Developer Task AFTER delivery:** Import script if format changes (SIMPLE)
 
 ---
 
 #### Task I2: Decide on Variant Display Criteria
 **Source:** Project 6, MEDIUM Priority
 **Owner:** Carrie + Laura (Content decision)
-**Developer Part:** Implement filter logic (3-5h) AFTER decision
+**Developer Part:** Implement filter logic (SIMPLE) AFTER decision
 
 ---
 
@@ -607,12 +605,11 @@ class Command(BaseCommand):
 
 | Task | Owner | Developer Part | Status |
 |------|-------|----------------|--------|
-| H1-H5 | Laura Morreale | Minimal (0-3h each) | WAITING FOR CONTENT |
-| I1-I3 | Carrie Benes | Import scripts (2-5h each) | WAITING FOR DATA |
+| H1-H5 | Laura Morreale | Minimal (SIMPLE tasks) | WAITING FOR CONTENT |
+| I1-I3 | Carrie Benes | Import scripts (SIMPLE each) | WAITING FOR DATA |
 | J1-J2 | RRCHNM/Amanda | NONE | NOT DEVELOPER |
 
-**TOTAL Developer Support:** 10-20h (when content delivered)
-**KOSTEN:** ~2.300€
+**TOTAL Developer Support:** Multiple SIMPLE tasks (when content delivered)
 
 ---
 
@@ -623,7 +620,7 @@ class Command(BaseCommand):
 #### Task K1: Add Historic Base Map to Gazetteer (Issue #56)
 **Source:** Project 6, LOW Priority
 **Status:** BLOCKED (no details why)
-**Aufwand:** 5-10h (if unblocked)
+**Complexity:** MEDIUM (if unblocked)
 
 **Blocker:** Possibly map data unavailable or copyright issues
 
@@ -648,7 +645,7 @@ class Command(BaseCommand):
 
 #### Task L1: Design Crowdsourcing Component (Issue #60)
 **Source:** Project 3, MEDIUM Priority
-**Aufwand:** 20-40h (LARGE feature)
+**Complexity:** COMPLEX (LARGE feature)
 **Status:** Design phase, no implementation yet
 
 **DECISION NEEDED:** Laura confirm if wanted for launch
@@ -657,7 +654,7 @@ class Command(BaseCommand):
 
 #### Task L2: Design User Roles for Contributions (Issue #51)
 **Source:** Project 3, MEDIUM Priority
-**Aufwand:** 15-25h
+**Complexity:** COMPLEX
 **Dependencies:** L1 (Crowdsourcing)
 
 **DECISION NEEDED:** Post-launch feature?
@@ -666,14 +663,14 @@ class Command(BaseCommand):
 
 #### Task L3: Design Flowchart for Manuscript Placement
 **Source:** Project 3, MEDIUM Priority
-**Aufwand:** 3-5h (design doc)
+**Complexity:** SIMPLE (design doc)
 **Status:** Pre-implementation planning
 
 ---
 
 #### Task L4: Incorporate import_export for Datasets (Issue #22)
 **Source:** Project 3, MEDIUM Priority
-**Aufwand:** 8-12h
+**Complexity:** MEDIUM
 **Feature:** Django-import-export integration for CSV uploads
 
 **DECISION NEEDED:** Priority vs. custom import commands?
@@ -682,10 +679,10 @@ class Command(BaseCommand):
 
 ### **PHASE 4 SUMMARY: Blocked/Future**
 
-| Category | Tasks | Aufwand (if unblocked) | Status |
-|----------|-------|------------------------|--------|
-| K: Blocked | 3 tasks | 5-10h | WAIT FOR UNBLOCK |
-| L: Future Features | 4 tasks | 46-82h | DESIGN PHASE |
+| Category | Tasks | Complexity (if unblocked) | Status |
+|----------|-------|---------------------------|--------|
+| K: Blocked | 3 tasks | MEDIUM | WAIT FOR UNBLOCK |
+| L: Future Features | 4 tasks | COMPLEX | DESIGN PHASE |
 
 **NOT RECOMMENDED FOR IMMEDIATE WORK**
 
@@ -772,13 +769,7 @@ class Command(BaseCommand):
 ---
 
 #### KB-U3: `knowledge/05_deliverables/cost_estimate.md`
-**Add:**
-- Phase 1 estimate: 3.900€
-- Phase 2 estimate: 20.000€
-- Phase 3 estimate: 2.300€
-- Total scope: ~26.200€ (vs. original 3.510€ for bugs only)
-
-**NOTE:** MASSIVE scope increase vs. bug-only estimate!
+**Note:** Cost estimates removed for client confidentiality
 
 ---
 
@@ -979,51 +970,46 @@ Agree:
 
 ---
 
-## 8. BUDGET SCENARIOS (Updated from Bug-Only Estimate)
+## 8. IMPLEMENTATION SCENARIOS
 
 ### Scenario A: MINIMAL (Bug Fixes Only)
 **Tasks:** B1, B2, B3 (from original bug inventory)
-**Aufwand:** 10h (pure dev) + 8h (testing/overhead) = 18h
-**Kosten:** 3.510€ (as per bug_inventory.md v3.0)
+**Complexity:** Mix of SIMPLE and MEDIUM
 **Timeline:** 2 weeks
 
 ---
 
 ### Scenario B: PHASE 1 (Quick Wins)
 **Tasks:** A1, A2, A3, B1, B2, D1, C1
-**Aufwand:** 20-27h (pure dev) + 15-20h (overhead) = 35-47h
-**Kosten:** 5.250€ - 7.050€
+**Complexity:** 8 tasks (SIMPLE to MEDIUM)
 **Timeline:** 3-4 weeks
 
 ---
 
 ### Scenario C: PHASE 1 + IIIF (High Priority)
 **Tasks:** Scenario B + E1
-**Aufwand:** 40-57h (pure dev) + 30-43h (overhead) = 70-100h
-**Kosten:** 10.500€ - 15.000€
+**Complexity:** Adds COMPLEX IIIF integration
 **Timeline:** 6-8 weeks
 
 ---
 
 ### Scenario D: PHASE 1 + 2 (Backend Integration)
 **Tasks:** All A, B, C, D, E, F (excluding WHG)
-**Aufwand:** 109-178h (pure dev) + 82-134h (overhead) = 191-312h
-**Kosten:** 28.650€ - 46.800€
+**Complexity:** Multiple COMPLEX backend tasks
 **Timeline:** 12-20 weeks (3-5 months)
 
 ---
 
 ### Scenario E: FULL SCOPE (All Non-Blocked Tasks)
 **Tasks:** All A-L (excluding blocked K tasks)
-**Aufwand:** 155-280h (pure dev) + 116-210h (overhead) = 271-490h
-**Kosten:** 40.650€ - 73.500€
+**Complexity:** Full project scope with COMPLEX tasks
 **Timeline:** 17-31 weeks (4-8 months)
 
 ---
 
 ### RECOMMENDATION:
 
-**START WITH:** Scenario B (Phase 1 Quick Wins) - 7.050€ max
+**START WITH:** Scenario B (Phase 1 Quick Wins)
 **RATIONALE:**
 - Low risk (no data dependencies)
 - High value (fixes 8 issues)
@@ -1031,8 +1017,8 @@ Agree:
 - Builds trust for larger phases
 
 **THEN DECIDE:** After Sprint 1 review, Laura can greenlight:
-- Scenario C (add IIIF) - additional 7.950€
-- Or Scenario D (full backend) - additional 39.750€
+- Scenario C (add IIIF)
+- Or Scenario D (full backend)
 
 **AVOID:** Committing to Scenario E upfront (too much uncertainty)
 
@@ -1047,7 +1033,6 @@ Agree:
 - [ ] Update existing KB files (KB-U1 to KB-U4)
 - [ ] Prepare meeting slides/agenda
 
-**Time:** 3-5h
 **Deadline:** Before meeting (Nov 3 or 11)
 
 ---
@@ -1060,17 +1045,12 @@ Agree:
 - [ ] Set Sprint start date
 - [ ] Request server access
 
-**Time:** 45-60 min
-
 ---
 
 ### Post-Meeting (Same Day):
 - [ ] Update `knowledge/04_meetings/2025-11-XX_meeting_notes.md`
 - [ ] Update `knowledge/07_implementation/task_tracking.md` with approved tasks
-- [ ] Update cost_estimate.md with agreed scenario
 - [ ] Send follow-up email with summary
-
-**Time:** 1-2h
 
 ---
 
@@ -1079,8 +1059,6 @@ Agree:
 - [ ] Create Git branches for Phase 1 tasks
 - [ ] Write test plans for each task
 - [ ] Schedule Sprint Review with Laura
-
-**Time:** 4-6h
 
 ---
 
@@ -1091,8 +1069,6 @@ Agree:
 - [ ] Create Pull Requests
 - [ ] Sprint Review demo
 
-**Time:** 20-27h (billable)
-
 ---
 
 ## 10. OPEN QUESTIONS FOR LAURA (Meeting)
@@ -1101,7 +1077,7 @@ Agree:
 
 1. **Task Prioritization:**
    - "Which tasks are MUST-HAVE for launch vs. nice-to-have?"
-   - "Is IIIF Viewer on /stanzas/ critical? (20-30h, ~4.500€)"
+   - "Is IIIF Viewer on /stanzas/ critical? (COMPLEX task)"
 
 2. **Data Dependencies:**
    - "When will Carrie deliver final toponym dataset?"
@@ -1115,9 +1091,9 @@ Agree:
    - "Is Introduction page content ready? (Task H1)"
    - "Can I get list of team members for About page? (Task C2)"
 
-5. **Budget:**
-   - "Which scenario fits your budget? (A: 3.5k, B: 7k, C: 15k, D: 47k, E: 74k)"
-   - "Prefer fixed-price or hourly with cap?"
+5. **Scope:**
+   - "Which scenario fits your timeline and priorities? (A through E)"
+   - "Prefer phased approach or full implementation?"
 
 ### MEDIUM PRIORITY QUESTIONS:
 
@@ -1148,15 +1124,14 @@ Agree:
 ## SUMMARY
 
 **Total Identified Tasks:** 53
-- **SOFORT umsetzbar:** 8 tasks (20-27h, ~5.250€)
-- **Backend/DB:** 12 tasks (89-151h, ~20.000€)
-- **Content-abhängig:** 18 tasks (10-20h Developer support)
+- **SOFORT umsetzbar:** 8 tasks (SIMPLE to MEDIUM complexity)
+- **Backend/DB:** 12 tasks (MEDIUM to COMPLEX)
+- **Content-abhängig:** 18 tasks (Developer support needed)
 - **Blocked/Future:** 15 tasks (nicht jetzt)
 
 **RECOMMENDED START:** Phase 1 (Scenario B)
 - 8 Quick Win tasks
-- 35-47h total (mit Overhead)
-- 5.250€ - 7.050€
+- SIMPLE to MEDIUM complexity
 - 3-4 Wochen
 - LOW RISK, HIGH VALUE
 
@@ -1167,7 +1142,7 @@ Agree:
 4. Iterative Sprints statt Big Bang
 
 **NEXT IMMEDIATE ACTION:**
-GitHub Issues lesen (1h) → Live-Site checken (2h) → Meeting Prep (2h)
+GitHub Issues lesen → Live-Site checken → Meeting Prep
 
 ---
 

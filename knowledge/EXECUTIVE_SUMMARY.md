@@ -10,21 +10,21 @@
 
 ### Ursprüngliche Annahme (v1.0 - FALSCH)
 - 5 Bugs identifiziert
-- ~35-40h Entwicklungsaufwand
-- ~10.000€ Kosten
+- COMPLEX scope
+- HIGH effort estimate
 
 ### Nach Code-Verifikation (v2.0 - ZU OPTIMISTISCH)
 - 2 echte Bugs
-- 12-17h Entwicklungsaufwand
-- ~2.340€ Kosten
+- MEDIUM effort
+- Manageable scope
 
 ### Nach Live-Site Browser-Tests (v3.0 - FINAL)
 - **3 echte Bugs** (Bug #2 existiert doch!)
-- **18h Entwicklungsaufwand**
-- **~3.510€ Kosten**
+- **MEDIUM-HIGH complexity**
+- **3 critical bugs**
 
-**Einsparung vs. Original: 6.490€ / 65% weniger**
-**Änderung v2.0 → v3.0: +1.170€ / +50% (Bug #2 ist real!)**
+**Scope reduction: 2 bugs eliminated vs. original**
+**Revision v2.0 → v3.0: +1 bug / +50% complexity (Bug #2 is real!)**
 
 ---
 
@@ -36,8 +36,7 @@
 - **Live-Test:** Yale1, Fn1 zeigen "No IIIF manifest or photographs available"
 - **Sekundär:** Hardcoding-Fallback zu "Urb1" ohne Prüfung
 - **Impact:** Nur Urb1 und Cam funktionieren vollständig
-- **Aufwand:** 4h
-- **Kosten:** 600€
+- **Complexity:** MEDIUM
 
 ### Bug #2: IIIF-Viewer rendert nicht (HOCH)
 - **Location:** JavaScript-Initialisierung, templates/stanzas.html
@@ -45,15 +44,13 @@
 - **Live-Test:** Weder /stanzas/ noch /manuscripts/Urb1/stanzas/ zeigen Viewer
 - **Ursache:** JavaScript-Initialisierung, nicht Template-Problem
 - **Impact:** Hauptfeature der Edition nicht sichtbar
-- **Aufwand:** 8h (JavaScript-Debugging)
-- **Kosten:** 1.200€
+- **Complexity:** MEDIUM-HIGH (JavaScript debugging required)
 
 ### Bug #3: page_number ignoriert (MITTEL)
 - **Location:** manuscript/views.py:485-506
 - **Problem:** URL-Parameter `page_number` wird akzeptiert aber nicht verwendet
 - **Impact:** Deep-Links zu spezifischen Seiten funktionieren nicht
-- **Aufwand:** 4h
-- **Kosten:** 600€
+- **Complexity:** MEDIUM
 
 ---
 
@@ -63,7 +60,7 @@
 - **Status:** Kein bare `except:` mehr im Code
 - **Beweis:** Alle Exceptions sind spezifisch (ObjectDoesNotExist, etc.)
 - **Fazit:** Bereits korrekt implementiert
-- **Aufwand:** 0h
+- **Status:** Already fixed
 
 ---
 
@@ -74,37 +71,34 @@
 - **Frontend:** ✅ Leaflet-Map rendert perfekt
 - **Live-Test:** https://lasfera.rrchnm.org/toponyms funktioniert einwandfrei
 - **Details:** ~80 Toponyme (nicht 700+), circleMarkers, Hover-Effekte
-- **Aufwand:** 0h
+- **Status:** Already fixed
 
 ---
 
-## 💰 KOSTENÜBERSICHT (FINAL)
+## 📋 SCOPE OVERVIEW (FINAL)
 
-### Empfohlene Option: Alle 3 Bugs
+### Recommended Option: All 3 Bugs
 
 ```
-Bug #1 (IIIF + Hardcoding):   4h × 150€ =   600€
-Bug #2 (Viewer JavaScript):   8h × 150€ = 1.200€
-Bug #3 (page_number):         4h × 150€ =   600€
-Testing & Review:             2h × 150€ =   300€
+Bug #1 (IIIF + Hardcoding):   MEDIUM complexity
+Bug #2 (Viewer JavaScript):   MEDIUM-HIGH complexity
+Bug #3 (page_number):         MEDIUM complexity
+Testing & Review:             Required
 ────────────────────────────────────────────────
-Entwicklung:                 18h         2.700€
-× Overhead (1.3x):                       3.510€
-════════════════════════════════════════════════
-TOTAL:                                   3.510€
+Total:                        3 bugs to fix
 ```
 
 **Timeline:** 3 Wochen (15 Arbeitstage)
 
-### Kostenvergleich
+### Scope Comparison
 
 ```
-v1.0 (Ursprünglich):        10.000€  (5 Bugs angenommen)
-v2.0 (Code-Analyse):         2.340€  (2 Bugs, zu optimistisch)
-v3.0 (Live-Tests):           3.510€  (3 Bugs, realistisch)
+v1.0 (Ursprünglich):        5 Bugs (assumed)
+v2.0 (Code-Analyse):        2 Bugs (too optimistic)
+v3.0 (Live-Tests):          3 Bugs (verified)
 ──────────────────────────────────────────────────────
-Einsparung vs. v1.0:        -6.490€  (-65%)
-Änderung v2.0 → v3.0:       +1.170€  (+50%)
+Scope reduction vs. v1.0:   -2 bugs (-40%)
+Revision v2.0 → v3.0:       +1 bug (+50%)
 ```
 
 ---
@@ -248,12 +242,11 @@ def mirador_view(request, manuscript_id, page_number):
 ### EMPFOHLEN: Alle 3 Bugs fixen
 
 1. Alle 3 Bugs als Pull Requests implementieren
-2. Bug #1: Fallback-Logik (4h)
-3. Bug #2: IIIF-Viewer JavaScript (8h)
-4. Bug #3: page_number Navigation (4h)
-5. Testing & Review (2h)
+2. Bug #1: Fallback-Logik (MEDIUM)
+3. Bug #2: IIIF-Viewer JavaScript (MEDIUM-HIGH)
+4. Bug #3: page_number Navigation (MEDIUM)
+5. Testing & Review (Required)
 6. **Timeline:** 3 Wochen
-7. **Kosten:** 3.510€
 
 ### Mit Laura besprechen
 
@@ -261,7 +254,7 @@ def mirador_view(request, manuscript_id, page_number):
 2. "3 echte Bugs gefunden, 2 widerlegte Annahmen"
 3. Live-Site Tests zeigen: Bug #2 ist real (Viewer rendert nicht)
 4. Gazetteer funktioniert perfekt (kein Fix nötig)
-5. Budget-Freigabe einholen: 3.510€
+5. Project scope approval
 6. Dann starten
 
 ---
@@ -271,8 +264,7 @@ def mirador_view(request, manuscript_id, page_number):
 | Aspekt | v1.0 (Annahmen) | v2.0 (Code) | v3.0 (Live) | Änderung |
 |--------|----------------|-------------|-------------|----------|
 | **Bugs** | 5 | 2 | 3 | +50% |
-| **Aufwand** | 35-40h | 12h | 18h | +50% |
-| **Kosten** | ~10.000€ | ~2.340€ | ~3.510€ | +50% |
+| **Complexity** | COMPLEX | SIMPLE | MEDIUM | +50% |
 | **Timeline** | 6-8 Wochen | 2 Wochen | 3 Wochen | +50% |
 | **Risiko** | HOCH | NIEDRIG | MITTEL | ↑ |
 | **Methodik** | Vermutungen | Code-Analyse | Code + Browser | ✅ |
@@ -301,27 +293,26 @@ def mirador_view(request, manuscript_id, page_number):
 
 ## 💡 EMPFEHLUNG
 
-**JA zu Szenario A (2.340€, 2 Wochen)**
+**RECOMMENDED: 3-Bug Fix Approach**
 
 **Begründung:**
-1. Nur 2 echte Bugs gefunden (Code-verifiziert)
-2. Beide Bugs sind klar umrissen
+1. 3 echte Bugs verifiziert (Code + Live-Site tested)
+2. Alle Bugs sind klar umrissen
 3. Lösungen sind bekannt
-4. Geringe Kosten, kurze Timeline
-5. Niedriges Risiko
+4. Kurze Timeline (3 Wochen)
+5. Mittleres Risiko, manageable
 
-**NEIN zu Szenario C (10.000€)**
-
-**Begründung:**
-1. Bug #2 existiert nicht
-2. Bug #4 ist bereits gefixt
-3. Unnötig teuer
-4. Basiert auf falschen Annahmen
-
-**VIELLEICHT zu Szenario B (2.940€)**
+**NOT RECOMMENDED: Original 5-Bug Scope**
 
 **Begründung:**
-1. Nur wenn Gazetteer tatsächlich kaputt
+1. Bug #4 ist bereits gefixt
+2. Bug #5 (Gazetteer) funktioniert perfekt
+3. Basiert auf falschen Annahmen
+
+**CONDITIONAL: Gazetteer Enhancement**
+
+**Begründung:**
+1. Nur wenn zusätzliche Features gewünscht
 2. Erst Browser-Test durchführen
 3. Dann entscheiden
 
