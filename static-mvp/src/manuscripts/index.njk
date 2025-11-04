@@ -1,0 +1,49 @@
+---
+layout: layout.njk
+title: Manuscripts - La Sfera
+---
+
+{% block content %}
+<h1>Manuscripts</h1>
+
+<p>The following manuscripts of <em>La Sfera</em> are included in this digital edition:</p>
+
+{% for ms in manuscripts %}
+<div class="manuscript-card">
+  <h2>{{ ms.siglum }} - {{ ms.library }}</h2>
+
+  <div class="meta">
+    <strong>Shelfmark:</strong> {{ ms.shelfmark }}<br>
+    <strong>Location:</strong> {{ ms.library_city }}<br>
+    {% if ms.codex %}
+      <strong>Support:</strong> {{ ms.codex.support | capitalize }}<br>
+      <strong>Dimensions:</strong> {{ ms.codex.dimensions }}<br>
+      <strong>Folios:</strong> {{ ms.codex.folios }}
+    {% endif %}
+  </div>
+
+  <p>{{ ms.description }}</p>
+
+  {% if ms.iiif_url %}
+  <p style="margin-top: 15px;">
+    <a href="{{ ms.digitized_url }}" target="_blank" style="color: #3498db;">→ View Digitized Manuscript</a>
+  </p>
+  {% endif %}
+
+  {% if ms.text_decoration %}
+  <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+    {% if ms.text_decoration.illuminated %}
+      <span>✨ Illuminated</span>
+    {% endif %}
+    {% if ms.text_decoration.decorated %}
+      <span>🎨 Decorated</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+<p style="margin-top: 30px;">
+  <a href="/">← Back to Home</a>
+</p>
+{% endblock %}

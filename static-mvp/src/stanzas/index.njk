@@ -1,0 +1,50 @@
+---
+layout: layout.njk
+title: Stanzas - La Sfera
+---
+
+{% block content %}
+<h1>Stanzas</h1>
+
+<p>Reading the text of <em>La Sfera</em> with English translations.</p>
+
+{% for stanza in stanzas %}
+<div class="stanza">
+  <div class="stanza-header">
+    <span class="stanza-code">{{ stanza.line_code }}</span>
+    <span style="margin-left: 10px; color: #666;">Manuscript: {{ stanza.manuscript }}</span>
+  </div>
+
+  <div class="stanza-text">{{ stanza.text }}</div>
+
+  {% set translation = translations | getTranslation(stanza.line_code) %}
+  {% if translation %}
+  <div class="translation">
+    <div class="translation-label">English Translation:</div>
+    {{ translation.translated_text }}
+    {% if translation.translator %}
+      <div style="margin-top: 10px; font-size: 0.85em;">
+        — Translated by {{ translation.translator }}
+      </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if stanza.notes %}
+  <div class="notes">
+    <strong>Note:</strong> {{ stanza.notes }}
+  </div>
+  {% endif %}
+
+  {% if stanza.themes %}
+  <div style="margin-top: 10px; font-size: 0.85em; color: #666;">
+    <strong>Themes:</strong> {{ stanza.themes | join(", ") }}
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+<p style="margin-top: 30px;">
+  <a href="/">← Back to Home</a>
+</p>
+{% endblock %}

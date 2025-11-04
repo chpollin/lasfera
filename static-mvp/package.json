@@ -1,0 +1,21 @@
+{
+  "name": "lasfera-static-mvp",
+  "version": "0.1.0",
+  "description": "La Sfera Static Site MVP",
+  "scripts": {
+    "build:data": "node scripts/build-data.js",
+    "build:11ty": "eleventy",
+    "build": "npm run build:data && npm run build:11ty",
+    "serve": "eleventy --serve",
+    "dev": "npm run build:data && npm run serve"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

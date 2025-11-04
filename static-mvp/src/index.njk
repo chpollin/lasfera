@@ -1,0 +1,47 @@
+---
+layout: layout.njk
+title: La Sfera Digital Edition - Home
+---
+
+{% block content %}
+<h1>Welcome to La Sfera</h1>
+
+<p>This is a <strong>Minimum Viable Product (MVP)</strong> demonstrating the static site architecture for the La Sfera Digital Edition.</p>
+
+<h2>About This Demo</h2>
+<p>This prototype shows how La Sfera can be migrated from a Django/PostgreSQL application to a static site hosted on GitHub Pages.</p>
+
+<h3>What's Included:</h3>
+<ul style="margin: 20px 0; padding-left: 30px;">
+  <li><strong>2 Manuscripts</strong> (Urb1, Cam)</li>
+  <li><strong>3 Stanzas</strong> with Italian text</li>
+  <li><strong>3 English Translations</strong></li>
+  <li><strong>1 Location</strong> (Florence)</li>
+</ul>
+
+<h3>Key Features Demonstrated:</h3>
+<ul style="margin: 20px 0; padding-left: 30px;">
+  <li>✅ YAML → JSON data conversion</li>
+  <li>✅ Static HTML generation with 11ty</li>
+  <li>✅ Manuscript listing</li>
+  <li>✅ Stanza display with translations</li>
+  <li>✅ Responsive layout</li>
+</ul>
+
+<div style="margin-top: 40px; padding: 20px; background: #e8f4f8; border-radius: 5px;">
+  <h3>Quick Links:</h3>
+  <p>
+    <a href="/manuscripts/" style="margin-right: 20px;">→ Browse Manuscripts</a>
+    <a href="/stanzas/">→ Read Stanzas</a>
+  </p>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 5px;">
+  <h4>📊 Statistics:</h4>
+  <p>
+    <strong>Manuscripts:</strong> {{ manuscripts | length }}<br>
+    <strong>Stanzas:</strong> {{ stanzas | length }}<br>
+    <strong>Translations:</strong> {{ translations | length }}
+  </p>
+</div>
+{% endblock %}
